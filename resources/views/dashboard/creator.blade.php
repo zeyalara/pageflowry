@@ -147,6 +147,12 @@
       z-index: 50;
     }
 
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
     .navbar-left h1 {
       font-size: 1.5rem;
       font-weight: 700;
@@ -203,25 +209,353 @@
       overflow-y: auto;
     }
 
-    /* Welcome Section */
-    .welcome-section {
-      margin-bottom: 32px;
-      opacity: 0;
-      animation: fadeUp 0.5s ease forwards;
+    /* Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.08));
+      border-radius: 20px;
+      padding: 48px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .welcome-text {
+    .hero-section.enhanced {
+      padding: 60px;
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.1));
+    }
+
+    .hero-section.saas {
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.05));
+      border-radius: 20px;
+      padding: 40px;
+      height: 240px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 40.5H.5" stroke="rgba(92,151,245,0.1)" fill="none"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+      opacity: 0.03;
+    }
+
+    .hero-content {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .hero-section.enhanced .hero-content {
+      grid-template-columns: 1fr 1.8fr;
+      gap: 60px;
+    }
+
+    .hero-section.saas .hero-content {
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    .hero-section.saas .hero-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1E293B;
+      margin-bottom: 8px;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      padding-bottom: 2px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .hero-section.saas .hero-subtitle {
+      font-size: 0.875rem;
+      color: #64748B;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .hero-section.saas .hero-stats {
+      gap: 16px;
+      margin-top: 0;
+    }
+
+    .hero-stat {
+      text-align: center;
+      background: var(--white);
+      border-radius: 12px;
+      padding: 16px;
+      min-width: 80px;
+      box-shadow: 0 4px 12px rgba(92,151,245,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .hero-section.saas .hero-stat {
+      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-width: 70px;
+      box-shadow: none;
+      transition: all 0.2s ease;
+    }
+
+    .hero-stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(92,151,245,0.2);
+    }
+
+    .hero-section.saas .hero-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: rgba(92, 151, 245, 0.3);
+    }
+
+    .hero-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    .hero-section.saas .hero-number {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 2px;
+    }
+
+    .hero-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .hero-section.saas .hero-label {
+      font-size: 0.75rem;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .hero-illustration {
+      display: flex;
+      justify-content: center;
+    }
+
+    .illustration-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(92,151,245,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .illustration-large {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 30px 60px rgba(92,151,245,0.2);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .illustration-clean {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .illustration-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 30px 60px rgba(92,151,245,0.25);
+    }
+
+    .illustration-large:hover {
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 0 40px 80px rgba(92,151,245,0.3);
+    }
+
+    .illustration-clean:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .illustration-image {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+    }
+
+    /* Enhanced Stats Section */
+    .enhanced-stats-section {
+      margin-bottom: 48px;
+    }
+
+    .enhanced-stats-section.saas {
+      margin-bottom: 24px;
+    }
+
+    .stats-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .enhanced-stats-section.saas .stats-header {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .stats-title {
       font-size: 1.75rem;
       font-weight: 700;
       color: var(--dark);
-      letter-spacing: -0.5px;
       margin-bottom: 8px;
     }
 
-    .welcome-sub {
-      font-family: 'DM Sans', sans-serif;
-      color: var(--muted);
+    .enhanced-stats-section.saas .stats-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 4px;
+    }
+
+    .stats-subtitle {
       font-size: 1rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .enhanced-stats-section.saas .stats-subtitle {
+      font-size: 0.875rem;
+      color: #64748B;
+      margin: 0;
+    }
+
+    .stat-card.enhanced {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(92,151,245,0.08);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card.enhanced::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--blue-dark));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .stat-card.enhanced:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 12px 30px rgba(92,151,245,0.2);
+    }
+
+    .stat-card.enhanced:hover::before {
+      opacity: 1;
+    }
+
+    .stat-card.saas {
+      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card.saas::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #5C97F5, #4A84E0);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .stat-card.saas:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: rgba(92, 151, 245, 0.3);
+    }
+
+    .stat-card.saas:hover::before {
+      opacity: 1;
+    }
+
+    .stat-content {
+      text-align: center;
+    }
+
+    .stat-card.enhanced .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .stat-card.enhanced .stat-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .stat-card.saas .stat-number {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 4px;
+    }
+
+    .stat-card.saas .stat-label {
+      font-size: 0.75rem;
+      color: #64748B;
+      font-weight: 500;
     }
 
     /* Stats Grid */
@@ -464,11 +798,6 @@
         margin-left: 0;
       }
 
-      .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
       .content {
         padding: 20px;
       }
@@ -477,33 +806,89 @@
         padding: 0 20px;
       }
 
-      .table {
-        font-size: 0.8rem;
+      .hero-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
       }
 
-      .table th,
-      .table td {
-        padding: 8px;
+      .hero-section.enhanced .hero-content {
+        grid-template-columns: 1fr;
+        gap: 32px;
       }
 
-      .stat-number {
-        font-size: 2rem;
+      .hero-section.saas .hero-title {
+        font-size: 1.5rem;
+        line-height: 1.3;
+        margin-bottom: 10px;
       }
-    }
 
-    /* Mobile Menu Toggle */
-    .mobile-menu-toggle {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--dark);
-    }
+      .hero-section.saas .hero-subtitle {
+        font-size: 0.875rem;
+        margin-bottom: 16px;
+      }
 
-    @media (max-width: 768px) {
-      .mobile-menu-toggle {
-        display: block;
+      .hero-stats {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .hero-stat {
+        padding: 12px;
+        min-width: 100%;
+      }
+
+      .hero-number {
+        font-size: 1.25rem;
+      }
+
+      .illustration-card {
+        padding: 20px;
+      }
+
+      .illustration-large {
+        padding: 24px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .stat-card.enhanced {
+        padding: 16px;
+      }
+
+      .stat-card.enhanced .stat-number {
+        font-size: 1.5rem;
+      }
+
+      .modal-card {
+        width: 90%;
+        max-width: 400px;
+        margin: 5% auto;
+      }
+
+      .modal-header {
+        gap: 12px;
+      }
+
+      .modal-title {
+        font-size: 1.25rem;
+      }
+
+      .modal-body {
+        margin-bottom: 24px;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -604,7 +989,6 @@
     <!-- Navbar -->
     <header class="navbar">
       <div class="navbar-left">
-        <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1>Dashboard Creator</h1>
       </div>
       
@@ -623,83 +1007,160 @@
 
     <!-- Content Area -->
     <div class="content">
-      <!-- Welcome Section -->
-      <div class="welcome-section">
-        <h2 class="welcome-text">Selamat datang, {{ $user->name }} 👋</h2>
-        <p class="welcome-sub">Ini adalah ringkasan aktivitas konten Anda hari ini</p>
+      <!-- Hero Section -->
+      <div class="hero-section saas">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1 class="hero-title">Selamat datang, {{ $user->name }}</h1>
+            <p class="hero-subtitle">Ini adalah ringkasan aktivitas konten Anda hari ini</p>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-number">{{ $stats['total_brands'] }}</div>
+                <div class="hero-label">Brands</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-number">{{ $stats['total_contents'] }}</div>
+                <div class="hero-label">Konten</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-number">{{ $stats['published'] ?? 0 }}</div>
+                <div class="hero-label">Published</div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-illustration">
+            <div class="illustration-clean">
+              <svg viewBox="0 0 300 200" fill="none">
+                <!-- Clean workflow illustration -->
+                <rect x="20" y="60" width="80" height="50" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="25" y="65" width="70" height="40" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="100" cy="85" r="4" fill="#5C97F5"/>
+                <rect x="35" y="75" width="50" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="45" cy="76.5" r="2" fill="#5C97F5"/>
+                
+                <!-- Connection lines -->
+                <path d="M100 85 L130 85" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle cx="115" cy="85" r="2" fill="#5C97F5"/>
+                
+                <!-- Second element -->
+                <rect x="130" y="60" width="80" height="50" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="135" y="65" width="70" height="40" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="210" cy="85" r="4" fill="#10B981"/>
+                <rect x="145" y="75" width="50" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="155" cy="76.5" r="2" fill="#10B981"/>
+                
+                <!-- Connection lines -->
+                <path d="M210 85 L240 85" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle cx="225" cy="85" r="2" fill="#10B981"/>
+                
+                <!-- Third element -->
+                <rect x="240" y="60" width="80" height="50" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="245" y="65" width="70" height="40" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="320" cy="85" r="4" fill="#F59E0B"/>
+                <rect x="255" y="75" width="50" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="265" cy="76.5" r="2" fill="#F59E0B"/>
+                
+                <!-- Success indicator -->
+                <circle cx="170" cy="140" r="20" fill="#10B981" opacity="0.1"/>
+                <circle cx="170" cy="140" r="12" fill="#10B981"/>
+                <path d="M160 140 L165 145 L180 130" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card" style="--index: 0">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-          </div>
-          <div class="stat-number">{{ $stats['total_brands'] }}</div>
-          <div class="stat-label">Total Brand</div>
+      <!-- Enhanced Stats Section -->
+      <div class="enhanced-stats-section saas">
+        <div class="stats-header">
+          <h2 class="stats-title">Workflow Overview</h2>
+          <p class="stats-subtitle">Monitor progress kontenmu secara real-time</p>
         </div>
         
-        <div class="stat-card" style="--index: 1">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
+        <div class="stats-grid">
+          <div class="stat-card saas" style="--index: 0">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['total_brands'] }}</div>
+              <div class="stat-label">Total Brand</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['total_contents'] }}</div>
-          <div class="stat-label">Total Konten</div>
-        </div>
-        
-        <div class="stat-card" style="--index: 2">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
+          
+          <div class="stat-card saas" style="--index: 1">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['total_contents'] }}</div>
+              <div class="stat-label">Total Konten</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['in_production'] }}</div>
-          <div class="stat-label">In Production</div>
-        </div>
-        
-        <div class="stat-card" style="--index: 3">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
+          
+          <div class="stat-card saas" style="--index: 2">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['in_production'] ?? 0 }}</div>
+              <div class="stat-label">In Production</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['under_review'] }}</div>
-          <div class="stat-label">Under Review</div>
-        </div>
-        
-        <div class="stat-card" style="--index: 4">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
+          
+          <div class="stat-card saas" style="--index: 3">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['under_review'] ?? 0 }}</div>
+              <div class="stat-label">Under Review</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['need_revision'] }}</div>
-          <div class="stat-label">Need Revision</div>
-        </div>
-        
-        <div class="stat-card" style="--index: 5">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+          
+          <div class="stat-card saas" style="--index: 4">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['need_revision'] ?? 0 }}</div>
+              <div class="stat-label">Need Revision</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['ready_to_publish'] }}</div>
-          <div class="stat-label">Ready to Publish</div>
-        </div>
-        
-        <div class="stat-card" style="--index: 6">
-          <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
+          
+          <div class="stat-card saas" style="--index: 5">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['ready_to_publish'] ?? 0 }}</div>
+              <div class="stat-label">Ready to Publish</div>
+            </div>
           </div>
-          <div class="stat-number">{{ $stats['published'] }}</div>
-          <div class="stat-label">Published</div>
+          
+          <div class="stat-card saas" style="--index: 6">
+            <div class="stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ $stats['published'] ?? 0 }}</div>
+              <div class="stat-label">Published</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -814,25 +1275,6 @@
 </div>
 
 <script>
-  // Mobile sidebar toggle
-  function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('open');
-  }
-
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.querySelector('.mobile-menu-toggle');
-    
-    if (window.innerWidth <= 768 && 
-        !sidebar.contains(event.target) && 
-        !toggle.contains(event.target) &&
-        sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
-    }
-  });
-
   // Add interactive hover effects
   document.addEventListener('DOMContentLoaded', function() {
     // Add click feedback to stat cards
@@ -845,15 +1287,15 @@
       });
     });
 
-    // Smooth scroll for mobile
-    if (window.innerWidth <= 768) {
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function() {
-          const sidebar = document.getElementById('sidebar');
-          sidebar.classList.remove('open');
-        });
+    // Add hover effects to buttons
+    document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+      btn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
       });
-    }
+      btn.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+      });
+    });
   });
 </script>
 

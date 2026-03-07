@@ -203,12 +203,290 @@
       overflow-y: auto;
     }
 
+    /* Brief Header Section */
+    .brief-header-section {
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.05));
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brief-header-section.enhanced {
+      padding: 60px;
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.1));
+    }
+
+    .brief-header-section.saas {
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.05));
+      border-radius: 20px;
+      padding: 32px 40px;
+      height: 260px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brief-header-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 40.5H.5" stroke="rgba(92,151,245,0.1)" fill="none"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+      opacity: 0.03;
+    }
+
+    .header-content {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .brief-header-section.enhanced .header-content {
+      grid-template-columns: 1fr 1.8fr;
+      gap: 60px;
+    }
+
+    .brief-header-section.saas .header-content {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .brief-header-section.saas .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 6px;
+      letter-spacing: -0.025em;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .brief-header-section.saas .page-subtitle {
+      font-size: 0.875rem;
+      color: #64748B;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .brief-header-section.saas .header-stats {
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .header-stat {
+      text-align: center;
+      background: var(--white);
+      border-radius: 12px;
+      padding: 16px;
+      min-width: 90px;
+      box-shadow: 0 4px 12px rgba(92,151,245,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .brief-header-section.saas .header-stat {
+      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      min-width: 70px;
+      box-shadow: none;
+      transition: all 0.2s ease;
+    }
+
+    .header-stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(92,151,245,0.2);
+    }
+
+    .brief-header-section.saas .header-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: rgba(92, 151, 245, 0.3);
+    }
+
+    .header-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    .brief-header-section.saas .header-number {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 2px;
+    }
+
+    .header-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .brief-header-section.saas .header-label {
+      font-size: 0.75rem;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .illustration-medium {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(92,151,245,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .illustration-large {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 30px 60px rgba(92,151,245,0.2);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .illustration-clean {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      max-width: 300px;
+      max-height: 180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .illustration-clean svg {
+      max-width: 100%;
+      max-height: 140px;
+      height: auto;
+      width: auto;
+    }
+
+    .illustration-medium:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 30px 60px rgba(92,151,245,0.25);
+    }
+
+    .illustration-large:hover {
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 0 40px 80px rgba(92,151,245,0.3);
+    }
+
+    .illustration-clean:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Enhanced Table */
+    .table.enhanced {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(92,151,245,0.08);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .table.enhanced::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--blue-dark));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .table.enhanced:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(92,151,245,0.15);
+    }
+
+    .table.enhanced:hover::before {
+      opacity: 1;
+    }
+
+    .table.enhanced th {
+      background: var(--soft);
+      color: var(--blue-dark);
+      font-weight: 600;
+      padding: 16px 12px;
+      border: none;
+      text-align: left;
+    }
+
+    .table.enhanced td {
+      padding: 16px 12px;
+      border-bottom: 1px solid rgba(92,151,245,0.1);
+      transition: all 0.2s ease;
+    }
+
+    .table.enhanced tr:hover td {
+      background: rgba(92,151,245,0.02);
+    }
+
+    .table.enhanced tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .table.enhanced {
+        padding: 16px;
+      }
+      .table.enhanced th {
+        padding: 12px 8px;
+      }
+      .table.enhanced td {
+        padding: 12px 8px;
+      }
+    }
+
     /* Header Section */
     .header-section {
       display: flex;
       justify-content: between;
       align-items: center;
-      margin-bottom: 32px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
       gap: 20px;
     }
@@ -249,6 +527,7 @@
       box-shadow: 0 4px 20px rgba(92,151,245,0.08);
       border: 1px solid rgba(92,151,245,0.08);
       overflow: hidden;
+      margin-top: 0;
     }
 
     .table {
@@ -461,6 +740,108 @@
         flex-direction: column;
         gap: 4px;
       }
+
+      .hero-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .header-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .brief-header-section.enhanced .header-content {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .brief-header-section.saas .header-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .header-stats {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .brief-header-section.saas .header-stats {
+        flex-direction: row;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .header-stat {
+        padding: 8px;
+        min-width: 100%;
+      }
+
+      .brief-header-section.saas .header-stat {
+        padding: 6px 10px;
+        min-width: auto;
+      }
+
+      .header-number {
+        font-size: 1.25rem;
+      }
+
+      .brief-header-section.saas .header-number {
+        font-size: 1rem;
+      }
+
+      .illustration-clean {
+        padding: 16px;
+        max-width: 260px;
+        max-height: 160px;
+      }
+
+      .illustration-clean svg {
+        max-height: 120px;
+      }
+
+      .table.enhanced {
+        padding: 16px;
+      }
+
+      .table.enhanced th {
+        padding: 12px 8px;
+        font-size: 0.875rem;
+      }
+
+      .table.enhanced td {
+        padding: 12px 8px;
+        font-size: 0.875rem;
+      }
+
+      .modal-card {
+        width: 90%;
+        max-width: 400px;
+        margin: 5% auto;
+      }
+
+      .modal-header {
+        gap: 12px;
+      }
+
+      .modal-title {
+        font-size: 1.25rem;
+      }
+
+      .modal-body {
+        margin-bottom: 24px;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     /* Mobile Menu Toggle */
@@ -603,20 +984,82 @@
       @endif
 
       <!-- Header Section -->
+      <div class="brief-header-section saas">
+        <div class="header-content">
+          <div class="header-text">
+            <h1 class="page-title">Content Brief</h1>
+            <p class="page-subtitle">Kelola konsep dan strategi konten sebelum produksi.</p>
+            <div class="header-stats">
+              <div class="header-stat">
+                <div class="header-number">{{ $briefs->count() }}</div>
+                <div class="header-label">Total Brief</div>
+              </div>
+              <div class="header-stat">
+                <div class="header-number">{{ $briefs->where('status', 'Active')->count() }}</div>
+                <div class="header-label">Active</div>
+              </div>
+              <div class="header-stat">
+                <div class="header-number">{{ $briefs->where('status', 'Completed')->count() }}</div>
+                <div class="header-label">Completed</div>
+              </div>
+            </div>
+          </div>
+          <div class="header-illustration">
+            <div class="illustration-clean">
+              <svg viewBox="0 0 300 200" fill="none">
+                <!-- Clean document workflow -->
+                <rect x="20" y="40" width="100" height="60" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="25" y="45" width="90" height="50" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="120" cy="70" r="4" fill="#5C97F5"/>
+                <rect x="35" y="55" width="60" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="45" cy="56.5" r="2" fill="#5C97F5"/>
+                
+                <!-- Connection -->
+                <path d="M120 70 L160 70" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle cx="140" cy="70" r="2" fill="#5C97F5"/>
+                
+                <!-- Strategy element -->
+                <rect x="160" y="40" width="100" height="60" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="165" y="45" width="90" height="50" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="260" cy="70" r="4" fill="#10B981"/>
+                <rect x="175" y="55" width="60" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="185" cy="56.5" r="2" fill="#10B981"/>
+                
+                <!-- Connection -->
+                <path d="M260 70 L200 120" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle cx="230" cy="95" r="2" fill="#10B981"/>
+                
+                <!-- Target element -->
+                <rect x="150" y="120" width="100" height="60" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <rect x="155" y="125" width="90" height="50" rx="4" fill="#ffffff" stroke="#E2E8F0" stroke-width="1"/>
+                <circle cx="250" cy="150" r="4" fill="#F59E0B"/>
+                <rect x="165" y="135" width="60" height="3" rx="1.5" fill="#E2E8F0"/>
+                <circle cx="175" cy="136.5" r="2" fill="#F59E0B"/>
+                
+                <!-- Success indicator -->
+                <circle cx="80" cy="160" r="16" fill="#10B981" opacity="0.1"/>
+                <circle cx="80" cy="160" r="10" fill="#10B981"/>
+                <path d="M72 160 L76 164 L88 148" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
       <div class="header-section">
-        <h2 class="header-title">Daftar Content Brief</h2>
         <a href="{{ route('brief.create') }}" class="btn-primary">
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
-          Buat Brief
+          Buat Brief Baru
         </a>
       </div>
 
-      <!-- Table Card -->
+      <!-- Enhanced Table Card -->
       <div class="table-card">
         @if($briefs->count() > 0)
-          <table class="table">
+          <table class="table enhanced">
             <thead>
               <tr>
                 <th>Judul</th>

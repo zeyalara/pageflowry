@@ -203,6 +203,69 @@
       overflow-y: auto;
     }
 
+    /* Brand Header Section */
+    .brand-header-section {
+      background: linear-gradient(135deg, var(--soft), rgba(92,151,245,0.05));
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-header-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 40.5H.5" stroke="rgba(92,151,245,0.1)" fill="none"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+      opacity: 0.03;
+    }
+
+    .header-content {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .header-illustration {
+      display: flex;
+      justify-content: center;
+    }
+
+    .illustration-small {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(92,151,245,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .illustration-small:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 30px 60px rgba(92,151,245,0.25);
+    }
+
     /* Header Section */
     .header-section {
       display: flex;
@@ -393,6 +456,128 @@
       color: var(--muted);
     }
 
+    /* Custom Delete Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      width: 500px;
+      max-width: 90%;
+      position: relative;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .modal-icon {
+      width: 48px;
+      height: 48px;
+      background: #FFF0F0;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #DC2626;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 0;
+    }
+
+    .modal-body {
+      margin-bottom: 32px;
+    }
+
+    .modal-message {
+      font-size: 1rem;
+      color: var(--dark);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .modal-warning {
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-footer .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-cancel {
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .btn-cancel:hover {
+      background: #E1EDFF;
+      color: var(--blue);
+    }
+
+    .btn-delete {
+      background: #FFF0F0;
+      color: #DC2626;
+    }
+
+    .btn-delete:hover {
+      background: #FEE2E2;
+      transform: translateY(-1px);
+    }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .sidebar {
@@ -433,6 +618,34 @@
       .action-buttons {
         flex-direction: column;
         gap: 4px;
+      }
+
+      .modal-card {
+        width: 90%;
+        max-width: 400px;
+        margin: 5% auto;
+      }
+
+      .modal-header {
+        gap: 12px;
+      }
+
+      .modal-title {
+        font-size: 1.25rem;
+      }
+
+      .modal-body {
+        margin-bottom: 24px;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
       }
     }
 
@@ -576,13 +789,45 @@
       @endif
 
       <!-- Header Section -->
+      <div class="brand-header-section">
+        <div class="header-content">
+          <div class="header-text">
+            <h1 class="page-title">Brand Management</h1>
+            <p class="page-subtitle">Kelola brand yang terlibat dalam produksi konten.</p>
+          </div>
+          <div class="header-illustration">
+            <div class="illustration-small">
+              <svg viewBox="0 0 200 150" fill="none">
+                <!-- Brand building blocks -->
+                <rect x="20" y="40" width="40" height="40" rx="8" fill="#EAF2FF" stroke="#5C97F5" stroke-width="2"/>
+                <rect x="30" y="50" width="40" height="40" rx="8" fill="#EAF2FF" stroke="#5C97F5" stroke-width="2"/>
+                <rect x="40" y="60" width="40" height="40" rx="8" fill="#EAF2FF" stroke="#5C97F5" stroke-width="2"/>
+                
+                <!-- Brand identity elements -->
+                <circle cx="90" cy="50" r="20" fill="#FFF0F0" stroke="#DC2626" stroke-width="2"/>
+                <rect x="110" y="40" width="60" height="20" rx="4" fill="#ffffff" stroke="#DC2626" stroke-width="2"/>
+                <circle cx="140" cy="50" r="4" fill="#DC2626"/>
+                <rect x="120" y="55" width="40" height="10" rx="2" fill="#ffffff" stroke="#DC2626" stroke-width="2"/>
+                <circle cx="130" cy="60" r="3" fill="#DC2626"/>
+                
+                <!-- Creative elements -->
+                <circle cx="170" cy="80" r="12" fill="#EAF2FF" stroke="#5C97F5" stroke-width="2"/>
+                <path d="M160 75 L180 75 M170 70 L170 90" stroke="#5C97F5" stroke-width="2" fill="none"/>
+                <circle cx="160" cy="70" r="3" fill="#5C97F5"/>
+                <circle cx="180" cy="70" r="3" fill="#5C97F5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
       <div class="header-section">
-        <h2 class="header-title">Daftar Brand</h2>
         <a href="{{ route('brands.create') }}" class="btn-primary">
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
-          Tambah Brand
+          Tambah Brand Baru
         </a>
       </div>
 
@@ -625,16 +870,12 @@
                       </svg>
                       Edit
                     </a>
-                    <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus brand ini?')">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn-action btn-delete">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
+                    <a href="#" class="btn-action btn-delete" onclick="openDeleteModal({{ $brand->id }}, '{{ $brand->name }}')">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
                       Hapus
-                      </button>
-                    </form>
+                    </a>
                   </div>
                 </td>
               </tr>
@@ -672,7 +913,91 @@
       sidebar.classList.remove('open');
     }
   });
+
+  // Custom Delete Modal Functions
+  function openDeleteModal(brandId, brandName) {
+    const modal = document.getElementById('deleteModal');
+    const brandNameElement = document.getElementById('brandName');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    // Set brand name in modal
+    brandNameElement.textContent = brandName;
+    
+    // Set form action
+    deleteForm.action = '/brands/' + brandId;
+    
+    // Show modal
+    modal.classList.add('show');
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    
+    // Hide modal
+    modal.classList.remove('show');
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+  }
+
+  // Close modal when clicking overlay
+  document.getElementById('deleteModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+      closeDeleteModal();
+    }
+  });
+
+  // Close modal when clicking outside card
+  document.querySelector('.modal-card').addEventListener('click', function(event) {
+    event.stopPropagation();
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeDeleteModal();
+    }
+  });
 </script>
+
+<!-- Custom Delete Modal -->
+<div id="deleteModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.196 2.502H8.966c-1.54 0-2.502-1.196-2.502V8.966c0-1.54 1.196-2.502 2.502H4.75c-1.54 0-2.502 1.196-2.502V17.25c0 1.54 1.196 2.502 2.502h6.75z"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">Konfirmasi Hapus</h3>
+    </div>
+    <div class="modal-body">
+      <p class="modal-message">Apakah Anda yakin ingin menghapus brand <strong id="brandName"></strong>?</p>
+      <p class="modal-warning">Tindakan ini tidak dapat dibatalkan.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Batal
+      </button>
+      <form id="deleteForm" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-delete">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Hapus
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
