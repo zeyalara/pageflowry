@@ -338,7 +338,7 @@
       <!-- DAFTAR -->
       <div class="form-section" id="form-register">
         <div class="form-title">Buat akun baru ✨</div>
-        <div class="form-sub">Daftar dan mulai kelola konten tim kamu</div>
+        <div class="form-sub">Daftar dan mulai kelola sistem PAGEFLOWRY</div>
         <div class="msg" id="msg-register"></div>
         <form method="POST" action="{{ route('register') }}" id="fRegister">
           @csrf
@@ -372,17 +372,12 @@
             </div>
           </div>
           <div class="field">
-            <label>🎭 Pilih Role</label>
+            <label>👑 Role</label>
             <div class="role-row">
-              <label class="role-opt selected" id="r-admin" onclick="pickRole('admin')">
+              <label class="role-opt selected" id="r-admin">
                 <input type="radio" name="role" value="admin" checked/>
                 <span class="role-ico">👑</span>
                 <span class="role-name">Admin</span>
-              </label>
-              <label class="role-opt" id="r-creator" onclick="pickRole('creator')">
-                <input type="radio" name="role" value="creator"/>
-                <span class="role-ico">🎥</span>
-                <span class="role-name">Creator</span>
               </label>
             </div>
           </div>
@@ -480,7 +475,7 @@
       document.getElementById('tab-register').classList.add('active');
       document.getElementById('form-register').classList.add('active');
       document.getElementById('vTitle').textContent = 'Bergabung Sekarang';
-      document.getElementById('vDesc').textContent  = 'Buat akun dan mulai kelola workflow konten tim kamu secara profesional bersama PAGEFLOWRY.';
+      document.getElementById('vDesc').textContent  = 'Buat akun dan mulai kelola sistem PAGEFLOWRY secara profesional.';
     }
 
     // Re-animate status cards
@@ -489,13 +484,6 @@
       void c.offsetHeight;
       c.style.animation = '';
     });
-  }
-
-  // Role picker
-  function pickRole(role) {
-    document.getElementById('r-admin').classList.remove('selected');
-    document.getElementById('r-creator').classList.remove('selected');
-    document.getElementById('r-' + role).classList.add('selected');
   }
 
   // Loading on submit

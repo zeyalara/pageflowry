@@ -27,6 +27,7 @@ Route::get('/dashboard', function () {
 })->middleware('auth');
 
 Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->middleware(['auth', 'creator'])->name('creator.dashboard');
+Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->middleware(['auth'])->name('admin.dashboard');
 
 Route::middleware(['auth', 'creator'])->group(function () {
     Route::resource('brands', BrandController::class);

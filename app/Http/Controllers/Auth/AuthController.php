@@ -23,6 +23,8 @@ class AuthController extends Controller
             // Redirect based on user role
             if (Auth::user()->role === 'creator') {
                 return redirect()->route('creator.dashboard');
+            } elseif (Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
             }
             
             return redirect()->intended('/dashboard');
@@ -55,6 +57,8 @@ class AuthController extends Controller
         // Redirect based on user role
         if (Auth::user()->role === 'creator') {
             return redirect()->route('creator.dashboard');
+        } elseif (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
         }
 
         return redirect('/dashboard');
