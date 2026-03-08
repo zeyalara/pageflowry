@@ -982,13 +982,13 @@ tbody tr:hover td { background: var(--blue-50); }
 
   <nav class="sb-nav">
     <div class="sb-group-label">Overview</div>
-    <a class="sb-item active" href="#">
+    <a class="sb-item active" href="{{ route('admin.dashboard') }}">
       <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
       Dashboard
     </a>
 
     <div class="sb-group-label">Manajemen</div>
-    <a class="sb-item" href="#">
+    <a class="sb-item" href="{{ route('brands.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
       Brand Management
     </a>

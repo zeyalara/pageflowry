@@ -29,8 +29,20 @@ Route::get('/dashboard', function () {
 Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->middleware(['auth', 'creator'])->name('creator.dashboard');
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->middleware(['auth'])->name('admin.dashboard');
 
+Route::get('/debug', function () {
+    return view('debug');
+})->middleware('auth');
+
+Route::post('/test-brand', [App\Http\Controllers\TestController::class, 'testBrandStore'])->middleware('auth');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+    Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+    Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+});
+
 Route::middleware(['auth', 'creator'])->group(function () {
-    Route::resource('brands', BrandController::class);
     Route::resource('brief', ContentBriefController::class);
 });
 
