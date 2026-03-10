@@ -1,8 +1,6 @@
-@extends('layouts.admin')
+<?php $__env->startSection('page-title','Dashboard'); ?>
 
-@section('page-title','Dashboard')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 
     <!-- ── 1. STAT CARDS ── -->
     <div>
@@ -351,4 +349,5 @@
         </div>
       </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\pageflowry\resources\views/dashboard/admin.blade.php ENDPATH**/ ?>

@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Brand extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'pic',
@@ -14,4 +18,12 @@ class Brand extends Model
         'tone',
         'status',
     ];
+
+    /**
+     * Get the content tasks for the brand.
+     */
+    public function contentTasks(): HasMany
+    {
+        return $this->hasMany(ContentTask::class);
+    }
 }

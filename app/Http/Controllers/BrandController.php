@@ -12,8 +12,8 @@ class BrandController extends Controller
      */
     public function index()
     {
-        $brands = Brand::all();
-        return view('brands.index', compact('brands'));
+        $brands = Brand::latest()->get();
+        return view('admin.brand.index', compact('brands'));
     }
 
     /**
@@ -21,7 +21,7 @@ class BrandController extends Controller
      */
     public function create()
     {
-        return view('brands.create');
+        return view('admin.brand.create');
     }
 
     /**
@@ -34,14 +34,25 @@ class BrandController extends Controller
             'pic' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
             'target_market' => 'required|string',
-            'tone' => 'required|string',
-            'status' => 'required|in:Active,Non Active',
+            'tone' => 'required|array',
+            'tone.*' => 'required|string',
+            'status' => 'required|in:Active,Non Active'
         ]);
 
-        Brand::create($request->all());
-        
-        return redirect()->route('brands.index')
-            ->with('success', 'Brand berhasil ditambahkan!');
+        $brand = Brand::create([
+            'name' => $request->name,
+            'pic' => $request->pic,
+            'contact' => $request->contact,
+            'target_market' => $request->target_market,
+            'tone' => is_array($request->tone) ? implode(',', $request->tone) : $request->tone,
+            'status' => $request->status,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'brand' => $brand,
+            'message' => 'Brand berhasil ditambahkan!'
+        ]);
     }
 
     /**
@@ -50,7 +61,7 @@ class BrandController extends Controller
     public function show(string $id)
     {
         $brand = Brand::findOrFail($id);
-        return view('brands.show', compact('brand'));
+        return view('admin.brand.show', compact('brand'));
     }
 
     /**
@@ -59,7 +70,7 @@ class BrandController extends Controller
     public function edit(string $id)
     {
         $brand = Brand::findOrFail($id);
-        return view('brands.edit', compact('brand'));
+        return view('admin.brand.edit', compact('brand'));
     }
 
     /**
@@ -74,14 +85,25 @@ class BrandController extends Controller
             'pic' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
             'target_market' => 'required|string',
-            'tone' => 'required|string',
-            'status' => 'required|in:Active,Non Active',
+            'tone' => 'required|array',
+            'tone.*' => 'required|string',
+            'status' => 'required|in:Active,Non Active'
         ]);
 
-        $brand->update($request->all());
-        
-        return redirect()->route('brands.index')
-            ->with('success', 'Brand berhasil diperbarui!');
+        $brand->update([
+            'name' => $request->name,
+            'pic' => $request->pic,
+            'contact' => $request->contact,
+            'target_market' => $request->target_market,
+            'tone' => is_array($request->tone) ? implode(',', $request->tone) : $request->tone,
+            'status' => $request->status,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'brand' => $brand,
+            'message' => 'Brand berhasil diperbarui!'
+        ]);
     }
 
     /**
@@ -90,9 +112,12 @@ class BrandController extends Controller
     public function destroy(string $id)
     {
         $brand = Brand::findOrFail($id);
+        $brandName = $brand->name;
         $brand->delete();
-        
-        return redirect()->route('brands.index')
-            ->with('success', 'Brand berhasil dihapus!');
+
+        return response()->json([
+            'success' => true,
+            'message' => "Brand \"{$brandName}\" berhasil dihapus!"
+        ]);
     }
 }
