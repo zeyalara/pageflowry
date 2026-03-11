@@ -30,10 +30,10 @@ Route::get('/dashboard', function () {
 Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->middleware(['auth', 'creator'])->name('creator.dashboard');
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->middleware(['auth'])->name('admin.dashboard');
 
-<<<<<<< HEAD
 Route::get('/test-production', function() {
     return "Production route works!";
-=======
+});
+
 Route::get('/debug', function () {
     return view('debug');
 })->middleware('auth');
@@ -49,7 +49,6 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'creator'])->group(function () {
     Route::resource('brief', ContentBriefController::class);
->>>>>>> 079717fe7589fd0dc098d6c93c483eee5cc7801f
 });
 
 Route::get('/admin/production', [ProductionController::class, 'index'])->name('production.index');
