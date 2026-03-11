@@ -895,47 +895,46 @@ tbody tr:hover td { background: var(--blue-50); }
     </a>
 
     <div class="sb-group-label">Manajemen</div>
-    <a class="sb-item" href="#">
+    <a class="sb-item {{ request()->routeIs('brands.index') ? 'active' : '' }}" href="{{ route('brands.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
       Brand Management
     </a>
-    <a class="sb-item" href="#">
+    <a class="sb-item {{ request()->routeIs('content-tasks.index') ? 'active' : '' }}" href="{{ route('content-tasks.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
       Daftar Tugas Konten
     </a>
 
     <div class="sb-group-label">Workflow</div>
-    <a class="sb-item {{ request()->routeIs('production.index') ? 'active' : '' }}" 
-   href="{{ route('production.index') }}">
-  <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
-  Production
-</a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}">
+    <a class="sb-item {{ request()->routeIs('production.index') ? 'active' : '' }}" href="{{ route('production.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
+      Production
+    </a>
+    <a class="sb-item {{ request()->routeIs('revision.index', 1) ? 'active' : '' }}" href="{{ route('revision.index', 1) }}">
       <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
       Revision
       <span class="sb-badge">4</span>
     </a>
-   <a class="sb-item" href="#">
-  <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
-  Approval
-</a>
-    <a class="sb-item" href="#">
+    <a class="sb-item {{ request()->routeIs('approval.index') ? 'active' : '' }}" href="{{ route('approval.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
+      Approval
+    </a>
+    <a class="sb-item {{ request()->routeIs('publishing.index') ? 'active' : '' }}" href="{{ route('publishing.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
       Publishing
     </a>
 
     <div class="sb-group-label">Laporan</div>
-    <a class="sb-item" href="#">
+    <a class="sb-item {{ request()->routeIs('analytics.index') ? 'active' : '' }}" href="{{ route('analytics.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
       Analytics
     </a>
-    <a class="sb-item" href="#">
-      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
+    <a class="sb-item {{ request()->routeIs('report.index') ? 'active' : '' }}" href="{{ route('report.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-file-chart-line"></i></span>
       Report
     </a>
 
     <div class="sb-group-label">Lainnya</div>
-    <a class="sb-item" href="#">
+    <a class="sb-item {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
       Settings
     </a>
@@ -1010,12 +1009,7 @@ counters.forEach((el, i) => {
 });
 
 /* ── SIDEBAR ACTIVE ─────────────────── */
-document.querySelectorAll('.sb-item').forEach(el => {
-  el.addEventListener('click', function () {
-    document.querySelectorAll('.sb-item').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
+// Removed to allow proper navigation
 
 /* ── QA BUTTON FEEDBACK ─────────────── */
 document.querySelectorAll('.qa-btn').forEach(btn => {

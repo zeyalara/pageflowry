@@ -19,14 +19,21 @@ class BrandController extends Controller
             return redirect('/login')->with('error', 'Access denied. Admin role required.');
         }
         
-        // Get ALL brands from database with no filtering
+        // Get ALL brands from database with no filtering - show everything
         $brands = Brand::orderBy('id', 'asc')->get();
         
-        // Debug: Log the actual data
+        // Debug: Log the actual data from database
         \Log::info('BrandController: Total brands from database: ' . $brands->count());
-        foreach($brands as $brand) {
-            \Log::info('Brand ID: ' . $brand->id . ', Name: "' . $brand->name . '", PIC: "' . $brand->pic . '"');
+        \Log::info('BrandController: Raw database data: ' . json_encode($brands->toArray()));
+        
+        // Log each brand individually for verification
+        foreach($brands as $index => $brand) {
+            \Log::info("Brand #" . ($index + 1) . " - ID: " . $brand->id . ", Name: '" . $brand->name . "', PIC: '" . $brand->pic . "', Status: '" . $brand->status . "', Created: '" . $brand->created_at . "'");
         }
+        
+        // Verify no brands are missing
+        $expectedCount = $brands->count();
+        \Log::info("BrandController: Expected to display " . $expectedCount . " brands in the view");
         
         return view('brands.index', compact('brands'));
     }
@@ -37,7 +44,7 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'pic' => 'required|string|max:255',
                 'contact' => 'required|string|max:255',
@@ -46,7 +53,20 @@ class BrandController extends Controller
                 'status' => 'required|in:Active,Non Active',
             ]);
 
-            $brand = Brand::create($request->all());
+            // Create brand with all required fields
+            $brand = Brand::create([
+                'name' => $validated['name'],
+                'pic' => $validated['pic'],
+                'contact' => $validated['contact'],
+                'target_market' => $validated['target_market'],
+                'tone' => $validated['tone'],
+                'status' => $validated['status'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            // Log successful creation
+            \Log::info('Brand created successfully: ID ' . $brand->id . ', Name: ' . $brand->name);
             
             return response()->json([
                 'success' => true,
@@ -55,12 +75,14 @@ class BrandController extends Controller
             ]);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Brand validation failed: ' . json_encode($e->errors()));
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Brand creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
