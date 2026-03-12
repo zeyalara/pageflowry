@@ -127,20 +127,20 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </div>
   <nav class="sb-nav">
     <div class="sb-sec">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}"><span class="sb-ic"><i class="fa-solid fa-house"></i></span>Dashboard</a>
+    <a class="sb-item" href="<?php echo e(route('admin.dashboard')); ?>"><span class="sb-ic"><i class="fa-solid fa-house"></i></span>Dashboard</a>
     <div class="sb-sec">Manajemen</div>
-    <a class="sb-item" href="{{ route('brands.index') }}"><span class="sb-ic"><i class="fa-solid fa-tag"></i></span>Brand Management</a>
-    <a class="sb-item" href="{{ route('content-tasks.index') }}"><span class="sb-ic"><i class="fa-solid fa-list-check"></i></span>Daftar Tugas Konten</a>
+    <a class="sb-item" href="<?php echo e(route('brands.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-tag"></i></span>Brand Management</a>
+    <a class="sb-item" href="<?php echo e(route('content-tasks.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-list-check"></i></span>Daftar Tugas Konten</a>
     <div class="sb-sec">Workflow</div>
-    <a class="sb-item active" href="{{ route('production.index') }}"><span class="sb-ic"><i class="fa-solid fa-film"></i></span>Production</a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}"><span class="sb-ic"><i class="fa-solid fa-rotate-left"></i></span>Revision<span class="sb-badge">4</span></a>
-    <a class="sb-item" href="{{ route('approval.index') }}"><span class="sb-ic"><i class="fa-solid fa-circle-check"></i></span>Approval</a>
-    <a class="sb-item" href="{{ route('publishing.index') }}"><span class="sb-ic"><i class="fa-solid fa-paper-plane"></i></span>Publishing</a>
+    <a class="sb-item active" href="<?php echo e(route('production.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-film"></i></span>Production</a>
+    <a class="sb-item" href="<?php echo e(route('revision.index', 1)); ?>"><span class="sb-ic"><i class="fa-solid fa-rotate-left"></i></span>Revision<span class="sb-badge">4</span></a>
+    <a class="sb-item" href="<?php echo e(route('approval.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-circle-check"></i></span>Approval</a>
+    <a class="sb-item" href="<?php echo e(route('publishing.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-paper-plane"></i></span>Publishing</a>
     <div class="sb-sec">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}"><span class="sb-ic"><i class="fa-solid fa-chart-line"></i></span>Analytics</a>
-    <a class="sb-item" href="{{ route('report.index') }}"><span class="sb-ic"><i class="fa-solid fa-file-lines"></i></span>Report</a>
+    <a class="sb-item" href="<?php echo e(route('analytics.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-chart-line"></i></span>Analytics</a>
+    <a class="sb-item" href="<?php echo e(route('report.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-file-lines"></i></span>Report</a>
     <div class="sb-sec">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}"><span class="sb-ic"><i class="fa-solid fa-gear"></i></span>Settings</a>
+    <a class="sb-item" href="<?php echo e(route('settings.index')); ?>"><span class="sb-ic"><i class="fa-solid fa-gear"></i></span>Settings</a>
   </nav>
   <div class="sb-foot">
     <div class="sb-user">
@@ -195,3 +195,4 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <script>console.log('Production page loaded');</script>
 </body>
 </html>
+<?php /**PATH C:\xampp444\htdocs\laravel\pageflowry\resources\views/admin/production/index.blade.php ENDPATH**/ ?>
