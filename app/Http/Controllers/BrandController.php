@@ -70,6 +70,7 @@ class BrandController extends Controller
             
             return response()->json([
                 'success' => true,
+       
                 'message' => 'Brand berhasil ditambahkan!',
                 'brand' => $brand
             ]);

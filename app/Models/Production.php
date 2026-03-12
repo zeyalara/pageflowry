@@ -12,10 +12,11 @@ class Production extends Model
 
     protected $fillable = [
         'content_task_id',
-        'video_version',
-        'final_duration',
-        'production_notes',
-        'video_file_path',
+        'judul_konten',
+        'versi_video',
+        'durasi_final',
+        'catatan_produksi',
+        'file_video',
         'status',
     ];
 
@@ -39,24 +40,24 @@ class Production extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Accessors to match the expected field names
-    public function getVersiVideoAttribute()
+    // Accessors for alternate naming
+    public function getVideoVersionAttribute()
     {
-        return $this->video_version;
+        return $this->versi_video;
     }
 
-    public function getDurasiFinalAttribute()
+    public function getFinalDurationAttribute()
     {
-        return $this->final_duration;
+        return $this->durasi_final;
     }
 
-    public function getCatatanProduksiAttribute()
+    public function getProductionNotesAttribute()
     {
-        return $this->production_notes;
+        return $this->catatan_produksi;
     }
 
-    public function getFileVideoAttribute()
+    public function getVideoFilePathAttribute()
     {
-        return $this->video_file_path;
+        return $this->file_video;
     }
 }

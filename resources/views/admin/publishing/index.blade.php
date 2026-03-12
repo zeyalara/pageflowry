@@ -1,271 +1,228 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Pageflowry — Publishing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-<style>
-/* Same CSS as brief page */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-+:root{
-  --blue:#5897fe; --blue-6:#3a7bfe; --blue-7:#2563eb;
-  --blue-50:#eff6ff; --blue-100:#dbeafe; --blue-200:#bfdbfe;
-  --white:#fff; --bg:#f4f7fe; --border:#e8eef9; --blight:#f0f5ff;
-  --t9:#0d1526; --t7:#2d3f5e; --t5:#5c7099; --t4:#8fa3c4; --t3:#b8cae4;
-  --orange:#ff7849; --violet:#8b5cf6; --emerald:#10b981;
-  --rose:#f43f5e; --amber:#f59e0b; --cyan:#06b6d4;
-  --sidebar:240px; --topbar:66px; --r:16px; --rs:10px;
-  --s1:0 1px 3px rgba(13,21,38,.05),0 4px 16px rgba(88,151,254,.06);
-  --s2:0 4px 24px rgba(88,151,254,.13);
-  --s3:0 8px 48px rgba(88,151,254,.22);
-  --tr:.2s cubic-bezier(.4,0,.2,1);
-}
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t9);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.shell{display:flex;height:100vh;overflow:hidden}
-.sidebar{
-  width:var(--sidebar);min-width:var(--sidebar);height:100vh;
-  background:var(--white);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow-y:auto;z-index:200;
-}
-.sb-logo{
-  padding:20px 20px 18px;display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid var(--blight);flex-shrink:0;
-}
-.sb-mark{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--blue),var(--blue-6));
-  display:flex;align-items:center;justify-content:center;
-}
-.sb-mark svg{width:15px;height:15px}
-.sb-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
-.sb-name em{color:var(--t9);font-style:normal}
-.sb-nav{padding:14px 12px;flex:1}
-.sb-sec{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);padding:12px 10px 6px}
-.sb-item{
-  display:flex;align-items:center;gap:10px;padding:9.5px 12px;
-  border-radius:var(--rs);cursor:pointer;transition:var(--tr);
-  font-size:13.5px;font-weight:500;color:var(--t5);
-  text-decoration:none;position:relative;margin-bottom:1px;
-}
-.sb-item:hover{background:var(--blue-50);color:var(--blue-6)}
-.sb-item.active{background:var(--blue-50);color:var(--blue);font-weight:600}
-.sb-item.active::before{
-  content:'';position:absolute;left:0;top:22%;bottom:22%;
-  width:3px;border-radius:0 3px 3px 0;background:var(--blue);
-}
-.sb-ic{
-  width:28px;height:28px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12.5px;flex-shrink:0;transition:var(--tr);
-}
-.sb-item.active .sb-ic{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(88,151,254,.35)}
-.sb-item:not(.active) .sb-ic{color:var(--t4)}
-.sb-item:hover:not(.active) .sb-ic{background:var(--blue-100);color:var(--blue)}
-.sb-badge{margin-left:auto;background:var(--rose);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6}
-.sb-foot{padding:14px 12px;border-top:1px solid var(--blight);flex-shrink:0}
-.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);background:var(--blue-50);cursor:pointer;transition:var(--tr)}
-.sb-user:hover{background:var(--blue-100)}
-.sb-ava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-6));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{
-  height:var(--topbar);min-height:var(--topbar);background:var(--white);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;gap:16px;flex-shrink:0;z-index:100;
-}
-.tb-title{font-size:18px;font-weight:800;color:var(--t9);letter-spacing:-.4px;line-height:1.1}
-.tb-crumb{font-size:12px;color:var(--t4);margin-top:2px;display:flex;align-items:center;gap:5px}
-.tb-crumb span{color:var(--blue);font-weight:500}
-.tb-right{display:flex;align-items:center;gap:8px}
-.tb-btn{
-  width:38px;height:38px;border-radius:var(--rs);border:1px solid var(--border);
-  background:var(--white);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:var(--tr);color:var(--t5);font-size:15px;position:relative;
-}
-.tb-btn:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-.tb-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:1.5px solid #fff}
-.tb-av{
-  width:38px;height:38px;border-radius:var(--rs);
-  background:linear-gradient(145deg,var(--blue),var(--blue-6));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;
-  box-shadow:0 3px 12px rgba(88,151,254,.35);transition:var(--tr);
-}
-.tb-av:hover{transform:scale(1.05)}
-.tb-div{width:1px;height:24px;background:var(--border);margin:0 4px}
-.body{flex:1;overflow-y:auto;padding:26px 28px 60px;display:flex;flex-direction:column;gap:20px}
-.pg-header{display:flex;align-items:center;justify-content:space-between;gap:16px;animation:fadeUp .35s ease both}
-.pg-heading{font-size:22px;font-weight:800;color:var(--t9);letter-spacing:-.5px;margin-bottom:3px}
-.pg-sub{font-size:13px;color:var(--t4)}
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.sc{
-  background:var(--white);border-radius:var(--r);border:1px solid var(--border);
-  box-shadow:var(--s1);padding:18px 16px;cursor:default;transition:var(--tr);
-  animation:fadeUp .4s ease both;animation-delay:calc(var(--i,0)*55ms);
-  position:relative;overflow:hidden;
-}
-.sc:hover{transform:translateY(-3px);box-shadow:var(--s2);border-color:var(--blue-200)}
-.sc::after{content:'';position:absolute;bottom:-14px;right:-14px;width:60px;height:60px;border-radius:50%;opacity:.07;transition:var(--tr)}
-.sc:hover::after{opacity:.16}
-.sc-b {border-top:2.5px solid var(--blue)}.sc-b::after{background:var(--blue)}
-.sc-o {border-top:2.5px solid var(--orange)}.sc-o::after{background:var(--orange)}
-.sc-v {border-top:2.5px solid var(--violet)}.sc-v::after{background:var(--violet)}
-.sc-r {border-top:2.5px solid var(--rose)}.sc-r::after{background:var(--rose)}
-.sc-e {border-top:2.5px solid var(--emerald)}.sc-e::after{background:var(--emerald)}
-.sc-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:12px}
-.sc-b .sc-ic{background:rgba(88,151,254,.1);color:var(--blue)}
-.sc-o .sc-ic{background:rgba(255,120,73,.1);color:var(--orange)}
-.sc-v .sc-ic{background:rgba(139,92,246,.1);color:var(--violet)}
-.sc-r .sc-ic{background:rgba(244,63,94,.1);color:var(--rose)}
-.sc-e .sc-ic{background:rgba(16,185,129,.1);color:var(--emerald)}
-.sc-num{font-size:26px;font-weight:800;color:var(--t9);line-height:1;margin-bottom:4px;letter-spacing:-.4px}
-.sc-label{font-size:12px;font-weight:500;color:var(--t4)}
-.sc-sub{font-size:11px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:3px}
-.s-up{color:var(--emerald)}.s-w{color:var(--amber)}.s-dn{color:var(--rose)}
-.content-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both}
-.card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--blight)}
-.card-title{font-size:14px;font-weight:700;color:var(--t7)}
-.card-actions{display:flex;gap:8px}
-.card-body{padding:20px 22px}
-.btn{
-  display:inline-flex;align-items:center;gap:7px;padding:0 18px;height:40px;
-  border-radius:var(--rs);font-family:'DM Sans',sans-serif;
-  font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--tr);
-  border:none;outline:none;white-space:nowrap;
-}
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-6));color:#fff;box-shadow:0 3px 12px rgba(88,151,254,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,151,254,.4)}
-.btn-primary:active{transform:scale(.97)}
-.btn-ghost{background:var(--white);color:var(--t5);border:1.5px solid var(--border)}
-.btn-ghost:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-</style>
-</head>
-<body>
-<div class="shell">
+@extends('layouts.admin')
 
-<!-- ═══════ SIDEBAR ═══════ -->
-<aside class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-mark">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="sb-name">Page<em>flowry</em></div>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-sec">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}"><span class="sb-ic"><i class="fa-solid fa-house"></i></span>Dashboard</a>
-    <div class="sb-sec">Manajemen</div>
-    <a class="sb-item" href="{{ route('brands.index') }}"><span class="sb-ic"><i class="fa-solid fa-tag"></i></span>Brand Management</a>
-    <a class="sb-item" href="{{ route('content-tasks.index') }}"><span class="sb-ic"><i class="fa-solid fa-list-check"></i></span>Daftar Tugas Konten</a>
-    <div class="sb-sec">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}"><span class="sb-ic"><i class="fa-solid fa-film"></i></span>Production</a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}"><span class="sb-ic"><i class="fa-solid fa-rotate-left"></i></span>Revision<span class="sb-badge">4</span></a>
-    <a class="sb-item" href="{{ route('approval.index') }}"><span class="sb-ic"><i class="fa-solid fa-circle-check"></i></span>Approval</a>
-    <a class="sb-item active" href="{{ route('publishing.index') }}"><span class="sb-ic"><i class="fa-solid fa-paper-plane"></i></span>Publishing</a>
-    <div class="sb-sec">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}"><span class="sb-ic"><i class="fa-solid fa-chart-line"></i></span>Analytics</a>
-    <a class="sb-item" href="{{ route('report.index') }}"><span class="sb-ic"><i class="fa-solid fa-file-lines"></i></span>Report</a>
-    <div class="sb-sec">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}"><span class="sb-ic"><i class="fa-solid fa-gear"></i></span>Settings</a>
-  </nav>
-  <div class="sb-foot">
-    <div class="sb-user">
-      <div class="sb-ava">AM</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12.5px;font-weight:600;color:var(--t7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Alya Mutia</div>
-        <div style="font-size:11px;color:var(--blue);font-weight:500">Administrator</div>
-      </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--t3);font-size:12px"></i>
+@section('page-title', 'Publishing')
+
+@section('content')
+@if(session('success'))
+<div class="alert alert-success">
+  <i class="fa-solid fa-check-circle"></i>
+  {{ session('success') }}
+</div>
+@endif
+@if(session('error'))
+<div class="alert alert-error">
+  <i class="fa-solid fa-exclamation-circle"></i>
+  {{ session('error') }}
+</div>
+@endif
+
+<div>
+  <div class="sec-head">
+    <div class="sec-title">
+      <i class="fa-solid fa-paper-plane"></i>
+      Publishing
     </div>
   </div>
-</aside>
+  <div class="page-subtitle">
+    Konten siap dipublish (status: ready_to_publish)
+  </div>
+</div>
 
-<!-- ═══════ MAIN ═══════ -->
-<div class="main">
-
-  <header class="topbar">
-    <div>
-      <div class="tb-title">Publishing</div>
-      <div class="tb-crumb">
-        <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--t3)"></i>
-        <span>Publishing</span>
-      </div>
+<div>
+  <div class="stat-row">
+    <div class="stat-card sc-amb" style="--i:0">
+      <div class="stat-ic"><i class="fa-solid fa-clock"></i></div>
+      <div class="stat-val">{{ $contentTasks->count() }}</div>
+      <div class="stat-lbl">Menunggu Publish</div>
+      <div class="stat-trend trend-warn"><i class="fa-solid fa-hourglass-half"></i> Ready to publish</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-btn"><i class="fa-regular fa-bell"></i><span class="tb-dot"></span></div>
-      <div class="tb-btn"><i class="fa-regular fa-envelope"></i></div>
-      <div class="tb-div"></div>
-      <div class="tb-av">AM</div>
+    <div class="stat-card sc-em" style="--i:1">
+      <div class="stat-ic"><i class="fa-solid fa-paper-plane"></i></div>
+      <div class="stat-val">{{ $publishedCount ?? 0 }}</div>
+      <div class="stat-lbl">Sudah Dipublish</div>
+      <div class="stat-trend trend-up"><i class="fa-solid fa-check"></i> Selesai</div>
     </div>
-  </header>
+  </div>
+</div>
 
-  <div class="body">
-
-    <!-- PAGE HEADER -->
-    <div class="pg-header">
-      <div>
-        <div class="pg-heading">Publishing Management</div>
-        <div class="pg-sub">Kelola publikasi konten</div>
-      </div>
-      <button class="btn btn-primary">
-        <i class="fa-solid fa-plus"></i> Jadwal Publishing Baru
+<div class="card tbl-card">
+  <div class="sec-head" style="margin-bottom:0">
+    <div class="sec-title"><i class="fa-solid fa-list"></i> Publishing List</div>
+    <div class="bulk-actions" id="bulkActions" style="display: none;">
+      <button class="btn-bulk btn-publish" onclick="publishSelected()">
+        <i class="fa-solid fa-paper-plane"></i>
+        Publish Selected
       </button>
     </div>
+    <a class="sec-link" href="#">Export <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+        <th>Judul Konten</th>
+        <th>Brand</th>
+        <th>Versi Video</th>
+        <th>Durasi Final</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($contentTasks as $task)
+      @php $production = $task->productions->first(); @endphp
+      <tr data-id="{{ $task->id }}">
+        <td>
+          <input type="checkbox" class="publish-checkbox" value="{{ $task->id }}" onchange="updateBulkActions()">
+        </td>
+        <td><span class="td-name">{{ $task->judul_konten }}</span></td>
+        <td><span class="td-brand">{{ optional($task->brand)->name ?? '-' }}</span></td>
+        <td>{{ $production ? $production->versi_video : '-' }}</td>
+        <td>{{ $production ? $production->durasi_final : '-' }}</td>
+        <td>
+          <span class="pill p-pub">
+            <span class="pill-dot"></span>
+            Ready to Publish
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-action btn-publish" onclick="publishSingle({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Publish">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      @empty
+      <tr>
+        <td colspan="7" class="text-center py-4">
+          <i class="fa-solid fa-paper-plane text-muted mb-2" style="font-size: 2rem;"></i>
+          <div class="text-muted">Tidak ada konten siap dipublish</div>
+        </td>
+      </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
 
-    <!-- STAT CARDS -->
-    <div class="stats-row">
-      <div class="sc sc-b" style="--i:0">
-        <div class="sc-ic"><i class="fa-solid fa-calendar"></i></div>
-        <div class="sc-num">18</div>
-        <div class="sc-label">Dijadwalkan</div>
-        <div class="sc-sub s-up"><i class="fa-solid fa-calendar-check"></i> Minggu ini</div>
+<div id="publishModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-paper-plane"></i>
+        Publish Konten
       </div>
-      <div class="sc sc-e" style="--i:1">
-        <div class="sc-ic"><i class="fa-solid fa-paper-plane"></i></div>
-        <div class="sc-num">35</div>
-        <div class="sc-label">Sudah Dipublish</div>
-        <div class="sc-sub s-up"><i class="fa-solid fa-check"></i> Bulan ini</div>
-      </div>
-      <div class="sc sc-o" style="--i:2">
-        <div class="sc-ic"><i class="fa-solid fa-clock"></i></div>
-        <div class="sc-num">7</div>
-        <div class="sc-label">Menunggu</div>
-        <div class="sc-sub s-w"><i class="fa-solid fa-hourglass-half"></i> Diproses</div>
-      </div>
+      <button class="modal-close" onclick="closePublishModal()"><i class="fa-solid fa-times"></i></button>
     </div>
-
-    <!-- CONTENT CARD -->
-    <div class="content-card">
-      <div class="card-header">
-        <h3 class="card-title">Jadwal Publishing</h3>
-        <div class="card-actions">
-          <button class="btn btn-ghost">
-            <i class="fa-solid fa-download"></i> Export
-          </button>
-          <button class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Jadwal Baru
-          </button>
-        </div>
-      </div>
-      <div class="card-body">
-        <p>Halaman Publishing Management sedang dalam pengembangan.</p>
-        <p>Semua menu sidebar berfungsi dengan baik.</p>
-      </div>
+    <div class="modal-body">
+      <p style="font-size: 14px; color: var(--text-700); margin-bottom: 16px;">
+        Apakah Anda yakin ingin mempublish konten ini?
+      </p>
+      <div id="publishContent" style="font-size: 13px; color: var(--text-600);"></div>
     </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="closePublishModal()">Cancel</button>
+      <button type="button" class="btn-primary" onclick="confirmPublish()">
+        <i class="fa-solid fa-paper-plane"></i> Publish
+      </button>
+    </div>
+  </div>
+</div>
+@endsection
 
-  </div><!-- /body -->
-</div><!-- /main -->
-</div><!-- /shell -->
+@push('styles')
+<style>
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: var(--white); border-radius: var(--r-sm); border: 1px solid var(--border); padding: 20px; box-shadow: var(--s1); }
+.stat-ic { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px; }
+.stat-val { font-size: 28px; font-weight: 800; color: var(--text-900); }
+.stat-lbl { font-size: 13px; font-weight: 600; color: var(--text-700); }
+.stat-trend { font-size: 11px; font-weight: 600; margin-top: 8px; }
+.sc-amb { border-top: 3px solid var(--amber); } .sc-amb .stat-ic { background: rgba(245,158,11,.1); color: var(--amber); }
+.sc-em { border-top: 3px solid var(--emerald); } .sc-em .stat-ic { background: rgba(16,185,129,.1); color: var(--emerald); }
+.trend-warn { color: var(--amber); } .trend-up { color: var(--emerald); }
+.bulk-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.btn-bulk { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-bulk.btn-publish { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+.p-pub { background: rgba(16,185,129,.1); color: #065f46; } .p-pub .pill-dot { background: var(--emerald); }
+.btn-action.btn-publish:hover { background: rgba(16,185,129,.1); color: var(--emerald); border-color: var(--emerald); }
+.alert { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--r-sm); margin-bottom: 20px; font-size: 13px; }
+.alert-success { background: rgba(16,185,129,.1); color: var(--emerald); border: 1px solid rgba(16,185,129,.2); }
+.alert-error { background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+.text-muted { color: var(--text-400); } .text-center { text-align: center; } .py-4 { padding: 16px 0; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.modal-content { background: var(--white); border-radius: var(--r-sm); width: 100%; max-width: 500px; box-shadow: var(--s3); overflow: hidden; }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text-900); display: flex; align-items: center; gap: 8px; }
+.modal-close { width: 32px; height: 32px; border-radius: var(--r-xs); border: none; background: var(--bg); color: var(--text-500); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-body { padding: 20px 24px; }
+.modal-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.btn-secondary { padding: 8px 16px; border: 1px solid var(--border); background: var(--white); color: var(--text-700); border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-primary { padding: 8px 16px; background: var(--blue); color: white; border: 1px solid var(--blue); border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.pub-toast { position: fixed; right: 24px; bottom: 24px; z-index: 999; padding: 10px 16px; border-radius: 10px; background: #022c22; color: #ecfdf5; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+</style>
+@endpush
 
+@push('scripts')
 <script>
-// Simple functionality
-console.log('Publishing page loaded');
+function toggleSelectAll() {
+  var selectAll = document.getElementById('selectAll');
+  var checkboxes = document.querySelectorAll('.publish-checkbox');
+  checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+  updateBulkActions();
+}
+function updateBulkActions() {
+  var checked = document.querySelectorAll('.publish-checkbox:checked');
+  document.getElementById('bulkActions').style.display = checked.length ? 'flex' : 'none';
+  var all = document.querySelectorAll('.publish-checkbox');
+  document.getElementById('selectAll').checked = all.length === checked.length && checked.length > 0;
+}
+var currentPublishIds = [];
+function publishSelected() {
+  var ids = Array.from(document.querySelectorAll('.publish-checkbox:checked')).map(function(c) { return c.value; });
+  if (!ids.length) { showPubToast('Pilih minimal 1 konten'); return; }
+  currentPublishIds = ids;
+  document.getElementById('publishContent').innerHTML = '<p><strong>' + ids.length + '</strong> konten akan dipublish (status → published).</p>';
+  document.getElementById('publishModal').style.display = 'flex';
+}
+function publishSingle(id, title) {
+  currentPublishIds = [id];
+  document.getElementById('publishContent').innerHTML = '<p>Konten: <strong>' + (title || '') + '</strong> (ID: ' + id + ')</p>';
+  document.getElementById('publishModal').style.display = 'flex';
+}
+function closePublishModal() {
+  document.getElementById('publishModal').style.display = 'none';
+  currentPublishIds = [];
+}
+function confirmPublish() {
+  if (!currentPublishIds.length) return;
+  var btn = document.querySelector('#publishModal .btn-primary');
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...';
+  btn.disabled = true;
+  fetch('{{ route("publishing.publish") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), 'Accept': 'application/json' },
+    body: JSON.stringify({ ids: currentPublishIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) { showPubToast(data.message || 'Konten berhasil dipublish!'); setTimeout(function() { window.location.reload(); }, 1200); }
+    else { showPubToast(data.message || 'Gagal'); }
+  })
+  .catch(function() { showPubToast('Terjadi kesalahan'); })
+  .finally(function() { btn.innerHTML = orig; btn.disabled = false; closePublishModal(); });
+}
+function showPubToast(msg) {
+  var ex = document.querySelector('.pub-toast');
+  if (ex) ex.remove();
+  var t = document.createElement('div');
+  t.className = 'pub-toast';
+  t.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>' + msg + '</span>';
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
+}
+document.getElementById('publishModal').addEventListener('click', function(e) { if (e.target === this) closePublishModal(); });
 </script>
-</body>
-</html>
+@endpush

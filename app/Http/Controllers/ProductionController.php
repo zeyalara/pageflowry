@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use App\Models\Production;
 use App\Models\ContentTask;
 use App\Models\Brand;
@@ -16,117 +18,29 @@ class ProductionController extends Controller
      */
     public function index()
     {
-        // Use dummy statistics to avoid database column errors
-        $stats = [
-            'total_production' => 3,
-            'under_review' => 1,
-            'need_revision' => 2,
-            'ready_to_publish' => 1,
-            'published' => 2,
-        ];
+        // Get content tasks that are in production or have been processed
+        $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
+            $q->latest()->limit(1);
+        }])
+        ->whereIn('status', ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'])
+        ->orderBy('id', 'asc')
+        ->get();
+
+        // Get tasks for dropdown (status = in_production only)
+        $tasks = ContentTask::where('status', 'in_production')->get();
         
-        // Use dummy data to avoid database relationship errors
-        $productions = collect([
-            [
-                'id' => 1,
-                'content_task_id' => 1,
-                'judul_konten' => 'Tutorial Skincare Pagi',
-                'nama_brand' => 'GlowSkin',
-                'versi_video' => 'v2.1',
-                'durasi_final' => '3:45',
-                'catatan_produksi' => 'Video dengan lighting baik dan audio jernih',
-                'status' => 'in_progress',
-                'creator_name' => 'Admin',
-                'deadline' => '10 Mar 2026',
-                'created_at' => '09 Mar 2026',
-                'file_video' => 'demo_video.mp4',
-                'thumbnail' => null,
-            ],
-            [
-                'id' => 2,
-                'content_task_id' => 2,
-                'judul_konten' => 'Review Produk Makeup',
-                'nama_brand' => 'BeautyHaus',
-                'versi_video' => 'v1.3',
-                'durasi_final' => '5:20',
-                'catatan_produksi' => 'Close-up produk dengan detail yang jelas',
-                'status' => 'completed',
-                'creator_name' => 'Admin',
-                'deadline' => '11 Mar 2026',
-                'created_at' => '08 Mar 2026',
-                'file_video' => 'demo_video2.mp4',
-                'thumbnail' => null,
-            ],
-            [
-                'id' => 3,
-                'content_task_id' => 3,
-                'judul_konten' => 'Tips Makeup Natural',
-                'nama_brand' => 'FreshFace',
-                'versi_video' => 'v3.0',
-                'durasi_final' => '4:15',
-                'catatan_produksi' => 'Tutorial step-by-step dengan before-after',
-                'status' => 'draft',
-                'creator_name' => 'Admin',
-                'deadline' => '12 Mar 2026',
-                'created_at' => '07 Mar 2026',
-                'file_video' => 'demo_video3.mp4',
-                'thumbnail' => null,
-            ]
-        ]);
+        // Debug: Check if tasks exist
+        // dd($tasks->toArray()); // Uncomment to debug
 
-        // Create dummy content tasks for display
-        $contentTasks = collect([
-            ['id' => 1, 'judul_konten' => 'Tutorial Skincare Pagi', 'brand_name' => 'GlowSkin'],
-            ['id' => 2, 'judul_konten' => 'Review Produk Makeup', 'brand_name' => 'BeautyHaus'],
-            ['id' => 3, 'judul_konten' => 'Tips Makeup Natural', 'brand_name' => 'FreshFace'],
-        ]);
-
-        $statusClasses = [
-            'draft' => 'p-draft',
-            'in_progress' => 'p-review',
-            'completed' => 'p-revision',
-            'cancelled' => 'p-cancelled',
+        // Statistics calculated from content_tasks.status
+        $stats = [
+            'total_tasks' => ContentTask::count(),
+            'in_production' => ContentTask::where('status', 'in_production')->count(),
+            'under_review' => ContentTask::where('status', 'under_review')->count(),
+            'ready_to_publish' => ContentTask::where('status', 'ready_to_publish')->count(),
         ];
 
-        $statusLabels = [
-            'draft' => 'Draft',
-            'in_progress' => 'In Progress',
-            'completed' => 'Completed',
-            'cancelled' => 'Cancelled',
-        ];
-
-        // Additional data for the new design
-        $recentActivities = collect([
-            [
-                'id' => 1,
-                'action' => 'Video uploaded',
-                'content_title' => 'Tutorial Skincare Pagi',
-                'user' => 'Admin',
-                'time' => '2 hours ago',
-                'icon' => 'fa-upload',
-                'color' => 'ad-blue'
-            ],
-            [
-                'id' => 2,
-                'action' => 'Review requested',
-                'content_title' => 'Tips Makeup Natural',
-                'user' => 'Admin',
-                'time' => '4 hours ago',
-                'icon' => 'fa-eye',
-                'color' => 'ad-vio'
-            ],
-            [
-                'id' => 3,
-                'action' => 'Revision completed',
-                'content_title' => 'Review Produk Makeup',
-                'user' => 'Admin',
-                'time' => '6 hours ago',
-                'icon' => 'fa-check',
-                'color' => 'ad-em'
-            ]
-        ]);
-
-        return view('admin.production.index', compact('productions', 'contentTasks', 'stats', 'recentActivities', 'statusClasses', 'statusLabels'));
+        return view('admin.production.index', compact('contentTasks', 'tasks', 'stats'));
     }
 
     /**
@@ -150,28 +64,6 @@ class ProductionController extends Controller
         return response()->download($filePath, $filename);
     }
 
-    /**
-     * Send production to review
-     */
-    public function sendToReview($id)
-    {
-        try {
-            // Update production status ke 'Ready to Publish'
-            DB::table('productions')
-                ->where('id', $id)
-                ->update(['status' => 'Ready to Publish']);
-                
-            return response()->json([
-                'success' => true,
-                'message' => 'Konten berhasil dikirim ke review'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengirim ke review: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * Show the form for creating a new resource.
@@ -186,13 +78,31 @@ class ProductionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'content_task_id' => 'required|exists:content_tasks,id',
-            'version' => 'required|string|max:10',
-            'final_duration' => 'required|string|max:20',
-            'video_file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
-            'production_notes' => 'nullable|string|max:500'
-        ]);
+        // Handle AJAX validation
+        if ($request->ajax()) {
+            $validator = Validator::make($request->all(), [
+                'content_task_id' => 'required|exists:content_tasks,id',
+                'version' => 'required|string|max:10',
+                'final_duration' => 'required|string|max:20',
+                'video_file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
+                'production_notes' => 'nullable|string|max:500'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all())
+                ], 422);
+            }
+        } else {
+            $request->validate([
+                'content_task_id' => 'required|exists:content_tasks,id',
+                'version' => 'required|string|max:10',
+                'final_duration' => 'required|string|max:20',
+                'video_file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
+                'production_notes' => 'nullable|string|max:500'
+            ]);
+        }
 
         try {
             DB::beginTransaction();
@@ -201,8 +111,24 @@ class ProductionController extends Controller
             $path = null;
             if ($request->hasFile('video_file')) {
                 $file = $request->file('video_file');
+                
+                // Validate file
+                if (!$file->isValid()) {
+                    throw new \Exception('File upload tidak valid');
+                }
+                
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('storage/productions'), $filename);
+                $uploadPath = public_path('storage/productions');
+                
+                // Ensure directory exists
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                if (!$file->move($uploadPath, $filename)) {
+                    throw new \Exception('Gagal memindahkan file');
+                }
+                
                 $path = 'productions/' . $filename;
             }
 
@@ -213,14 +139,20 @@ class ProductionController extends Controller
                 'durasi_final' => $request->final_duration,
                 'file_video' => $path,
                 'catatan_produksi' => $request->production_notes,
-                'status' => 'in_review'
             ]);
 
-            // Update content task status to in_progress (sesuai enum di database)
+            // Update content task status to under_review
             ContentTask::where('id', $request->content_task_id)
-                ->update(['status' => 'in_progress']);
+                ->update(['status' => 'under_review']);
 
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Video production berhasil diupload!'
+                ]);
+            }
 
             return redirect()->back()->with('success', 'Video production berhasil diupload!');
 
@@ -230,6 +162,15 @@ class ProductionController extends Controller
             // Clean up uploaded file if exists
             if ($path && file_exists(public_path('storage/' . $path))) {
                 unlink(public_path('storage/' . $path));
+            }
+            
+            Log::error('Production upload error: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
             }
             
             return redirect()->back()

@@ -1,271 +1,650 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Pageflowry — Approval</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+@extends('layouts.admin')
+
+@section('page-title', 'Approval')
+
+@push('styles')
 <style>
-/* Same CSS as brief page */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-+:root{
-  --blue:#5897fe; --blue-6:#3a7bfe; --blue-7:#2563eb;
-  --blue-50:#eff6ff; --blue-100:#dbeafe; --blue-200:#bfdbfe;
-  --white:#fff; --bg:#f4f7fe; --border:#e8eef9; --blight:#f0f5ff;
-  --t9:#0d1526; --t7:#2d3f5e; --t5:#5c7099; --t4:#8fa3c4; --t3:#b8cae4;
-  --orange:#ff7849; --violet:#8b5cf6; --emerald:#10b981;
-  --rose:#f43f5e; --amber:#f59e0b; --cyan:#06b6d4;
-  --sidebar:240px; --topbar:66px; --r:16px; --rs:10px;
-  --s1:0 1px 3px rgba(13,21,38,.05),0 4px 16px rgba(88,151,254,.06);
-  --s2:0 4px 24px rgba(88,151,254,.13);
-  --s3:0 8px 48px rgba(88,151,254,.22);
-  --tr:.2s cubic-bezier(.4,0,.2,1);
+/* Header & actions */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t9);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.shell{display:flex;height:100vh;overflow:hidden}
-.sidebar{
-  width:var(--sidebar);min-width:var(--sidebar);height:100vh;
-  background:var(--white);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow-y:auto;z-index:200;
+.page-header-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.5px;
 }
-.sb-logo{
-  padding:20px 20px 18px;display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid var(--blight);flex-shrink:0;
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-400);
+  margin-top: 2px;
 }
-.sb-mark{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--blue),var(--blue-6));
-  display:flex;align-items:center;justify-content:center;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 18px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--t);
+  border: none;
+  outline: none;
+  white-space: nowrap;
 }
-.sb-mark svg{width:15px;height:15px}
-.sb-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
-.sb-name em{color:var(--t9);font-style:normal}
-.sb-nav{padding:14px 12px;flex:1}
-.sb-sec{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);padding:12px 10px 6px}
-.sb-item{
-  display:flex;align-items:center;gap:10px;padding:9.5px 12px;
-  border-radius:var(--rs);cursor:pointer;transition:var(--tr);
-  font-size:13.5px;font-weight:500;color:var(--t5);
-  text-decoration:none;position:relative;margin-bottom:1px;
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue), var(--blue-600));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(88,151,254,.35);
 }
-.sb-item:hover{background:var(--blue-50);color:var(--blue-6)}
-.sb-item.active{background:var(--blue-50);color:var(--blue);font-weight:600}
-.sb-item.active::before{
-  content:'';position:absolute;left:0;top:22%;bottom:22%;
-  width:3px;border-radius:0 3px 3px 0;background:var(--blue);
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88,151,254,.40);
 }
-.sb-ic{
-  width:28px;height:28px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12.5px;flex-shrink:0;transition:var(--tr);
+.btn-ghost {
+  background: transparent;
+  color: var(--text-500);
+  border: 1px solid var(--border);
+  height: 34px;
+  padding: 0 14px;
+  font-size: 12px;
 }
-.sb-item.active .sb-ic{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(88,151,254,.35)}
-.sb-item:not(.active) .sb-ic{color:var(--t4)}
-.sb-item:hover:not(.active) .sb-ic{background:var(--blue-100);color:var(--blue)}
-.sb-badge{margin-left:auto;background:var(--rose);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6}
-.sb-foot{padding:14px 12px;border-top:1px solid var(--blight);flex-shrink:0}
-.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);background:var(--blue-50);cursor:pointer;transition:var(--tr)}
-.sb-user:hover{background:var(--blue-100)}
-.sb-ava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-6));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{
-  height:var(--topbar);min-height:var(--topbar);background:var(--white);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;gap:16px;flex-shrink:0;z-index:100;
+.btn-ghost:hover {
+  background: var(--bg);
+  color: var(--text-700);
 }
-.tb-title{font-size:18px;font-weight:800;color:var(--t9);letter-spacing:-.4px;line-height:1.1}
-.tb-crumb{font-size:12px;color:var(--t4);margin-top:2px;display:flex;align-items:center;gap:5px}
-.tb-crumb span{color:var(--blue);font-weight:500}
-.tb-right{display:flex;align-items:center;gap:8px}
-.tb-btn{
-  width:38px;height:38px;border-radius:var(--rs);border:1px solid var(--border);
-  background:var(--white);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:var(--tr);color:var(--t5);font-size:15px;position:relative;
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,21,38,.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
 }
-.tb-btn:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-.tb-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:1.5px solid #fff}
-.tb-av{
-  width:38px;height:38px;border-radius:var(--rs);
-  background:linear-gradient(145deg,var(--blue),var(--blue-6));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;
-  box-shadow:0 3px 12px rgba(88,151,254,.35);transition:var(--tr);
+.overlay.open {
+  opacity: 1;
+  pointer-events: all;
 }
-.tb-av:hover{transform:scale(1.05)}
-.tb-div{width:1px;height:24px;background:var(--border);margin:0 4px}
-.body{flex:1;overflow-y:auto;padding:26px 28px 60px;display:flex;flex-direction:column;gap:20px}
-.pg-header{display:flex;align-items:center;justify-content:space-between;gap:16px;animation:fadeUp .35s ease both}
-.pg-heading{font-size:22px;font-weight:800;color:var(--t9);letter-spacing:-.5px;margin-bottom:3px}
-.pg-sub{font-size:13px;color:var(--t4)}
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.sc{
-  background:var(--white);border-radius:var(--r);border:1px solid var(--border);
-  box-shadow:var(--s1);padding:18px 16px;cursor:default;transition:var(--tr);
-  animation:fadeUp .4s ease both;animation-delay:calc(var(--i,0)*55ms);
-  position:relative;overflow:hidden;
+.modal {
+  background: var(--white);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: var(--s3), 0 0 0 1px rgba(88,151,254,.08);
+  transform: translateY(20px) scale(.95);
+  opacity: 0;
+  max-height: 90vh;
+  overflow-y: auto;
 }
-.sc:hover{transform:translateY(-3px);box-shadow:var(--s2);border-color:var(--blue-200)}
-.sc::after{content:'';position:absolute;bottom:-14px;right:-14px;width:60px;height:60px;border-radius:50%;opacity:.07;transition:var(--tr)}
-.sc:hover::after{opacity:.16}
-.sc-b {border-top:2.5px solid var(--blue)}.sc-b::after{background:var(--blue)}
-.sc-o {border-top:2.5px solid var(--orange)}.sc-o::after{background:var(--orange)}
-.sc-v {border-top:2.5px solid var(--violet)}.sc-v::after{background:var(--violet)}
-.sc-r {border-top:2.5px solid var(--rose)}.sc-r::after{background:var(--rose)}
-.sc-e {border-top:2.5px solid var(--emerald)}.sc-e::after{background:var(--emerald)}
-.sc-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:12px}
-.sc-b .sc-ic{background:rgba(88,151,254,.1);color:var(--blue)}
-.sc-o .sc-ic{background:rgba(255,120,73,.1);color:var(--orange)}
-.sc-v .sc-ic{background:rgba(139,92,246,.1);color:var(--violet)}
-.sc-r .sc-ic{background:rgba(244,63,94,.1);color:var(--rose)}
-.sc-e .sc-ic{background:rgba(16,185,129,.1);color:var(--emerald)}
-.sc-num{font-size:26px;font-weight:800;color:var(--t9);line-height:1;margin-bottom:4px;letter-spacing:-.4px}
-.sc-label{font-size:12px;font-weight:500;color:var(--t4)}
-.sc-sub{font-size:11px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:3px}
-.s-up{color:var(--emerald)}.s-w{color:var(--amber)}.s-dn{color:var(--rose)}
-.content-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both}
-.card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--blight)}
-.card-title{font-size:14px;font-weight:700;color:var(--t7)}
-.card-actions{display:flex;gap:8px}
-.card-body{padding:20px 22px}
-.btn{
-  display:inline-flex;align-items:center;gap:7px;padding:0 18px;height:40px;
-  border-radius:var(--rs);font-family:'DM Sans',sans-serif;
-  font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--tr);
-  border:none;outline:none;white-space:nowrap;
+.overlay.open .modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
 }
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-6));color:#fff;box-shadow:0 3px 12px rgba(88,151,254,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,151,254,.4)}
-.btn-primary:active{transform:scale(.97)}
-.btn-ghost{background:var(--white);color:var(--t5);border:1.5px solid var(--border)}
-.btn-ghost:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal-head {
+  padding: 24px 28px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.modal-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: -.4px;
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-400);
+  margin-top: 3px;
+}
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg);
+  cursor: pointer;
+  transition: var(--t);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-400);
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.modal-close:hover {
+  background: rgba(244,63,94,.1);
+  color: var(--rose);
+}
+.modal-body {
+  padding: 24px 28px;
+}
+.modal-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0 20px;
+}
+.modal-footer {
+  padding: 0 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mf-left {
+  font-size: 11px;
+  color: var(--text-400);
+}
+.mf-right {
+  display: flex;
+  gap: 8px;
+}
+
+/* Status Badge Colors */
+.p-under-review {
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+.p-under-review .pill-dot {
+  background: #facc15;
+}
+.p-need-revision {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.p-need-revision .pill-dot {
+  background: #ef4444;
+}
+.p-ready-to-publish {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.p-ready-to-publish .pill-dot {
+  background: #22c55e;
+}
+.p-published {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.p-published .pill-dot {
+  background: #a855f7;
+}
+
+/* Action Buttons */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-500);
+  cursor: pointer;
+  transition: var(--t);
+  font-size: 10px;
+}
+.btn-action:hover {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+.btn-action:disabled {
+  background: var(--bg);
+  color: var(--text-400);
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-action:disabled:hover {
+  background: var(--bg);
+  color: var(--text-400);
+  border-color: var(--border);
+  transform: none;
+}
+
+/* Table overflow fixes */
+.tbl-card {
+  overflow-x: auto;
+}
+.tbl-card table {
+  width: 1170px; /* Total width of all columns */
+  table-layout: fixed;
+  min-width: 100%;
+}
+.tbl-card th,
+.tbl-card td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tbl-card .action-buttons {
+  min-width: 140px;
+  display: flex;
+  gap: 1px;
+  flex-wrap: nowrap;
+}
+.tbl-card .pill {
+  font-size: 10px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.tbl-card .pill-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
 </style>
-</head>
-<body>
-<div class="shell">
+@endpush
 
-<!-- ═══════ SIDEBAR ═══════ -->
-<aside class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-mark">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="sb-name">Page<em>flowry</em></div>
+@section('content')
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Approval</div>
+    <div class="page-subtitle">Review dan approve konten yang siap dipublish</div>
   </div>
-  <nav class="sb-nav">
-    <div class="sb-sec">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}"><span class="sb-ic"><i class="fa-solid fa-house"></i></span>Dashboard</a>
-    <div class="sb-sec">Manajemen</div>
-    <a class="sb-item" href="{{ route('brands.index') }}"><span class="sb-ic"><i class="fa-solid fa-tag"></i></span>Brand Management</a>
-    <a class="sb-item" href="{{ route('content-tasks.index') }}"><span class="sb-ic"><i class="fa-solid fa-list-check"></i></span>Daftar Tugas Konten</a>
-    <div class="sb-sec">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}"><span class="sb-ic"><i class="fa-solid fa-film"></i></span>Production</a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}"><span class="sb-ic"><i class="fa-solid fa-rotate-left"></i></span>Revision<span class="sb-badge">4</span></a>
-    <a class="sb-item active" href="{{ route('approval.index') }}"><span class="sb-ic"><i class="fa-solid fa-circle-check"></i></span>Approval</a>
-    <a class="sb-item" href="{{ route('publishing.index') }}"><span class="sb-ic"><i class="fa-solid fa-paper-plane"></i></span>Publishing</a>
-    <div class="sb-sec">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}"><span class="sb-ic"><i class="fa-solid fa-chart-line"></i></span>Analytics</a>
-    <a class="sb-item" href="{{ route('report.index') }}"><span class="sb-ic"><i class="fa-solid fa-file-lines"></i></span>Report</a>
-    <div class="sb-sec">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}"><span class="sb-ic"><i class="fa-solid fa-gear"></i></span>Settings</a>
-  </nav>
-  <div class="sb-foot">
-    <div class="sb-user">
-      <div class="sb-ava">AM</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12.5px;font-weight:600;color:var(--t7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Alya Mutia</div>
-        <div style="font-size:11px;color:var(--blue);font-weight:500">Administrator</div>
-      </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--t3);font-size:12px"></i>
+</div>
+
+@if(session('success'))
+  <div class="alert alert-success">
+    <i class="fa-solid fa-check-circle"></i>
+    {{ session('success') }}
+  </div>
+@endif
+@if(session('error'))
+  <div class="alert alert-error">
+    <i class="fa-solid fa-exclamation-circle"></i>
+    {{ session('error') }}
+  </div>
+@endif
+
+<div class="stat-row">
+  <div class="stat-card sc-blue" style="--i:0">
+    <div class="stat-ic"><i class="fa-solid fa-list"></i></div>
+    <div class="stat-val">{{ $stats['total_review'] ?? 0 }}</div>
+    <div class="stat-lbl">Total Review</div>
+  </div>
+  <div class="stat-card sc-red" style="--i:1">
+    <div class="stat-ic"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div class="stat-val">{{ $stats['need_revision'] ?? 0 }}</div>
+    <div class="stat-lbl">Need Revision</div>
+  </div>
+  <div class="stat-card sc-em" style="--i:2">
+    <div class="stat-ic"><i class="fa-solid fa-check-circle"></i></div>
+    <div class="stat-val">{{ $stats['ready_to_publish'] ?? 0 }}</div>
+    <div class="stat-lbl">Ready to Publish</div>
+  </div>
+</div>
+
+<div class="card tbl-card">
+  <div class="sec-head" style="margin-bottom:0">
+    <div class="sec-title">
+      <i class="fa-solid fa-list"></i>
+      Daftar Approval Konten
     </div>
   </div>
-</aside>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40px;">ID</th>
+        <th style="width: 200px;">Judul Konten</th>
+        <th style="width: 100px;">Brand</th>
+        <th style="width: 80px;">Versi Video</th>
+        <th style="width: 80px;">Durasi Final</th>
+        <th style="width: 150px;">Catatan Produksi</th>
+        <th style="width: 160px;">Catatan Revisi</th>
+        <th style="width: 100px;">Deadline Revisi</th>
+        <th style="width: 120px;">Status</th>
+        <th style="width: 140px;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($contentTasks as $index => $task)
+        @php 
+          $production = $task->productions->first();
+          $statusMap = [
+            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
+            'need_revision' => ['label' => 'Need Revision', 'class' => 'p-need-revision'],
+            'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
+            'published' => ['label' => 'Published', 'class' => 'p-published'],
+          ];
+          $s = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-prod'];
+          $rowNumber = $index + 1;
+        @endphp
+        <tr>
+          <td style="white-space: nowrap; vertical-align: middle;">{{ $rowNumber }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="td-name">{{ $task->judul_konten }}</span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="td-brand">{{ optional($task->brand)->name ?? '-' }}</span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->versi_video : '-' }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->durasi_final : '-' }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            @if($production && $production->catatan_produksi)
+              <span class="td-notes" title="{{ $production->catatan_produksi }}">
+                {{ Str::limit($production->catatan_produksi, 40) }}
+              </span>
+            @else
+              <span class="text-muted">-</span>
+            @endif
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            @if($task->revision_note)
+              <span class="td-notes" title="{{ $task->revision_note }}">
+                {{ Str::limit($task->revision_note, 30) }}
+              </span>
+            @else
+              <span class="text-muted">-</span>
+            @endif
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            @if($task->revision_deadline)
+              <span class="td-date">
+                <i class="fa-regular fa-calendar"></i>
+                {{ $task->revision_deadline->format('d M Y') }}
+              </span>
+            @else
+              <span class="text-muted">-</span>
+            @endif
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="pill {{ $s['class'] }}">
+              <span class="pill-dot"></span>
+              {{ $s['label'] }}
+            </span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div class="action-buttons" style="display:flex;gap:1px;flex-wrap:nowrap;">
+              @if($production && $production->file_video)
+                <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Video">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download Video">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+              @endif
+              @if($task->status != 'ready_to_publish')
+                <button class="btn-action" onclick="approveSingle({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Approve">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              @else
+                <button class="btn-action" disabled title="Already Approved">
+                  <i class="fa-solid fa-check-circle"></i>
+                </button>
+              @endif
+            </div>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="10" style="text-align:center;padding:32px 0;color:var(--text-400);">
+            <i class="fa-solid fa-list" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
+            <div style="font-size:15px;font-weight:600;">Belum ada konten untuk diapprove</div>
+            <div style="font-size:12.5px;">Upload video produksi dan kirim ke approval terlebih dahulu</div>
+          </td>
+        </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
 
-<!-- ═══════ MAIN ═══════ -->
-<div class="main">
-
-  <header class="topbar">
-    <div>
-      <div class="tb-title">Approval</div>
-      <div class="tb-crumb">
-        <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--t3)"></i>
-        <span>Approval</span>
+<!-- Approve Modal -->
+<div class="overlay" id="approveOverlay" onclick="closeOnOverlay(event, 'approveOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-check-circle"></i> Approval</div>
+        <div class="modal-title">Approve Konten</div>
+        <div class="modal-subtitle">Setujui konten untuk dipublish</div>
       </div>
-    </div>
-    <div class="tb-right">
-      <div class="tb-btn"><i class="fa-regular fa-bell"></i><span class="tb-dot"></span></div>
-      <div class="tb-btn"><i class="fa-regular fa-envelope"></i></div>
-      <div class="tb-div"></div>
-      <div class="tb-av">AM</div>
-    </div>
-  </header>
-
-  <div class="body">
-
-    <!-- PAGE HEADER -->
-    <div class="pg-header">
-      <div>
-        <div class="pg-heading">Approval Management</div>
-        <div class="pg-sub">Kelola persetujuan konten</div>
-      </div>
-      <button class="btn btn-primary">
-        <i class="fa-solid fa-plus"></i> Tugas Approval Baru
+      <button class="modal-close" type="button" onclick="closeModal('approveOverlay')">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
-    <!-- STAT CARDS -->
-    <div class="stats-row">
-      <div class="sc sc-b" style="--i:0">
-        <div class="sc-ic"><i class="fa-solid fa-clock"></i></div>
-        <div class="sc-num">12</div>
-        <div class="sc-label">Menunggu Approval</div>
-        <div class="sc-sub s-w"><i class="fa-solid fa-hourglass-half"></i> Sedang diproses</div>
-      </div>
-      <div class="sc sc-e" style="--i:1">
-        <div class="sc-ic"><i class="fa-solid fa-check-circle"></i></div>
-        <div class="sc-num">28</div>
-        <div class="sc-label">Disetujui</div>
-        <div class="sc-sub s-up"><i class="fa-solid fa-check"></i> Selesai</div>
-      </div>
-      <div class="sc sc-r" style="--i:2">
-        <div class="sc-ic"><i class="fa-solid fa-x-circle"></i></div>
-        <div class="sc-num">5</div>
-        <div class="sc-label">Ditolak</div>
-        <div class="sc-sub s-dn"><i class="fa-solid fa-triangle-exclamation"></i> Perlu revisi</div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div id="approveContent">
+        <!-- Content will be filled by JavaScript -->
       </div>
     </div>
-
-    <!-- CONTENT CARD -->
-    <div class="content-card">
-      <div class="card-header">
-        <h3 class="card-title">Daftar Approval</h3>
-        <div class="card-actions">
-          <button class="btn btn-ghost">
-            <i class="fa-solid fa-download"></i> Export
-          </button>
-          <button class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Approval Baru
-          </button>
-        </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Konten akan berubah status menjadi "Ready to Publish"
       </div>
-      <div class="card-body">
-        <p>Halaman Approval Management sedang dalam pengembangan.</p>
-        <p>Semua menu sidebar berfungsi dengan baik.</p>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('approveOverlay')">Batal</button>
+        <button class="btn btn-primary" type="button" onclick="confirmApprove()">
+          <i class="fa-solid fa-check"></i> Approve
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-  </div><!-- /body -->
-</div><!-- /main -->
-</div><!-- /shell -->
+<!-- Preview Video Modal -->
+<div class="overlay" id="previewOverlay" onclick="closeOnOverlay(event, 'previewOverlay')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width: 800px;">
+    <div class="modal-head">
+      <div class="modal-title">Preview Video Produksi</div>
+      <button class="modal-close" onclick="closeModal('previewOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div id="previewContent">
+        <!-- Video preview content will be inserted here -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('previewOverlay')">Tutup</button>
+    </div>
+  </div>
+</div>
 
+<!-- Download Confirmation Modal -->
+<div class="overlay" id="downloadOverlay" onclick="closeOnOverlay(event, 'downloadOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-download"></i> Download</div>
+        <div class="modal-title">Download Video</div>
+        <div class="modal-subtitle">Konfirmasi download video produksi</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('downloadOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div id="downloadContent">
+        <!-- Content will be filled by JavaScript -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Video akan diunduh ke perangkat Anda
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('downloadOverlay')">Batal</button>
+        <button class="btn btn-primary" type="button" onclick="confirmDownload()">
+          <i class="fa-solid fa-download"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection
+
+@push('scripts')
 <script>
-// Simple functionality
-console.log('Approval page loaded');
+let currentApproveId = null;
+let currentDownloadUrl = null;
+const downloadBaseUrl = '{{ url('/admin/production/download') }}';
+
+function approveSingle(taskId, taskTitle) {
+  currentApproveId = taskId;
+  
+  const content = `
+    <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
+      <div style="font-weight: 600; color: var(--text-900); margin-bottom: 4px;">${taskTitle}</div>
+      <div style="font-size: 12px; color: var(--text-500);">ID: #${taskId}</div>
+    </div>
+    <p style="font-size: 14px; color: var(--text-700); margin: 0;">
+      Apakah Anda yakin ingin menyetujui konten ini? Status akan berubah menjadi <strong>"Ready to Publish"</strong>.
+    </p>
+  `;
+  
+  document.getElementById('approveContent').innerHTML = content;
+  document.getElementById('approveOverlay').classList.add('open');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('open');
+  if (modalId === 'approveOverlay') {
+    currentApproveId = null;
+  }
+}
+
+function closeOnOverlay(event, modalId) {
+  if (event.target === event.currentTarget) {
+    closeModal(modalId);
+  }
+}
+
+function confirmApprove() {
+  if (!currentApproveId) return;
+  
+  const submitBtn = event.target;
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+  submitBtn.disabled = true;
+
+  fetch('{{ route("approval.approve-single") }}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ 
+      content_task_id: currentApproveId 
+    })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        closeModal('approveOverlay');
+        window.location.reload();
+      } else {
+        alert('Gagal menyetujui konten: ' + (data.message || 'Terjadi kesalahan'));
+      }
+    })
+    .catch(error => {
+      console.error('Approval error:', error);
+      alert('Terjadi kesalahan saat menyetujui konten. Silakan coba lagi.');
+    })
+    .finally(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    });
+}
+
+function openDownloadModal(productionId, taskTitle, videoFile) {
+  currentDownloadUrl = downloadBaseUrl + '/' + productionId;
+  
+  const content = `
+    <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
+      <div style="font-weight: 600; color: var(--text-900); margin-bottom: 4px;">${taskTitle}</div>
+      <div style="font-size: 12px; color: var(--text-500);">Production ID: #${productionId}</div>
+      <div style="font-size: 12px; color: var(--text-500); margin-top: 4px;">File: ${videoFile}</div>
+    </div>
+    <p style="font-size: 14px; color: var(--text-700); margin: 0;">
+      Apakah Anda yakin ingin mengunduh video ini?
+    </p>
+  `;
+  
+  document.getElementById('downloadContent').innerHTML = content;
+  document.getElementById('downloadOverlay').classList.add('open');
+}
+
+function confirmDownload() {
+  if (!currentDownloadUrl) return;
+  
+  // Create a temporary link to trigger download
+  const link = document.createElement('a');
+  link.href = currentDownloadUrl;
+  link.download = ''; // Let the server set the filename
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Close modal after download starts
+  closeModal('downloadOverlay');
+  currentDownloadUrl = null;
+}
+
+function previewVideo(productionId, taskTitle, videoFile) {
+  const previewContent = document.getElementById('previewContent');
+  
+  // Update modal title
+  const modalTitle = document.querySelector('#previewOverlay .modal-title');
+  if (modalTitle) {
+    modalTitle.textContent = `Preview Video - ${taskTitle}`;
+  }
+  
+  // Create video element
+  const videoPath = `/storage/${videoFile}`;
+  previewContent.innerHTML = `
+    <div style="text-align: center;">
+      <video controls style="max-width: 100%; height: auto; border-radius: 8px;" preload="metadata">
+        <source src="${videoPath}" type="video/mp4">
+        <source src="${videoPath}" type="video/mov">
+        <source src="${videoPath}" type="video/avi">
+        Browser Anda tidak mendukung video player.
+      </video>
+      <div style="margin-top: 16px; color: var(--text-400); font-size: 14px;">
+        <i class="fa-solid fa-info-circle"></i> Video: ${taskTitle}
+      </div>
+    </div>
+  `;
+  
+  // Open modal
+  document.getElementById('previewOverlay').classList.add('open');
+}
 </script>
-</body>
-</html>
+@endpush

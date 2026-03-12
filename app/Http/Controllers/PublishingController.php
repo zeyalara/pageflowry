@@ -3,39 +3,46 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\ContentTask;
 
 class PublishingController extends Controller
 {
+    /**
+     * Daftar konten dengan status ready_to_publish
+     */
     public function index()
     {
-        return view('admin.publishing.index');
+        $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => fn ($q) => $q->latest()->limit(1)])
+            ->where('status', 'ready_to_publish')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $publishedCount = ContentTask::where('status', 'published')->count();
+
+        return view('admin.publishing.index', compact('contentTasks', 'publishedCount'));
     }
 
-    public function create()
+    /**
+     * Publish: update status → published
+     */
+    public function publish(Request $request)
     {
-        return view('admin.publishing.create');
-    }
+        $ids = $request->input('ids', []);
 
-    public function store(Request $request)
-    {
-        // Logic for storing publishing data
-        return redirect()->route('publishing.index')->with('success', 'Publishing created successfully');
-    }
+        if (!is_array($ids) || count($ids) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada konten yang dipilih.',
+            ], 422);
+        }
 
-    public function edit($id)
-    {
-        return view('admin.publishing.edit', ['id' => $id]);
-    }
+        ContentTask::whereIn('id', $ids)
+            ->where('status', 'ready_to_publish')
+            ->update(['status' => 'published']);
 
-    public function update(Request $request, $id)
-    {
-        // Logic for updating publishing data
-        return redirect()->route('publishing.index')->with('success', 'Publishing updated successfully');
-    }
-
-    public function destroy($id)
-    {
-        // Logic for deleting publishing data
-        return redirect()->route('publishing.index')->with('success', 'Publishing deleted successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Konten berhasil dipublish.',
+        ]);
     }
 }

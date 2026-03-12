@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <link href="{{ asset('css/admin.css') }}" rel="stylesheet"/>
+@stack('styles')
 
 <style>
 /* ═══════════════════════════════════════════════
@@ -424,7 +425,7 @@ html, body {
 ═══════════════════════════════════════════════ */
 .stat-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
 }
 
@@ -909,7 +910,7 @@ tbody tr:hover td { background: var(--blue-50); }
       <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
       Production
     </a>
-    <a class="sb-item {{ request()->routeIs('revision.index', 1) ? 'active' : '' }}" href="{{ route('revision.index', 1) }}">
+    <a class="sb-item {{ request()->routeIs('revision.index') ? 'active' : '' }}" href="{{ route('revision.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
       Revision
       <span class="sb-badge">4</span>
@@ -1019,5 +1020,6 @@ document.querySelectorAll('.qa-btn').forEach(btn => {
   });
 });
 </script>
+@stack('scripts')
 </body>
 </html>

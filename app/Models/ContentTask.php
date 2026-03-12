@@ -18,10 +18,16 @@ class ContentTask extends Model
         'creator_id',
         'status',
         'deadline',
+        'revision_note',
+        'revision_deadline',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
         'deadline' => 'datetime',
+        'revision_deadline' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /**
