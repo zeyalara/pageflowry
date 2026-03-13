@@ -14,17 +14,49 @@
 ───────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --blue:#5897fe; --blue-6:#3a7bfe; --blue-7:#2563eb;
-  --blue-50:#eff6ff; --blue-100:#dbeafe; --blue-200:#bfdbfe;
-  --white:#fff; --bg:#f4f7fe; --border:#e8eef9; --blight:#f0f5ff;
-  --t9:#0d1526; --t7:#2d3f5e; --t5:#5c7099; --t4:#8fa3c4; --t3:#b8cae4;
-  --orange:#ff7849; --violet:#8b5cf6; --emerald:#10b981;
-  --rose:#f43f5e; --amber:#f59e0b; --cyan:#06b6d4;
-  --sidebar:240px; --topbar:66px; --r:16px; --rs:10px;
-  --s1:0 1px 3px rgba(13,21,38,.05),0 4px 16px rgba(88,151,254,.06);
-  --s2:0 4px 24px rgba(88,151,254,.13);
-  --s3:0 8px 48px rgba(88,151,254,.22);
-  --tr:.2s cubic-bezier(.4,0,.2,1);
+  /* primary */
+  --blue:        #5897fe;
+  --blue-600:    #3a7bfe;
+  --blue-700:    #2563eb;
+  --blue-50:     #eff6ff;
+  --blue-100:    #dbeafe;
+  --blue-200:    #bfdbfe;
+
+  /* neutral */
+  --white:        #ffffff;
+  --bg:           #f4f7fe;
+  --border:       #e8eef9;
+  --border-light: #f0f5ff;
+
+  /* text */
+  --text-900:    #0d1526;
+  --text-700:    #2d3f5e;
+  --text-600:    #5c7099;
+  --text-400:    #8fa3c4;
+  --text-300:    #b8cae4;
+
+  /* accents */
+  --orange:      #ff7849;
+  --violet:      #8b5cf6;
+  --emerald:     #10b981;
+  --rose:        #f43f5e;
+  --amber:       #f59e0b;
+  --cyan:        #06b6d4;
+
+  /* sizes */
+  --sidebar:     240px;
+  --topbar:      66px;
+  --r:           16px;
+  --r-sm:        10px;
+  --r-xs:        7px;
+
+  /* shadows */
+  --s1: 0 1px 3px rgba(13,21,38,.05), 0 4px 16px rgba(88,151,254,.06);
+  --s2: 0 4px 24px rgba(88,151,254,.12);
+  --s3: 0 8px 40px rgba(88,151,254,.20);
+
+  /* transitions */
+  --t: .2s cubic-bezier(.4,0,.2,1);
 }
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t9);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -45,44 +77,50 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   display:flex;flex-direction:column;overflow-y:auto;z-index:200;
 }
 .sb-logo{
-  padding:20px 20px 18px;display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid var(--blight);flex-shrink:0;
+  padding:20px 20px 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid var(--border-light);
+  flex-shrink:0;
 }
-.sb-mark{
+.sb-logo-mark{
   width:32px;height:32px;border-radius:8px;flex-shrink:0;
   background:linear-gradient(135deg,var(--blue),var(--blue-6));
   display:flex;align-items:center;justify-content:center;
 }
-.sb-mark svg{width:15px;height:15px}
-.sb-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
-.sb-name em{color:var(--t9);font-style:normal}
-.sb-nav{padding:14px 12px;flex:1}
-.sb-sec{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);padding:12px 10px 6px}
+.sb-logo-mark svg{width:15px;height:15px}
+.sb-logo-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
+.sb-logo-name em{color:var(--t9);font-style:normal}
+.sb-group-label{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--text-300);padding:12px 10px 6px}
 .sb-item{
   display:flex;align-items:center;gap:10px;padding:9.5px 12px;
-  border-radius:var(--rs);cursor:pointer;transition:var(--tr);
-  font-size:13.5px;font-weight:500;color:var(--t5);
+  border-radius:var(--r-sm);cursor:pointer;transition:var(--t);
+  font-size:13.5px;font-weight:500;color:var(--text-600);
   text-decoration:none;position:relative;margin-bottom:1px;
 }
-.sb-item:hover{background:var(--blue-50);color:var(--blue-6)}
+.sb-item:hover{background:var(--blue-50);color:var(--blue-600)}
 .sb-item.active{background:var(--blue-50);color:var(--blue);font-weight:600}
 .sb-item.active::before{
   content:'';position:absolute;left:0;top:22%;bottom:22%;
   width:3px;border-radius:0 3px 3px 0;background:var(--blue);
 }
-.sb-ic{
+.icon-wrap{
   width:28px;height:28px;border-radius:8px;
   display:flex;align-items:center;justify-content:center;
-  font-size:12.5px;flex-shrink:0;transition:var(--tr);
+  font-size:12.5px;flex-shrink:0;transition:var(--t);
 }
-.sb-item.active .sb-ic{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(88,151,254,.35)}
-.sb-item:not(.active) .sb-ic{color:var(--t4)}
-.sb-item:hover:not(.active) .sb-ic{background:var(--blue-100);color:var(--blue)}
+.sb-item.active .icon-wrap{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(88,151,254,.35)}
+.sb-item:not(.active) .icon-wrap{color:var(--text-400)}
+.sb-item:hover:not(.active) .icon-wrap{background:var(--blue-100);color:var(--blue)}
 .sb-badge{margin-left:auto;background:var(--rose);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6}
-.sb-foot{padding:14px 12px;border-top:1px solid var(--blight);flex-shrink:0}
-.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);background:var(--blue-50);cursor:pointer;transition:var(--tr)}
+.sb-footer{padding:14px 12px;border-top:1px solid var(--border-light);flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--blue-50);cursor:pointer;transition:var(--t)}
 .sb-user:hover{background:var(--blue-100)}
-.sb-ava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-6));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-600));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:12.5px;font-weight:600;color:var(--text-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-size:11px;color:var(--blue);font-weight:500}
 
 /* ─────────────────────────────────────────
    MAIN
@@ -426,39 +464,78 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <body>
 <div class="shell">
 
-<!-- ═══════ SIDEBAR ═══════ -->
+<!-- ══════════════ SIDEBAR ══════════════ -->
 <aside class="sidebar">
   <div class="sb-logo">
-    <div class="sb-mark">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <div class="sb-logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
     </div>
-    <div class="sb-name">Page<em>flowry</em></div>
+    <div class="sb-logo-name">Page<em>flowry</em></div>
   </div>
+
   <nav class="sb-nav">
-    <div class="sb-sec">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}"><span class="sb-ic"><i class="fa-solid fa-house"></i></span>Dashboard</a>
-    <div class="sb-sec">Manajemen</div>
-    <a class="sb-item" href="{{ route('brands.index') }}"><span class="sb-ic"><i class="fa-solid fa-tag"></i></span>Brand Management</a>
-    <a class="sb-item active" href="{{ route('content-tasks.index') }}"><span class="sb-ic"><i class="fa-solid fa-list-check"></i></span>Daftar Tugas Konten</a>
-    <div class="sb-sec">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}"><span class="sb-ic"><i class="fa-solid fa-film"></i></span>Production</a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}"><span class="sb-ic"><i class="fa-solid fa-rotate-left"></i></span>Revision<span class="sb-badge">4</span></a>
-    <a class="sb-item" href="{{ route('approval.index') }}"><span class="sb-ic"><i class="fa-solid fa-circle-check"></i></span>Approval</a>
-    <a class="sb-item" href="{{ route('publishing.index') }}"><span class="sb-ic"><i class="fa-solid fa-paper-plane"></i></span>Publishing</a>
-    <div class="sb-sec">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}"><span class="sb-ic"><i class="fa-solid fa-chart-line"></i></span>Analytics</a>
-    <a class="sb-item" href="{{ route('report.index') }}"><span class="sb-ic"><i class="fa-solid fa-file-lines"></i></span>Report</a>
-    <div class="sb-sec">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}"><span class="sb-ic"><i class="fa-solid fa-gear"></i></span>Settings</a>
+    <div class="sb-group-label">Overview</div>
+    <a class="sb-item" href="{{ route('admin.dashboard') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
+      Dashboard
+    </a>
+
+    <div class="sb-group-label">Manajemen</div>
+    <a class="sb-item" href="{{ route('brands.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
+      Brand Management
+    </a>
+    <a class="sb-item active" href="{{ route('content-tasks.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
+      Daftar Tugas Konten
+    </a>
+
+    <div class="sb-group-label">Workflow</div>
+    <a class="sb-item" href="{{ route('production.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
+      Production
+    </a>
+    <a class="sb-item" href="{{ route('revision.index', 1) }}">
+      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
+      Revision
+      <span class="sb-badge">4</span>
+    </a>
+    <a class="sb-item" href="{{ route('approval.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
+      Approval
+    </a>
+    <a class="sb-item" href="{{ route('publishing.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
+      Publishing
+    </a>
+
+    <div class="sb-group-label">Laporan</div>
+    <a class="sb-item" href="{{ route('analytics.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
+      Analytics
+    </a>
+    <a class="sb-item" href="{{ route('report.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
+      Report
+    </a>
+
+    <div class="sb-group-label">Lainnya</div>
+    <a class="sb-item" href="{{ route('settings.index') }}">
+      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
+      Settings
+    </a>
   </nav>
-  <div class="sb-foot">
+
+  <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-ava">AM</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12.5px;font-weight:600;color:var(--t7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Alya Mutia</div>
-        <div style="font-size:11px;color:var(--blue);font-weight:500">Administrator</div>
+      <div class="sb-avatar">AM</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name">Alya Mutia</div>
+        <div class="sb-user-role">Administrator</div>
       </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--t3);font-size:12px"></i>
+      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
     </div>
   </div>
 </aside>

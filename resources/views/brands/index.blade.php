@@ -830,7 +830,7 @@ html, body {
 <body>
 <div class="shell">
 
-<!-- ════════════ SIDEBAR ════════════ -->
+<!-- ════════════════ SIDEBAR ════════════════ -->
 <aside class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-mark">
@@ -840,44 +840,60 @@ html, body {
     </div>
     <div class="sb-logo-name">Page<em>flowry</em></div>
   </div>
+
   <nav class="sb-nav">
     <div class="sb-group-label">Overview</div>
     <a class="sb-item" href="{{ route('admin.dashboard') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span> Dashboard
+      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
+      Dashboard
     </a>
+
     <div class="sb-group-label">Manajemen</div>
     <a class="sb-item active" href="{{ route('brands.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span> Brand Management
+      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
+      Brand Management
     </a>
     <a class="sb-item" href="{{ route('content-tasks.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span> Daftar Tugas Konten
+      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
+      Daftar Tugas Konten
     </a>
+
     <div class="sb-group-label">Workflow</div>
     <a class="sb-item" href="{{ route('production.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span> Production
+      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
+      Production
     </a>
     <a class="sb-item" href="{{ route('revision.index', 1) }}">
-      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span> Revision
+      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
+      Revision
       <span class="sb-badge">4</span>
     </a>
     <a class="sb-item" href="{{ route('approval.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span> Approval
+      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
+      Approval
     </a>
     <a class="sb-item" href="{{ route('publishing.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span> Publishing
+      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
+      Publishing
     </a>
+
     <div class="sb-group-label">Laporan</div>
     <a class="sb-item" href="{{ route('analytics.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span> Analytics
+      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
+      Analytics
     </a>
     <a class="sb-item" href="{{ route('report.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span> Report
+      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
+      Report
     </a>
+
     <div class="sb-group-label">Lainnya</div>
     <a class="sb-item" href="{{ route('settings.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span> Settings
+      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
+      Settings
     </a>
   </nav>
+
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar">AM</div>
