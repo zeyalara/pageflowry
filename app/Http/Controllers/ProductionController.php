@@ -18,13 +18,22 @@ class ProductionController extends Controller
      */
     public function index()
     {
-        // Get content tasks that are in production or have been processed
-        $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
-            $q->latest()->limit(1);
-        }])
-        ->whereIn('status', ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'])
-        ->orderBy('id', 'asc')
-        ->get();
+        // Base query: task yang tampil di tabel (status workflow produksi)
+        $workflowStatuses = ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'];
+
+        $baseQuery = ContentTask::with([
+                'brand',
+                'creator',
+                'productions' => function ($q) {
+                    $q->latest()->limit(1);
+                },
+            ])
+            ->whereIn('status', $workflowStatuses);
+
+        // Data untuk tabel
+        $contentTasks = (clone $baseQuery)
+            ->orderBy('id', 'asc')
+            ->get();
 
         // Get tasks for dropdown (status = in_production only)
         $tasks = ContentTask::where('status', 'in_production')->get();
@@ -32,12 +41,12 @@ class ProductionController extends Controller
         // Debug: Check if tasks exist
         // dd($tasks->toArray()); // Uncomment to debug
 
-        // Statistics calculated from content_tasks.status
+        // Statistik di-card diambil dari data yang sama dengan tabel (supaya angka sinkron)
         $stats = [
-            'total_tasks' => ContentTask::count(),
-            'in_production' => ContentTask::where('status', 'in_production')->count(),
-            'under_review' => ContentTask::where('status', 'under_review')->count(),
-            'ready_to_publish' => ContentTask::where('status', 'ready_to_publish')->count(),
+            'total_tasks'    => $contentTasks->count(),
+            'in_production'  => $contentTasks->where('status', 'in_production')->count(),
+            'under_review'   => $contentTasks->where('status', 'under_review')->count(),
+            'ready_to_publish' => $contentTasks->where('status', 'ready_to_publish')->count(),
         ];
 
         return view('admin.production.index', compact('contentTasks', 'tasks', 'stats'));

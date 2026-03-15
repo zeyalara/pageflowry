@@ -13,13 +13,15 @@ class RevisionController extends Controller
      */
     public function index()
     {
-        // Get content tasks dengan status under_review dan need_revision
+        // Tampilkan semua konten yang sudah masuk alur produksi (sama seperti halaman Production)
+        $workflowStatuses = ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'];
+
         $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
-            $q->latest()->limit(1);
-        }])
-        ->whereIn('status', ['under_review', 'need_revision'])
-        ->orderBy('id', 'asc')
-        ->get();
+                $q->latest()->limit(1);
+            }])
+            ->whereIn('status', $workflowStatuses)
+            ->orderBy('id', 'asc')
+            ->get();
 
         // Statistics dari content_tasks.status
         $stats = [
@@ -32,7 +34,8 @@ class RevisionController extends Controller
     }
 
     /**
-     * Send to Approval: update status → ready_for_approval
+     * Send to Approval: update status → ready_to_publish
+     * (disamakan dengan halaman Approval & Publishing agar kartu/stat sinkron)
      */
     public function sendToApproval(Request $request)
     {
@@ -49,7 +52,7 @@ class RevisionController extends Controller
         try {
             ContentTask::whereIn('id', $ids)
                 ->where('status', 'under_review')
-                ->update(['status' => 'ready_for_approval']);
+                ->update(['status' => 'ready_to_publish']);
 
             DB::commit();
 

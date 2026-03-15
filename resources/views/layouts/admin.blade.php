@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <link href="{{ asset('css/admin.css') }}" rel="stylesheet"/>
-@stack('styles')
 
 <style>
 /* ═══════════════════════════════════════════════
@@ -872,6 +871,7 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 
 </style>
+@stack('styles')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
@@ -887,6 +887,10 @@ tbody tr:hover td { background: var(--blue-50); }
     </div>
     <div class="sb-logo-name">Page<em>flowry</em></div>
   </div>
+
+  @php
+    $revisionBadge = \App\Models\ContentTask::where('status', 'need_revision')->count();
+  @endphp
 
   <nav class="sb-nav">
     <div class="sb-group-label">Overview</div>
@@ -913,7 +917,9 @@ tbody tr:hover td { background: var(--blue-50); }
     <a class="sb-item {{ request()->routeIs('revision.index') ? 'active' : '' }}" href="{{ route('revision.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
       Revision
-      <span class="sb-badge">4</span>
+      @if($revisionBadge > 0)
+        <span class="sb-badge">{{ $revisionBadge }}</span>
+      @endif
     </a>
     <a class="sb-item {{ request()->routeIs('approval.index') ? 'active' : '' }}" href="{{ route('approval.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
@@ -930,7 +936,7 @@ tbody tr:hover td { background: var(--blue-50); }
       Analytics
     </a>
     <a class="sb-item {{ request()->routeIs('report.index') ? 'active' : '' }}" href="{{ route('report.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-file-chart-line"></i></span>
+      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
       Report
     </a>
 

@@ -337,17 +337,17 @@
   <div class="stat-card sc-vio" style="--i:1">
     <div class="stat-ic"><i class="fa-solid fa-cog"></i></div>
     <div class="stat-val">{{ $stats['in_production'] ?? 0 }}</div>
-    <div class="stat-lbl">Dalam Produksi</div>
+    <div class="stat-lbl">In Production</div>
   </div>
   <div class="stat-card sc-amb" style="--i:2">
     <div class="stat-ic"><i class="fa-solid fa-eye"></i></div>
     <div class="stat-val">{{ $stats['under_review'] ?? 0 }}</div>
-    <div class="stat-lbl">Dalam Review</div>
+    <div class="stat-lbl">Under Review</div>
   </div>
   <div class="stat-card sc-em" style="--i:3">
     <div class="stat-ic"><i class="fa-solid fa-paper-plane"></i></div>
     <div class="stat-val">{{ $stats['ready_to_publish'] ?? 0 }}</div>
-    <div class="stat-lbl">Siap Publish</div>
+    <div class="stat-lbl">Ready to Publish</div>
   </div>
 </div>
 
@@ -422,9 +422,9 @@
                 <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Video">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <a href="{{ route('production.download', $production->id) }}" class="btn-action" title="Download Video">
+                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download Video">
                   <i class="fa-solid fa-download"></i>
-                </a>
+                </button>
               @else
                 <button class="btn-action" onclick="showUploadForTask({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Upload Video">
                   <i class="fa-solid fa-upload"></i>
@@ -556,10 +556,46 @@
   </div>
 </div>
 
+<!-- Download Confirmation Modal -->
+<div class="overlay" id="downloadOverlay" onclick="closeOnOverlay(event, 'downloadOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-download"></i> Download</div>
+        <div class="modal-title">Download Video</div>
+        <div class="modal-subtitle">Konfirmasi download video produksi</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('downloadOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div id="downloadContent">
+        <!-- Content will be filled by JavaScript -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Video akan diunduh ke perangkat Anda
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('downloadOverlay')">Batal</button>
+        <button class="btn btn-primary" type="button" onclick="confirmDownload()">
+          <i class="fa-solid fa-download"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+let currentDownloadUrl = null;
+const downloadBaseUrl = '{{ url('/admin/production/download') }}';
+
 function openUploadModal() {
   document.getElementById('uploadOverlay').classList.add('open');
 }
@@ -583,7 +619,9 @@ function showUploadForTask(taskId, taskTitle) {
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('open');
-  resetForm();
+  if (modalId === 'uploadOverlay') {
+    resetForm();
+  }
 }
 
 function closeOnOverlay(event, modalId) {
@@ -713,6 +751,38 @@ function previewVideo(productionId, taskTitle, videoFile) {
   
   // Open modal
   document.getElementById('previewOverlay').classList.add('open');
+}
+
+function openDownloadModal(productionId, taskTitle, videoFile) {
+  currentDownloadUrl = downloadBaseUrl + '/' + productionId;
+  
+  const content = `
+    <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
+      <div style="font-weight: 600; color: var(--text-900); margin-bottom: 4px;">${taskTitle}</div>
+      <div style="font-size: 12px; color: var(--text-500);">Production ID: #${productionId}</div>
+      <div style="font-size: 12px; color: var(--text-500); margin-top: 4px;">File: ${videoFile}</div>
+    </div>
+    <p style="font-size: 14px; color: var(--text-700); margin: 0;">
+      Apakah Anda yakin ingin mengunduh video ini?
+    </p>
+  `;
+  
+  document.getElementById('downloadContent').innerHTML = content;
+  document.getElementById('downloadOverlay').classList.add('open');
+}
+
+function confirmDownload() {
+  if (!currentDownloadUrl) return;
+  
+  const link = document.createElement('a');
+  link.href = currentDownloadUrl;
+  link.download = '';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  closeModal('downloadOverlay');
+  currentDownloadUrl = null;
 }
 
 </script>
