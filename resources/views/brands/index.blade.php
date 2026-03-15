@@ -338,7 +338,6 @@ html, body {
   animation: fadeUp .45s .15s ease both;
   display: flex;
   flex-direction: column;
-  max-height: 500px;
 }
 
 .table-card-head {
@@ -369,51 +368,10 @@ html, body {
 .vt-btn.active { background: var(--white); color: var(--blue); box-shadow: var(--s1); }
 .vt-btn:hover:not(.active) { color: var(--blue); }
 
-/* TABLE WRAPPER */
+/* TABLE WRAPPER - Clean and functional */
 .table-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 300px;
-  height: 700px; /* Fixed height to ensure scrolling works */
-  position: relative;
-}
-
-/* Cross-browser scrollbar support */
-.table-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-  background: var(--blue-200);
-  border-radius: 99px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: var(--blue);
-}
-
-/* Firefox scrollbar support */
-.table-wrapper * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--blue-200) var(--bg);
-}
-
-.table-wrapper *::-webkit-scrollbar {
-  width: 6px;
-}
-
-.table-wrapper *::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-
-.table-wrapper *::-webkit-scrollbar-thumb {
-  background: var(--blue-200);
-  border-radius: 99px;
+  height: 300px;
+  overflow-y: scroll;
 }
 
 /* TABLE */
@@ -917,6 +875,7 @@ html, body {
         <i class="fa-solid fa-house" style="font-size:10px"></i>
         <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--text-300)"></i>
         <span>Brand Management</span>
+        &nbsp;·&nbsp; <span id="today-date"></span>
       </div>
     </div>
     <div class="tb-right">
@@ -1022,7 +981,7 @@ html, body {
                   <div class="brand-cell">
                     <div class="brand-avatar" style="background:#5897fe">{{ $brand->name ? strtoupper(substr($brand->name, 0, 2)) : '??' }}</div>
                     <div>
-                      <div class="brand-name-text">{{ $brand->name ?: 'Unnamed Brand' }} (ID: {{ $brand->id }})</div>
+                      <div class="brand-name-text">{{ $brand->name ?: 'Unnamed Brand' }}</div>
                       <div class="brand-created">Dibuat {{ $brand->created_at ? $brand->created_at->format('M Y') : 'Unknown' }}</div>
                     </div>
                   </div>
@@ -1070,11 +1029,6 @@ html, body {
       <!-- GRID VIEW -->
       <div class="brand-grid" id="gridView"></div>
 
-      <!-- PAGINATION -->
-      <div class="pagination" id="pagination">
-        <div class="page-info">Menampilkan <strong id="showFrom">1</strong>–<strong id="showTo">10</strong> dari <strong id="totalRows">12</strong> brand</div>
-        <div class="page-btns" id="pageBtns"></div>
-      </div>
     </div>
 
   </div><!-- /body -->
@@ -1265,9 +1219,27 @@ let deleteTargetId = null;
 ══════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
   animateCounters();
-  // DISABLE ALL JAVASCRIPT RENDERING - Use server-side only
-  // renderTable(); // DISABLED
-  // document.getElementById('searchInput').addEventListener('input', filterTable); // DISABLED
+  
+  // Debug table-wrapper
+  const tableWrapper = document.querySelector('.table-wrapper');
+  console.log('Table wrapper element:', tableWrapper);
+  console.log('Table wrapper styles:', {
+    height: tableWrapper ? window.getComputedStyle(tableWrapper).height : 'not found',
+    overflowY: tableWrapper ? window.getComputedStyle(tableWrapper).overflowY : 'not found',
+    scrollHeight: tableWrapper ? tableWrapper.scrollHeight : 'not found',
+    clientHeight: tableWrapper ? tableWrapper.clientHeight : 'not found'
+  });
+  
+  // Today date
+  const d = new Date();
+  document.getElementById('today-date').textContent =
+    d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // Enable search functionality
+  document.getElementById('searchInput').addEventListener('input', filterTable);
+
+  // Enable renderTable for dynamic updates
+  renderTable();
 });
 
 /* ══════════════════════════════════════════
@@ -1296,11 +1268,6 @@ function brandInitials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).jo
    FILTER & SEARCH - DISABLED
 ══════════════════════════════════════════ */
 function filterTable() {
-  // DISABLED - Do not overwrite server-side rendering
-  console.log('filterTable disabled - using server-side only');
-  return;
-  
-  /*
   const q  = document.getElementById('searchInput').value.toLowerCase();
   const st = document.getElementById('filterStatus').value;
   filteredBrands = brands.filter(b => {
@@ -1312,7 +1279,6 @@ function filterTable() {
   currentPage = 1;
   console.log('Calling renderTable...');
   renderTable();
-  */
 }
 
 /* ══════════════════════════════════════════
@@ -1391,6 +1357,9 @@ function renderTable() {
     tbody.innerHTML = tableHTML;
     console.log('Table body innerHTML set');
   }
+
+  // render pagination
+  renderPagination();
 
   // grid view
   renderGrid(page);
@@ -1564,12 +1533,22 @@ function submitForm(e) {
   btn.disabled = true;
 
   const id     = document.getElementById('editId').value;
-  const name   = document.getElementById('fName').value.trim();
-  const pic    = document.getElementById('fPic').value.trim();
-  const contact= document.getElementById('fContact').value.trim();
-  const target = document.getElementById('fTarget').value.trim();
-  const status = document.getElementById('fStatus').value;
-  const tone   = [...document.querySelectorAll('.tone-chip.selected')].map(c => c.dataset.val).join(',');
+  const name = document.getElementById('brandName').value.trim();
+  const pic = document.getElementById('brandPic').value.trim();
+  const contact = document.getElementById('brandContact').value.trim();
+  const target = document.getElementById('brandTarget').value.trim();
+  const tone = [...document.querySelectorAll('.tone-chip.selected')].map(c => c.dataset.val).join(',');
+  const status = document.getElementById('brandStatus').value;
+
+  // Validate required fields
+  if (!name || !pic || !contact || !target || !tone || !status) {
+    showToast('error', 'Semua field harus diisi!');
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brand';
+    btn.disabled = false;
+    return;
+  }
+
+  console.log('Form data:', { name, pic, contact, target, tone, status });
 
   const formData = {
     name: name,
@@ -1601,7 +1580,7 @@ function submitForm(e) {
           brands[idx] = { ...brands[idx], name, pic, contact, target, tone: tone.split(','), status }; 
         }
         filteredBrands = [...brands];
-        // filterTable(); // DISABLED - Do not overwrite server-side rendering
+        updateStats();
         closeModal('formOverlay');
         showToast('success', 'Brand berhasil diperbarui!');
       } else {
@@ -1614,11 +1593,18 @@ function submitForm(e) {
     });
   } else {
     // Add new brand
+    console.log('Submitting new brand...');
+    console.log('Form Data:', formData);
+    
+    // Check CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    console.log('CSRF Token:', csrfToken ? csrfToken.getAttribute('content') : 'NOT FOUND');
+    
     fetch('/brands', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        'X-CSRF-TOKEN': csrfToken ? csrfToken.getAttribute('content') : ''
       },
       body: JSON.stringify(formData)
     })
@@ -1659,8 +1645,8 @@ function submitForm(e) {
         brands.unshift(newBrand);
         console.log('Brands after add:', brands);
         filteredBrands = [...brands];
-        console.log('filterTable disabled - using server-side only');
-        // filterTable(); // DISABLED - Do not overwrite server-side rendering
+        renderTable();
+        updateStats();
         closeModal('formOverlay');
         showToast('success', 'Brand baru berhasil ditambahkan!');
       } else {
@@ -1675,29 +1661,7 @@ function submitForm(e) {
         status: error.response?.status,
         statusText: error.response?.statusText
       });
-      
-      // Fallback: If data was saved but response failed, still update UI
-      if (error.message.includes('JSON') || error.message.includes('Invalid')) {
-        // Assume data was saved, add to UI anyway
-        const newBrand = {
-          id: Date.now(), // Temporary ID
-          name: name,
-          pic: pic,
-          contact: contact,
-          target: target,
-          tone: tone.split(','),
-          status: status,
-          contents: 0,
-          created: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
-        };
-        brands.unshift(newBrand);
-        filteredBrands = [...brands];
-        // filterTable(); // DISABLED - Do not overwrite server-side rendering
-        closeModal('formOverlay');
-        showToast('success', 'Brand berhasil ditambahkan! (Data tersimpan di database)');
-      } else {
-        showToast('error', 'Terjadi kesalahan saat menambahkan brand!');
-      }
+      showToast('error', 'Terjadi kesalahan saat menyimpan brand. Silakan coba lagi.');
     });
   }
 
@@ -1837,6 +1801,7 @@ function confirmDelete() {
       brands = brands.filter(x => x.id !== deleteTargetId);
       filteredBrands = filteredBrands.filter(x => x.id !== deleteTargetId);
       renderTable();
+      updateStats();
       closeModal('deleteOverlay');
       showToast('error', `Brand "${b?.name}" berhasil dihapus.`);
     } else {
@@ -1852,6 +1817,73 @@ function confirmDelete() {
     btn.disabled = false;
     deleteTargetId = null;
   });
+}
+
+/* ══════════════════════════════════════════
+   UPDATE STATISTICS
+══════════════════════════════════════════ */
+function updateStats() {
+  console.log('updateStats called');
+  const totalBrands = brands.length;
+  const activeBrands = brands.filter(b => b.status === 'Active').length;
+  const nonActiveBrands = brands.filter(b => b.status === 'Non Active').length;
+  const totalContents = brands.reduce((sum, b) => sum + (b.contents || 0), 0);
+  
+  console.log('Stats calculated:', { totalBrands, activeBrands, nonActiveBrands, totalContents });
+  
+  // Update Total Brand - bstat-blue
+  const totalBrandEl = document.querySelector('.bstat-blue .bstat-num');
+  console.log('Total Brand element:', totalBrandEl);
+  if (totalBrandEl) {
+    animateNumber(totalBrandEl, totalBrands);
+  }
+  
+  // Update Brand Aktif - bstat-em
+  const activeBrandEl = document.querySelector('.bstat-em .bstat-num');
+  console.log('Active Brand element:', activeBrandEl);
+  if (activeBrandEl) {
+    animateNumber(activeBrandEl, activeBrands);
+  }
+  
+  // Update Brand Non-Aktif - bstat-amb
+  const nonActiveBrandEl = document.querySelector('.bstat-amb .bstat-num');
+  console.log('Non-Active Brand element:', nonActiveBrandEl);
+  if (nonActiveBrandEl) {
+    animateNumber(nonActiveBrandEl, nonActiveBrands);
+  }
+  
+  // Update Total Konten - bstat-rose
+  const totalContentEl = document.querySelector('.bstat-rose .bstat-num');
+  console.log('Total Content element:', totalContentEl);
+  if (totalContentEl) {
+    animateNumber(totalContentEl, totalContents);
+  }
+  
+  // Update brand count in table header
+  const brandCountEl = document.getElementById('brandCount');
+  console.log('Brand count element:', brandCountEl);
+  if (brandCountEl) {
+    brandCountEl.textContent = totalBrands + ' brand';
+  }
+}
+
+function animateNumber(element, target) {
+  const start = parseInt(element.textContent) || 0;
+  const increment = (target - start) / 20;
+  let current = start;
+  let step = 0;
+  
+  const timer = setInterval(() => {
+    step++;
+    current += increment;
+    
+    if (step >= 20) {
+      element.textContent = target;
+      clearInterval(timer);
+    } else {
+      element.textContent = Math.round(current);
+    }
+  }, 50);
 }
 
 /* ══════════════════════════════════════════

@@ -49,6 +49,7 @@
   --r:           16px;
   --r-sm:        10px;
   --r-xs:        7px;
+  --rs:          10px;
 
   /* shadows */
   --s1: 0 1px 3px rgba(13,21,38,.05), 0 4px 16px rgba(88,151,254,.06);
@@ -58,8 +59,9 @@
   /* transitions */
   --t: .2s cubic-bezier(.4,0,.2,1);
 }
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t9);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:5px;height:5px}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-900);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--blue-200);border-radius:99px}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
@@ -86,12 +88,16 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 }
 .sb-logo-mark{
   width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--blue),var(--blue-6));
+  background:linear-gradient(135deg,var(--blue),var(--blue-600));
   display:flex;align-items:center;justify-content:center;
 }
 .sb-logo-mark svg{width:15px;height:15px}
 .sb-logo-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
-.sb-logo-name em{color:var(--t9);font-style:normal}
+.sb-logo-name em{color:var(--text-900);font-style:normal}
+.sb-nav {
+  padding: 14px 12px;
+  flex: 1;
+}
 .sb-group-label{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--text-300);padding:12px 10px 6px}
 .sb-item{
   display:flex;align-items:center;gap:10px;padding:9.5px 12px;
@@ -152,6 +158,85 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 }
 .tb-av:hover{transform:scale(1.05)}
 .tb-div{width:1px;height:24px;background:var(--border);margin:0 4px}
+
+/* Dashboard topbar classes */
+.tb-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tb-page {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+}
+.tb-breadcrumb {
+  font-size: 12px;
+  color: var(--text-400);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.tb-breadcrumb span {
+  color: var(--blue);
+  font-weight: 500;
+}
+.tb-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--t);
+  color: var(--text-500);
+  font-size: 15px;
+  position: relative;
+}
+.tb-icon-btn:hover {
+  background: var(--blue-50);
+  color: var(--blue);
+  border-color: var(--blue-200);
+}
+.tb-notif-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rose);
+  border: 1.5px solid #fff;
+}
+.tb-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.tb-avatar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(145deg, var(--blue), var(--blue-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(88,151,254,.35);
+  transition: var(--t);
+}
+.tb-avatar-btn:hover {
+  transform: scale(1.05);
+}
 
 /* ─────────────────────────────────────────
    BODY / SCROLL AREA
@@ -226,7 +311,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--tr);
   border:none;outline:none;white-space:nowrap;
 }
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-6));color:#fff;box-shadow:0 3px 12px rgba(88,151,254,.35)}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-600));color:#fff;box-shadow:0 3px 12px rgba(88,151,254,.35)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,151,254,.4)}
 .btn-primary:active{transform:scale(.97)}
 .btn-ghost{background:var(--white);color:var(--t5);border:1.5px solid var(--border)}
@@ -238,11 +323,12 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* ─────────────────────────────────────────
    TABLE CARD
 ───────────────────────────────────────── */
-.tcard{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both}
+.tcard{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both;display:flex;flex-direction:column;min-height:600px}
 .tcard-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--blight)}
 .tch-l{display:flex;align-items:center;gap:10px}
 .tch-title{font-size:14px;font-weight:700;color:var(--t7)}
 .tch-cnt{font-size:11.5px;font-weight:700;background:var(--blue-50);color:var(--blue);padding:2px 9px;border-radius:99px}
+.tcard-body{flex:1;overflow-y:auto;min-height:0}
 .ktable{width:100%;border-collapse:collapse}
 .ktable thead th{
   font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;
@@ -544,19 +630,28 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <div class="main">
 
   <header class="topbar">
-    <div>
-      <div class="tb-title">Daftar Tugas Konten</div>
-      <div class="tb-crumb">
+    <div class="tb-left">
+      <div class="tb-page">Daftar Tugas Konten</div>
+      <div class="tb-breadcrumb">
         <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--t3)"></i>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--text-300)"></i>
         <span>Daftar Tugas Konten</span>
+        &nbsp;·&nbsp; <span id="today-date"></span>
       </div>
     </div>
     <div class="tb-right">
-      <div class="tb-btn"><i class="fa-regular fa-bell"></i><span class="tb-dot"></span></div>
-      <div class="tb-btn"><i class="fa-regular fa-envelope"></i></div>
-      <div class="tb-div"></div>
-      <div class="tb-av">AM</div>
+      <div class="tb-icon-btn" title="Notifikasi">
+        <i class="fa-regular fa-bell"></i>
+        <span class="tb-notif-dot"></span>
+      </div>
+      <div class="tb-icon-btn" title="Pesan">
+        <i class="fa-regular fa-envelope"></i>
+      </div>
+      <div class="tb-divider"></div>
+      <div class="tb-avatar-btn" title="Profil">AM</div>
+      <div class="tb-icon-btn" title="Pengaturan">
+        <i class="fa-solid fa-sliders"></i>
+      </div>
     </div>
   </header>
 
@@ -647,19 +742,21 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <span class="tch-cnt" id="tblCount">12 tugas</span>
         </div>
       </div>
-      <table class="ktable">
-        <thead>
-          <tr>
-            <th>Judul Konten</th>
-            <th>Brand</th>
-            <th>Platform</th>
-            <th>Deadline Produksi</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tblBody"></tbody>
-      </table>
+      <div class="tcard-body">
+        <table class="ktable">
+          <thead>
+            <tr>
+              <th>Judul Konten</th>
+              <th>Brand</th>
+              <th>Platform</th>
+              <th>Deadline Produksi</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
       <div class="pagi" id="pagiBar">
         <div class="pagi-info">Menampilkan <b id="pgFrom">-</b>–<b id="pgTo">-</b> dari <b id="pgTotal">-</b> tugas</div>
         <div class="pagi-btns" id="pgBtns"></div>
@@ -1082,14 +1179,12 @@ document.addEventListener('DOMContentLoaded', () => {
   addCharCounter('fDesc',    'ccDesc',    500);
   addCharCounter('fCaption', 'ccCaption', 2200);
 
-  // Sidebar active link
-  document.querySelectorAll('.sb-item').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.preventDefault();
-      document.querySelectorAll('.sb-item').forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
+  // Today date
+  const d = new Date();
+  document.getElementById('today-date').textContent =
+    d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // Sidebar active link - REMOVED to allow navigation
 
   // Keyboard shortcuts
   document.addEventListener('keydown', e => {
@@ -1156,10 +1251,13 @@ function applyFilter() {
 }
 
 function renderTable() {
+  console.log('renderTable called', { db, filtered, page });
   const total = filtered.length;
   const start = (page - 1) * PER;
   const end   = Math.min(start + PER, total);
   const rows  = filtered.slice(start, end);
+
+  console.log('Table data:', { total, start, end, rows });
 
   document.getElementById('tblCount').textContent = total + ' tugas';
   document.getElementById('pgFrom').textContent   = total ? start + 1 : 0;
@@ -1167,6 +1265,8 @@ function renderTable() {
   document.getElementById('pgTotal').textContent  = total;
 
   const tbody = document.getElementById('tblBody');
+  console.log('tbody element:', tbody);
+  
   if (!rows.length) {
     tbody.innerHTML = `
       <tr class="empty-row">

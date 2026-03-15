@@ -1078,61 +1078,6 @@ tbody tr:hover td { background: var(--blue-50); }
   <!-- SCROLL BODY -->
   <div class="body">
 
-    <!-- ── 1. STAT CARDS ── -->
-    <div>
-      <div class="sec-head">
-        <div class="sec-title">
-          <i class="fa-solid fa-grid-2"></i>
-          Ringkasan Sistem
-        </div>
-        <a class="sec-link" href="#">Lihat detail <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
-      </div>
-      <div class="stat-row">
-        <div class="stat-card sc-blue" style="--i:0">
-          <div class="stat-ic"><i class="fa-solid fa-tag"></i></div>
-          <div class="stat-val" data-target="12">0</div>
-          <div class="stat-lbl">Total Brand</div>
-          <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +2 bulan ini</div>
-        </div>
-        <div class="stat-card sc-rose" style="--i:1">
-          <div class="stat-ic"><i class="fa-solid fa-list-check"></i></div>
-          <div class="stat-val" data-target="48">0</div>
-          <div class="stat-lbl">Total Tugas Konten</div>
-          <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +8 minggu ini</div>
-        </div>
-        <div class="stat-card sc-org" style="--i:2">
-          <div class="stat-ic"><i class="fa-solid fa-film"></i></div>
-          <div class="stat-val" data-target="10">0</div>
-          <div class="stat-lbl">In Production</div>
-          <div class="stat-trend trend-warn"><i class="fa-solid fa-circle"></i> Berjalan</div>
-        </div>
-        <div class="stat-card sc-vio" style="--i:3">
-          <div class="stat-ic"><i class="fa-solid fa-magnifying-glass"></i></div>
-          <div class="stat-val" data-target="7">0</div>
-          <div class="stat-lbl">Under Review</div>
-          <div class="stat-trend trend-warn"><i class="fa-solid fa-hourglass-half"></i> Menunggu</div>
-        </div>
-        <div class="stat-card sc-red" style="--i:4">
-          <div class="stat-ic"><i class="fa-solid fa-rotate-left"></i></div>
-          <div class="stat-val" data-target="4">0</div>
-          <div class="stat-lbl">Need Revision</div>
-          <div class="stat-trend trend-down"><i class="fa-solid fa-triangle-exclamation"></i> Perlu aksi</div>
-        </div>
-        <div class="stat-card sc-amb" style="--i:5">
-          <div class="stat-ic"><i class="fa-solid fa-clock"></i></div>
-          <div class="stat-val" data-target="6">0</div>
-          <div class="stat-lbl">Ready to Publish</div>
-          <div class="stat-trend trend-up"><i class="fa-solid fa-check"></i> Siap tayang</div>
-        </div>
-        <div class="stat-card sc-em" style="--i:6">
-          <div class="stat-ic"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="stat-val" data-target="21">0</div>
-          <div class="stat-lbl">Published</div>
-          <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +5 minggu ini</div>
-        </div>
-      </div>
-    </div>
-
     <!-- ── 2. MINI GRADIENT ── -->
     <div class="mini-row">
       <div class="mini-card mc-1">
