@@ -694,7 +694,14 @@ function submitUpload(event) {
       }
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Kalau backend ngirim JSON error, tampilkan message-nya biar jelas.
+        return response.json()
+          .then(errData => {
+            throw new Error(errData.message || `HTTP error! status: ${response.status}`);
+          })
+          .catch(() => {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          });
       }
       return response.json();
     })

@@ -35,8 +35,10 @@ class ProductionController extends Controller
             ->orderBy('id', 'asc')
             ->get();
 
-        // Get tasks for dropdown (status = in_production only)
-        $tasks = ContentTask::where('status', 'in_production')->get();
+        // Get tasks for dropdown.
+        // User expects "Pilih Content Task" to show all content tasks from
+        // the "Daftar Tugas Konten" menu, regardless of status.
+        $tasks = ContentTask::orderBy('id', 'asc')->get();
         
         // Debug: Check if tasks exist
         // dd($tasks->toArray()); // Uncomment to debug
@@ -141,9 +143,14 @@ class ProductionController extends Controller
                 $path = 'productions/' . $filename;
             }
 
+            // `productions.judul_konten` adalah field wajib (NOT NULL)
+            // Ambil dari ContentTask yang dipilih.
+            $contentTask = ContentTask::findOrFail($request->content_task_id);
+
             // Create production record
             Production::create([
                 'content_task_id' => $request->content_task_id,
+                'judul_konten' => $contentTask->judul_konten,
                 'versi_video' => $request->version,
                 'durasi_final' => $request->final_duration,
                 'file_video' => $path,
