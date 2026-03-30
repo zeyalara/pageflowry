@@ -65,8 +65,22 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::resource('brief', ContentBriefController::class);
+    Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('content-briefs.index');
+    Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('content-briefs.store');
+    Route::post('/content-briefs/search', [ContentBriefController::class, 'search'])->name('content-briefs.search');
+    Route::get('/content-briefs/{id}', [ContentBriefController::class, 'show'])->name('content-briefs.show');
+    Route::get('/content-briefs/{id}/edit', [ContentBriefController::class, 'edit'])->name('content-briefs.edit');
+    Route::put('/content-briefs/{id}', [ContentBriefController::class, 'update'])->name('content-briefs.update');
+    Route::delete('/content-briefs/{id}', [ContentBriefController::class, 'destroy'])->name('content-briefs.destroy');
 });
+
+// Public route for creators to view brief without login
+Route::get('/content-briefs/{id}/view', [ContentBriefController::class, 'publicView'])->name('content-briefs.public-view');
+
+// Email log viewer for testing
+Route::get('/email-log', function() {
+    return view('email-log');
+})->name('email.log');
 
 Route::get('/admin/production', [ProductionController::class, 'index'])->middleware('auth')->name('production.index');
 Route::post('/admin/production/store', [ProductionController::class, 'store'])->middleware('auth')->name('production.store');

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Pageflowry — Daftar Tugas Konten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -268,13 +269,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .sc-o {border-top:2.5px solid var(--orange)}.sc-o::after{background:var(--orange)}
 .sc-v {border-top:2.5px solid var(--violet)}.sc-v::after{background:var(--violet)}
 .sc-r {border-top:2.5px solid var(--rose)}.sc-r::after{background:var(--rose)}
-.sc-e {border-top:2.5px solid var(--emerald)}.sc-e::after{background:var(--emerald)}
+.sc-g {border-top:2.5px solid var(--emerald)}.sc-g::after{background:var(--emerald)}
 .sc-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:12px}
 .sc-b .sc-ic{background:rgba(88,151,254,.1);color:var(--blue)}
 .sc-o .sc-ic{background:rgba(255,120,73,.1);color:var(--orange)}
 .sc-v .sc-ic{background:rgba(139,92,246,.1);color:var(--violet)}
 .sc-r .sc-ic{background:rgba(244,63,94,.1);color:var(--rose)}
-.sc-e .sc-ic{background:rgba(16,185,129,.1);color:var(--emerald)}
+.sc-g .sc-ic{background:rgba(16,185,129,.1);color:var(--emerald)}
 .sc-num{font-size:26px;font-weight:800;color:var(--t9);line-height:1;margin-bottom:4px;letter-spacing:-.4px}
 .sc-label{font-size:12px;font-weight:500;color:var(--t4)}
 .sc-sub{font-size:11px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:3px}
@@ -320,9 +321,60 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .btn-danger:hover{background:rgba(244,63,94,.14)}
 .btn-sm{height:34px;padding:0 14px;font-size:12.5px}
 
-/* ─────────────────────────────────────────
+/* ─────/* Action Buttons Styling */
+.actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-action {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--t5);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.btn-action:hover {
+  background: var(--blue-50);
+  color: var(--blue);
+  border-color: var(--blue-200);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(88,151,254,0.15);
+}
+
+.btn-action:active {
+  transform: scale(0.95);
+}
+
+.btn-action.btn-delete {
+  color: var(--rose);
+  border-color: rgba(244,63,94,0.2);
+}
+
+.btn-action.btn-delete:hover {
+  background: rgba(244,63,94,0.08);
+  color: var(--rose);
+  border-color: rgba(244,63,94,0.3);
+}
+
+.btn-action i {
+  font-size: 13px;
+  transition: var(--tr);
+}
+
+/* ────────────────────────────────────
    TABLE CARD
-───────────────────────────────────────── */
+────────────────────────────────── */
 .tcard{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both;display:flex;flex-direction:column;min-height:600px}
 .tcard-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--blight)}
 .tch-l{display:flex;align-items:center;gap:10px}
@@ -671,34 +723,34 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <!-- STAT CARDS -->
     <div class="stats-row">
       <div class="sc sc-b" style="--i:0">
-        <div class="sc-ic"><i class="fa-solid fa-list-check"></i></div>
-        <div class="sc-num" id="sc-total">0</div>
+        <div class="sc-ic"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="sc-num">{{ $stats['total'] ?? 0 }}</div>
         <div class="sc-label">Total Tugas</div>
-        <div class="sc-sub s-up"><i class="fa-solid fa-arrow-trend-up"></i> +3 minggu ini</div>
+        <div class="sc-sub s-b"><i class="fa-solid fa-check-circle"></i> Semua tugas</div>
       </div>
       <div class="sc sc-o" style="--i:1">
         <div class="sc-ic"><i class="fa-solid fa-spinner"></i></div>
-        <div class="sc-num" id="sc-prod">0</div>
+        <div class="sc-num">{{ $stats['in_production'] ?? 0 }}</div>
         <div class="sc-label">In Production</div>
         <div class="sc-sub s-w"><i class="fa-solid fa-circle"></i> Sedang berjalan</div>
       </div>
       <div class="sc sc-v" style="--i:2">
         <div class="sc-ic"><i class="fa-solid fa-magnifying-glass"></i></div>
-        <div class="sc-num" id="sc-review">0</div>
+        <div class="sc-num">{{ $stats['under_review'] ?? 0 }}</div>
         <div class="sc-label">Under Review</div>
-        <div class="sc-sub s-w"><i class="fa-solid fa-hourglass-half"></i> Menunggu review</div>
+        <div class="sc-sub s-b"><i class="fa-solid fa-check-circle"></i> Sedang direview</div>
       </div>
       <div class="sc sc-r" style="--i:3">
-        <div class="sc-ic"><i class="fa-solid fa-rotate-left"></i></div>
-        <div class="sc-num" id="sc-revision">0</div>
+        <div class="sc-ic"><i class="fa-solid fa-exclamation-triangle"></i></div>
+        <div class="sc-num">{{ $stats['need_revision'] ?? 0 }}</div>
         <div class="sc-label">Need Revision</div>
-        <div class="sc-sub s-dn"><i class="fa-solid fa-triangle-exclamation"></i> Perlu aksi</div>
+        <div class="sc-sub s-r"><i class="fa-solid fa-times-circle"></i> Perlu revisi</div>
       </div>
-      <div class="sc sc-e" style="--i:4">
-        <div class="sc-ic"><i class="fa-solid fa-circle-check"></i></div>
-        <div class="sc-num" id="sc-pub">0</div>
+      <div class="sc sc-g" style="--i:4">
+        <div class="sc-ic"><i class="fa-solid fa-check-double"></i></div>
+        <div class="sc-num">{{ $stats['published'] ?? 0 }}</div>
         <div class="sc-label">Published</div>
-        <div class="sc-sub s-up"><i class="fa-solid fa-check"></i> Selesai</div>
+        <div class="sc-sub s-g"><i class="fa-solid fa-check-circle"></i> Sudah publish</div>
       </div>
     </div>
 
@@ -710,23 +762,25 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
       <select class="fsel" id="fltStatus" onchange="applyFilter()">
         <option value="">Semua Status</option>
-        <option>In Production</option>
-        <option>Under Review</option>
-        <option>Need Revision</option>
-        <option>Ready to Publish</option>
-        <option>Published</option>
+        <option value="In Production">In Production</option>
+        <option value="Under Review">Under Review</option>
+        <option value="Need Revision">Need Revision</option>
+        <option value="Ready to Publish">Ready to Publish</option>
+        <option value="Published">Published</option>
       </select>
       <select class="fsel" id="fltPlatform" onchange="applyFilter()">
         <option value="">Semua Platform</option>
-        <option>Instagram</option>
-        <option>TikTok</option>
-        <option>YouTube</option>
+        <option value="Instagram">Instagram</option>
+        <option value="TikTok">TikTok</option>
+        <option value="YouTube">YouTube</option>
       </select>
       <select class="fsel" id="fltBrand" onchange="applyFilter()">
         <option value="">Semua Brand</option>
-        <option>GlowSkin</option><option>BeautyHaus</option><option>StyleCo</option>
-        <option>FreshFace</option><option>LuxeBeauty</option><option>NaturalMe</option>
-        <option>SkinLab ID</option><option>BlushBrand</option>
+        @if(isset($brands) && $brands->count() > 0)
+          @foreach($brands as $brand)
+            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+          @endforeach
+        @endif
       </select>
       <div class="sp"></div>
       <button class="btn btn-ghost btn-sm" onclick="toast('w','Fitur export sedang dikembangkan.')">
@@ -739,7 +793,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="tcard-head">
         <div class="tch-l">
           <span class="tch-title">Daftar Tugas Konten</span>
-          <span class="tch-cnt" id="tblCount">12 tugas</span>
+          <span class="tch-cnt" id="tblCount">{{ $contentBriefs->count() }} tugas</span>
         </div>
       </div>
       <div class="tcard-body">
@@ -754,11 +808,61 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
               <th>Aksi</th>
             </tr>
           </thead>
-          <tbody id="tblBody"></tbody>
+          <tbody id="tblBody">
+            @if(isset($contentBriefs) && $contentBriefs->count() > 0)
+              @foreach($contentBriefs as $brief)
+                <tr>
+                  <td>
+                    <div class="task-title">{{ $brief->title }}</div>
+                    <div class="task-desc">{{ Str::limit($brief->description ?? '-', 50) }}</div>
+                  </td>
+                  <td>
+                    <div class="brand-info">
+                      <div class="brand-name">{{ $brief->brand->name ?? '-' }}</div>
+                      <div class="brand-pic">{{ $brief->brand->pic ?? '-' }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="platform-info">
+                      <i class="fa-brands {{ $brief->platform === 'Instagram' ? 'fa-instagram' : ($brief->platform === 'TikTok' ? 'fa-tiktok' : 'fa-youtube') }} {{ $brief->platform === 'Instagram' ? 'plat-ig' : ($brief->platform === 'TikTok' ? 'plat-tt' : 'plat-yt') }}"></i>
+                      <span>{{ $brief->platform }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="deadline-info">
+                      <div class="prod-deadline">{{ $brief->production_deadline ? \Carbon\Carbon::parse($brief->production_deadline)->format('d M Y') : '-' }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status {{ $brief->status === 'In Production' ? 'p-prod' : ($brief->status === 'Under Review' ? 'p-review' : ($brief->status === 'Need Revision' ? 'p-revision' : ($brief->status === 'Published' ? 'p-pub' : 'p-review'))) }}">{{ $brief->status }}</span>
+                  </td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn-action" onclick="openDetail({{ $brief->id }})" title="Detail">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="btn-action" onclick="openEdit({{ $brief->id }})" title="Edit">
+                        <i class="fa-solid fa-edit"></i>
+                      </button>
+                      <button class="btn-action btn-delete" onclick="openDel({{ $brief->id }})" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            @else
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-400);">
+                  <i class="fa-solid fa-search"></i> Tidak ada tugas ditemukan
+                </td>
+              </tr>
+            @endif
+          </tbody>
         </table>
       </div>
       <div class="pagi" id="pagiBar">
-        <div class="pagi-info">Menampilkan <b id="pgFrom">-</b>–<b id="pgTo">-</b> dari <b id="pgTotal">-</b> tugas</div>
+        <div class="pagi-info">Menampilkan <b id="pgFrom">{{ isset($contentBriefs) && $contentBriefs->count() > 0 ? '1' : '0' }}</b>–<b id="pgTo">{{ $contentBriefs->count() }}</b> dari <b id="pgTotal">{{ $contentBriefs->count() }}</b> tugas</div>
         <div class="pagi-btns" id="pgBtns"></div>
       </div>
     </div>
@@ -825,33 +929,42 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="fg3">
         <div class="fg">
           <label class="flbl">Brand <span class="req">*</span></label>
-          <select class="fsel-f" id="fBrand">
-            <option value="">Pilih brand...</option>
-            <option>GlowSkin</option><option>BeautyHaus</option><option>StyleCo</option>
-            <option>FreshFace</option><option>LuxeBeauty</option><option>NaturalMe</option>
-            <option>SkinLab ID</option><option>BlushBrand</option>
-          </select>
+          @if(isset($brands) && $brands->count() > 0)
+            <select class="fsel-f" id="fBrand">
+              <option value="">Pilih brand...</option>
+              @foreach($brands as $brand)
+                <option value="{{ $brand->id }}" data-name="{{ $brand->name }}" data-pic="{{ $brand->pic }}">{{ $brand->name }} - {{ $brand->pic }}</option>
+              @endforeach
+            </select>
+          @else
+            <select class="fsel-f" id="fBrand" disabled>
+              <option value="">Tidak ada brand aktif</option>
+            </select>
+            <div style="margin-top: 8px; padding: 8px 12px; background: rgba(245,158,11,.1); border-left: 3px solid var(--amber); border-radius: 6px; font-size: 12px; color: #92400e;">
+              <i class="fa-solid fa-exclamation-triangle" style="margin-right: 6px;"></i>
+              Tidak ada brand aktif. Silakan buat brand baru atau aktifkan brand yang sudah ada di Brand Management.
+            </div>
+          @endif
           <div class="ferr" id="eBrand">Brand wajib dipilih.</div>
         </div>
         <div class="fg">
           <label class="flbl">Platform <span class="req">*</span></label>
-          <select class="fsel-f" id="fPlatform">
+          <select class="fsel-f" id="fPlatform" onchange="updateFormatOptions()">
             <option value="">Pilih platform...</option>
-            <option>Instagram</option><option>TikTok</option><option>YouTube</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Lainnya">Platform Lain</option>
           </select>
           <div class="ferr" id="ePlatform">Platform wajib dipilih.</div>
         </div>
         <div class="fg">
           <label class="flbl">Format Konten <span class="req">*</span></label>
           <select class="fsel-f" id="fFormat">
-            <option value="">Pilih format...</option>
-            <option>Video Reels</option><option>Short Video</option>
-            <option>Long Form Video</option><option>Story</option><option>Live</option>
+            <option value="">Pilih platform terlebih dahulu...</option>
           </select>
-          <div class="ferr" id="eFormat">Format wajib dipilih.</div>
+          <div class="ferr" id="eFormat">Format konten wajib dipilih.</div>
         </div>
-      </div>
-      <div class="fg3">
         <div class="fg">
           <label class="flbl">Durasi Target <span class="req">*</span></label>
           <div class="ico-wrap"><i class="fa-solid fa-stopwatch"></i>
@@ -1125,22 +1238,40 @@ const STEP_NAMES = ['Deskripsi Tugas','Informasi Dasar','Strategi Konten','Creat
 const WF_STEPS  = ['Brief Dibuat','In Production','Under Review','Need Revision','Ready to Publish','Published'];
 const STATUS_IDX = {'In Production':1,'Under Review':2,'Need Revision':3,'Ready to Publish':4,'Published':5};
 
-let db = [
-  {id:1, title:'Tutorial Skincare Pagi Hari', brand:'GlowSkin', platform:'Instagram', format:'Video Reels', duration:'45 detik', deadProd:'2026-03-09', deadPub:'2026-03-15', status:'In Production', objective:'Product Education', audience:'Wanita 18–30 tahun skincare enthusiast', keyMsg:'Mulai hari dengan kulit sehat & glowing', hook:'POV: akhirnya nemuin rutinitas pagi yang simpel!', story:'Buka dengan close-up produk di meja, demo step-by-step pemakaian, tutup dengan before-after shot.', visual:'Soft pastel, pencahayaan natural jendela pagi, background krem minimalis.', caption:'Rutinitas pagi 5 menit yang bikin kulit glow seharian! ☀️🌿', cta:'Cek produknya di link bio!', hashtag:'#skincare #glowskin #morningroutine', views:80000, engage:5.5, creator:'kayla@creator.id'},
-  {id:2, title:'Review Produk Terbaru Q1 2026', brand:'BeautyHaus', platform:'TikTok', format:'Short Video', duration:'60 detik', deadProd:'2026-03-10', deadPub:'2026-03-18', status:'Need Revision', objective:'Brand Awareness', audience:'Gen Z & milenial beauty lover 18–35 tahun', keyMsg:'Produk terbaik dari BeautyHaus bulan ini', hook:'Kalian HARUS cobain ini sebelum kehabisan!', story:'Unboxing cepat, swatch semua warna, first impression jujur, overall rating, CTA.', visual:'Bright & vibrant, close-up swatches di kulit, ring light terang.', caption:'Review jujur produk terbaru BeautyHaus! Spoiler: worth it banget 🎨✨', cta:'Save dulu biar gak lupa!', hashtag:'#beautyhaus #review #makeup', views:120000, engage:7.2, creator:''},
-  {id:3, title:'Unboxing Koleksi Summer 2026', brand:'StyleCo', platform:'Instagram', format:'Video Reels', duration:'30 detik', deadProd:'2026-03-18', deadPub:'2026-03-25', status:'Under Review', objective:'Product Education', audience:'Gen Z fashion-conscious 16–28 tahun', keyMsg:'Summer vibes dimulai dari pilihan outfit yang tepat', hook:'Summer collection yang bikin OOTD makin cakep!', story:'Unboxing dramatis, showcase tiap item dengan styling cepat, mix & match tip.', visual:'Kuning & putih cerah, outdoor natural lighting, tropical props.', caption:'Summer is here! Koleksi terbaru StyleCo siap temani hari-hari kamu 🌞', cta:'Shop now di link bio, koleksi terbatas!', hashtag:'#styleco #summer #fashion', views:60000, engage:4.8, creator:'mutia@creator.id'},
-  {id:4, title:'Tips Makeup Natural Look 2026', brand:'GlowSkin', platform:'YouTube', format:'Long Form Video', duration:'8 menit', deadProd:'2026-03-22', deadPub:'2026-03-30', status:'Under Review', objective:'Brand Awareness', audience:'Wanita 20–35 tahun makeup enthusiast', keyMsg:'Natural look yang effortless bisa siapa saja lakukan', hook:'Tutorial makeup natural yang bisa ditiru siapa saja!', story:'Intro singkat 30 detik, step-by-step tutorial dengan commentary produk, before-after.', visual:'Studio lighting netral, clean white background, focus detail wajah.', caption:'Natural makeup look untuk sehari-hari! Produk yang dipakai ada di deskripsi 💄', cta:'Subscribe untuk tutorial berikutnya!', hashtag:'#makeup #natural #tutorial', views:200000, engage:3.5, creator:''},
-  {id:5, title:'GRWM — Edisi Hari Kerja', brand:'FreshFace', platform:'TikTok', format:'Short Video', duration:'45 detik', deadProd:'2026-03-14', deadPub:'2026-03-21', status:'In Production', objective:'Community Engagement', audience:'Remaja & young adult 16–25 tahun aktif TikTok', keyMsg:'Tampil fresh dan percaya diri setiap hari kerja', hook:'Get ready with me edisi kantoran! ⏰', story:'Time-lapse GRWM dari bangun tidur, highlight 3 key products, final look reveal.', visual:'Morning mood aesthetic, natural window light.', caption:'GRWM ke kantor dengan FreshFace! Siapa yang suka struggle mau kerja? 💼✨', cta:'Duet bareng kita yuk!', hashtag:'#grwm #freshface #officelook', views:90000, engage:8.1, creator:'alyaaja@creator.id'},
-  {id:6, title:'Honest Review Serum Vitamin C', brand:'GlowSkin', platform:'TikTok', format:'Short Video', duration:'60 detik', deadProd:'2026-03-20', deadPub:'2026-03-28', status:'Ready to Publish', objective:'Sales Conversion', audience:'Skincare enthusiast 18–40 tahun semua gender', keyMsg:'Serum yang benar-benar works dan worth the price', hook:'Serum ini bikin wajah gw berubah dalam 2 minggu!', story:'Before state kulit kusam, intro produk, day by day 2 minggu progress, final result.', visual:'Clean flat lay, before-after split screen dramatis, dewy skin close-up.', caption:'Honest review serum yang lagi viral! Ini yang beneran works 🌿✨', cta:'Link order di bio, stok super terbatas!', hashtag:'#serum #vitaminc #skincare', views:150000, engage:6.3, creator:''},
-  {id:7, title:'5 Produk Makeup Budget di Bawah 100K', brand:'BeautyHaus', platform:'TikTok', format:'Short Video', duration:'60 detik', deadProd:'2026-02-28', deadPub:'2026-03-05', status:'Published', objective:'Brand Loyalty', audience:'Beauty lover budget-conscious 16–30 tahun', keyMsg:'Cantik tidak harus mahal, BeautyHaus terbukti!', hook:'5 produk makeup kece semua harganya di bawah 100K!', story:'List reveal 1 per 1 dengan demo swatches + price tag visible.', visual:'Colorful flat lay, swatches on skin close-up, price tag graphic overlay.', caption:'Cantik ga harus mahal! 5 produk ini buktinya 💰 Tag temenmu!', cta:'Save & share ke temen yang suka makeup!', hashtag:'#budget #makeup #affordable', views:180000, engage:9.2, creator:'kayla@creator.id'},
-  {id:8, title:'Morning Skincare Routine 3 Steps', brand:'GlowSkin', platform:'Instagram', format:'Video Reels', duration:'30 detik', deadProd:'2026-02-25', deadPub:'2026-03-01', status:'Published', objective:'Product Education', audience:'Wanita muda 18–28 tahun skincare beginner', keyMsg:'Skincare ga harus ribet — 3 step aja cukup!', hook:'Rutinitas pagi 3 langkah yang bikin kulit glowing!', story:'Simple 3-step showcase: cleanser, toner, moisturizer dengan hasil nyata.', visual:'Minimal aesthetic, dewy skin result, morning light golden hour.', caption:'Simple morning routine yang bisa kamu coba mulai besok! ☀️🌿', cta:'Dapatkan full bundle di link bio', hashtag:'#morningroutine #skincare #minimal', views:95000, engage:5.8, creator:''},
-  {id:9, title:'Edukasi Sunscreen SPF 50+', brand:'NaturalMe', platform:'YouTube', format:'Long Form Video', duration:'12 menit', deadProd:'2026-02-20', deadPub:'2026-02-25', status:'Published', objective:'Product Education', audience:'Skincare enthusiast semua usia & gender', keyMsg:'Proteksi kulit dari UV adalah investasi jangka panjang', hook:'Semua yang perlu kamu tahu tentang sunscreen ada di sini!', story:'Edukasi kandungan PA & SPF, cara pemakaian tepat, mitos vs fakta.', visual:'Educational graphic overlay, clean clinic aesthetic, data chart.', caption:'Panduan lengkap sunscreen untuk kulit Indonesia! Wajib nonton sampai habis 🌞', cta:'Like & subscribe untuk konten edukatif lainnya', hashtag:'#sunscreen #spf #skincare', views:320000, engage:4.2, creator:'mutia@creator.id'},
-  {id:10, title:'Kolaborasi Brand Special Edition', brand:'LuxeBeauty', platform:'Instagram', format:'Video Reels', duration:'45 detik', deadProd:'2026-03-24', deadPub:'2026-04-01', status:'In Production', objective:'Brand Awareness', audience:'Wanita profesional & aspirational 25–45 tahun', keyMsg:'Luxury beauty yang kini lebih accessible', hook:'Kolaborasi eksklusif yang paling ditunggu-tunggu akhirnya hadir!', story:'Teaser build-up, reveal packaging mewah, unboxing dengan detail close-up.', visual:'Dark moody elegant, gold & champagne accents, premium packaging texture.', caption:'Exclusive collaboration yang tidak boleh dilewatkan! ✨👑', cta:'Pre-order now sebelum kehabisan!', hashtag:'#luxebeauty #collaboration #exclusive', views:75000, engage:4.0, creator:''},
-  {id:11, title:'Skin Barrier 101: Panduan Lengkap', brand:'SkinLab ID', platform:'Instagram', format:'Video Reels', duration:'60 detik', deadProd:'2026-03-26', deadPub:'2026-04-02', status:'In Production', objective:'Product Education', audience:'Skincare enthusiast yang struggle kulit sensitif 20–40', keyMsg:'Skin barrier yang kuat adalah fondasi kulit sehat', hook:'Kenapa kulitmu gampang iritasi & merah? Ini jawabannya!', story:'Edukasi visual: apa skin barrier, tanda kerusakan, cara repair dengan produk yang tepat.', visual:'Medical-clean aesthetic, infographic animated style, close-up skin texture.', caption:'Skin barrier yang kuat = kulit yang sehat! 🧬', cta:'Cek rangkaian SkinLab ID di link bio', hashtag:'#skinbarrier #skincare #kulitsensitif', views:60000, engage:5.5, creator:''},
-  {id:12, title:'Glitter Party Makeup Look', brand:'BlushBrand', platform:'TikTok', format:'Short Video', duration:'30 detik', deadProd:'2026-03-28', deadPub:'2026-04-05', status:'In Production', objective:'Community Engagement', audience:'Gen Z 16–24 tahun TikTok native, party-goer', keyMsg:'Ekspresikan dirimu dengan bold & glam!', hook:'POV: kamu siap party dengan look ini ✨🌟', story:'Transformasi dramatis dari bare face ke full glitter glam look dalam 30 detik.', visual:'Glittery high-energy, neon accent lighting, bold colors.', caption:'Party ready sama BlushBrand Glitter Collection! 🌟', cta:'Duet sama kita & tag hasilnya!', hashtag:'#glitter #makeup #partylook', views:110000, engage:10.5, creator:'alyaimut@creator.id'},
-];
-let nextId  = 13;
-let filtered = [...db];
+// Initial database data for client-side features (filter, pagination, detail modal).
+// Keep schema aligned with openDetail()/prefillForm().
+let db = {!! $contentBriefs->map(function ($brief) {
+  $brand = $brief->brand;
+  return [
+    'id' => $brief->id,
+    'title' => $brief->title,
+    'description' => $brief->description,
+    'platform' => $brief->platform,
+    'production_deadline' => $brief->production_deadline ? $brief->production_deadline->format('Y-m-d') : null,
+    'status' => $brief->status,
+    'brand' => $brief->brand_id,
+    'brand_name' => $brand ? $brand->name : null,
+    'brand_pic' => $brand ? $brand->pic : null,
+    'format' => $brief->content_format,
+    'duration' => $brief->target_duration,
+    'deadProd' => $brief->production_deadline ? $brief->production_deadline->format('Y-m-d') : null,
+    'deadPub' => $brief->publish_deadline ? $brief->publish_deadline->format('Y-m-d') : null,
+    'objective' => $brief->objective,
+    'audience' => $brief->target_audience,
+    'keyMsg' => $brief->key_message,
+    'hook' => $brief->hook,
+    'story' => $brief->storyline,
+    'visual' => $brief->visual_direction,
+    'caption' => $brief->caption,
+    'cta' => $brief->cta,
+    'hashtag' => $brief->hashtags,
+    'views' => $brief->target_views !== null ? (int) $brief->target_views : 0,
+    'engage' => $brief->target_engagement !== null ? (float) $brief->target_engagement : 0,
+    'creator' => $brief->creator_email ?: null,
+  ];
+})->values()->toJson() !!};
+let nextId  = 1;
+let filtered = [];
 let page     = 1;
 const PER    = 8;
 let delId    = null;
@@ -1232,100 +1363,236 @@ function animateNum(el, target) {
 }
 
 /* ══════════════════════════════════════
-   FILTER + RENDER TABLE
+   FILTER + RENDER TABLE (AJAX Real-Time)
 ══════════════════════════════════════ */
 function applyFilter() {
   const q  = document.getElementById('srchInput').value.trim().toLowerCase();
   const st = document.getElementById('fltStatus').value;
   const pl = document.getElementById('fltPlatform').value;
   const br = document.getElementById('fltBrand').value;
-  filtered = db.filter(k =>
-    (!q  || k.title.toLowerCase().includes(q) || k.brand.toLowerCase().includes(q)) &&
-    (!st || k.status   === st) &&
-    (!pl || k.platform === pl) &&
-    (!br || k.brand    === br)
-  );
-  page = 1;
-  renderTable();
+  
+  // DEBUG: Log filter values
+  console.log('🔍 Filter Applied:', { search: q, status: st, platform: pl, brand: br });
+  
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  
+  // DEBUG: Check CSRF token
+  console.log('🔐 CSRF Token Check:', {
+    metaTag: !!document.querySelector('meta[name="csrf-token"]'),
+    tokenValue: csrfToken ? csrfToken.substring(0, 20) + '...' : 'NOT FOUND',
+    tokenLength: csrfToken ? csrfToken.length : 0
+  });
+  
+  if (!csrfToken) {
+    console.error('❌ CSRF token not found');
+    alert('CSRF token not found! Please refresh the page.');
+    return;
+  }
+  
+  // Show loading state
+  const tableBody = document.querySelector('#tblBody');
+  if (tableBody) {
+    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><i class="fa-solid fa-circle-notch spin"></i> Mencari data...</td></tr>';
+  }
+  
+  // DEBUG: Log request details
+  const requestData = {
+    search: q,
+    status: st,
+    platform: pl,
+    brand: br
+  };
+  console.log('📤 Request Data:', requestData);
+  console.log('🌐 Fetch URL:', '/content-briefs/search');
+  console.log('🔐 Request Headers:', {
+    'Content-Type': 'application/json',
+    'X-CSRF-TOKEN': csrfToken ? 'PRESENT' : 'MISSING',
+    'Accept': 'application/json'
+  });
+  
+  // Send AJAX request to server for real-time filtering
+  fetch('/content-briefs/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': csrfToken,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+  })
+  .then(response => {
+    console.log('📥 Response Status:', response.status);
+    console.log('📥 Response Headers:', response.headers);
+    
+    if (!response.ok) {
+      console.error('❌ Response not OK:', response.status, response.statusText);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('📊 Response Data:', data);
+    if (data.success) {
+      // Update table with filtered data
+      renderTableFromDatabase(data.data);
+      
+      // Update statistics
+      updateStats(data.stats);
+      
+      console.log('✅ Filter applied:', { search: q, status: st, platform: pl, brand: br, results: data.data.length });
+    } else {
+      console.error('❌ Server returned success:false:', data.message);
+      throw new Error(data.message || 'Server returned error');
+    }
+  })
+  .catch(error => {
+    console.error('❌ Filter error:', error);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Show error state
+    const tableBody = document.querySelector('#tblBody');
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--rose);"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memfilter data. Silakan coba lagi.<br><small>Detail: ' + error.message + '</small></td></tr>';
+    }
+  });
+}
+
+// Render table from database data
+function renderTableFromDatabase(contentBriefs) {
+  const tableBody = document.querySelector('#tblBody');
+  if (!tableBody) return;
+  
+  if (contentBriefs.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-400);"><i class="fa-solid fa-search"></i> Data tidak ditemukan</td></tr>';
+    return;
+  }
+  
+  const rows = contentBriefs.map(brief => {
+    const platIcon = PLAT_ICON[brief.platform] || 'fa-globe';
+    const platCls = PLAT_CLS[brief.platform] || 'plat-other';
+    const statusCls = STATUS_CLS[brief.status] || 'p-review';
+    
+    return `
+      <tr>
+        <td>
+          <div class="task-title">${brief.title}</div>
+          <div class="task-desc">${brief.description ? (brief.description.length > 50 ? brief.description.substring(0, 50) + '...' : brief.description) : '-'}</div>
+        </td>
+        <td>
+          <div class="brand-info">
+            <div class="brand-name">${brief.brand_name || brief.brand?.name || '-'}</div>
+            <div class="brand-pic">${brief.brand_pic || brief.brand?.pic || '-'}</div>
+          </div>
+        </td>
+        <td>
+          <div class="platform-info">
+            <i class="fa-brands ${platIcon} ${platCls}"></i>
+            <span>${brief.platform}</span>
+          </div>
+        </td>
+        <td>
+          <div class="deadline-info">
+            <div class="prod-deadline">${brief.production_deadline ? formatDate(brief.production_deadline) : '-'}</div>
+          </div>
+        </td>
+        <td>
+          <span class="status ${statusCls}">${brief.status}</span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn-action" onclick="openDetail(${brief.id})" title="Detail">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button class="btn-action" onclick="openEdit(${brief.id})" title="Edit">
+              <i class="fa-solid fa-edit"></i>
+            </button>
+            <button class="btn-action btn-delete" onclick="openDel(${brief.id})" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  tableBody.innerHTML = rows;
+}
+
+// Update statistics
+function updateStats(stats) {
+  // Update header count
+  const headerCount = document.getElementById('tblCount');
+  if (headerCount) {
+    headerCount.textContent = stats.total + ' tugas';
+  }
+  
+  // Update statistics cards
+  document.querySelector('.sc-b .sc-num').textContent = stats.total || 0;
+  document.querySelector('.sc-o .sc-num').textContent = stats.in_production || 0;
+  document.querySelector('.sc-v .sc-num').textContent = stats.under_review || 0;
+  document.querySelector('.sc-r .sc-num').textContent = stats.need_revision || 0;
+  document.querySelector('.sc-g .sc-num').textContent = stats.published || 0;
+}
+
+// Format date helper
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function mk(html, disabled, on, onClick) {
+  const b = document.createElement('button');
+  b.className = 'pb';
+  b.innerHTML = html;
+  if (on) b.classList.add('on');
+  if (disabled) b.disabled = true;
+  if (!disabled && typeof onClick === 'function') b.addEventListener('click', onClick);
+  return b;
 }
 
 function renderTable() {
-  console.log('renderTable called', { db, filtered, page });
   const total = filtered.length;
-  const start = (page - 1) * PER;
-  const end   = Math.min(start + PER, total);
-  const rows  = filtered.slice(start, end);
-
-  console.log('Table data:', { total, start, end, rows });
-
-  document.getElementById('tblCount').textContent = total + ' tugas';
-  document.getElementById('pgFrom').textContent   = total ? start + 1 : 0;
-  document.getElementById('pgTo').textContent     = end;
-  document.getElementById('pgTotal').textContent  = total;
-
-  const tbody = document.getElementById('tblBody');
-  console.log('tbody element:', tbody);
-  
-  if (!rows.length) {
-    tbody.innerHTML = `
-      <tr class="empty-row">
-        <td colspan="6">
-          <div class="empty-ic"><i class="fa-solid fa-list-check"></i></div>
-          <div style="font-size:15px;font-weight:700;color:var(--t7)">Tidak ada tugas ditemukan</div>
-          <div style="font-size:13px;color:var(--t4);margin-top:4px">Coba ubah filter atau kata kunci pencarian.</div>
-        </td>
-      </tr>`;
-  } else {
-    tbody.innerHTML = rows.map(k => `
-      <tr onclick="openDetail(${k.id})">
-        <td>
-          <div class="tc-wrap">
-            <div class="tc-icon" style="background:${col(k.id)}">
-              <i class="fa-brands ${PLAT_ICON[k.platform] || 'fa-globe'}"></i>
-            </div>
-            <div>
-              <div class="tc-title">${k.title}</div>
-              <div class="tc-sub">${k.format} · ${k.duration}</div>
-            </div>
-          </div>
-        </td>
-        <td><span class="brand-tag"><i class="fa-solid fa-tag" style="font-size:9px"></i>${k.brand}</span></td>
-        <td>${platChip(k.platform)}</td>
-        <td>
-          <span class="dl ${dlCls(k.deadProd)}">
-            <i class="fa-regular fa-calendar"></i>${fmtDate(k.deadProd)}
-          </span>
-        </td>
-        <td>${pill(k.status)}</td>
-        <td onclick="event.stopPropagation()">
-          <div class="row-acts">
-            <button class="ab ab-d" title="Detail"  onclick="openDetail(${k.id})"><i class="fa-solid fa-eye"></i></button>
-            <button class="ab ab-e" title="Edit"    onclick="openEdit(${k.id})"><i class="fa-solid fa-pen"></i></button>
-            <button class="ab ab-x" title="Hapus"   onclick="openDel(${k.id})"><i class="fa-solid fa-trash-can"></i></button>
-          </div>
-        </td>
-      </tr>`).join('');
-  }
-  renderPagi(total);
-}
-
-function renderPagi(total) {
   const pages = Math.ceil(total / PER);
-  const cont  = document.getElementById('pgBtns');
-  const mk = (label, disabled, active, onClick) => {
-    const b = document.createElement('button');
-    b.className = 'pb' + (active ? ' on' : '');
-    b.innerHTML = label; b.disabled = disabled;
-    b.onclick = onClick;
-    return b;
-  };
+
+  if (pages > 0) page = Math.max(1, Math.min(page, pages));
+
+  const start = (page - 1) * PER;
+  const end = Math.min(start + PER, total);
+  const rows = total > 0 ? filtered.slice(start, end) : [];
+
+  renderTableFromDatabase(rows);
+
+  const cont = document.getElementById('pgBtns');
+  if (!cont) return;
+
   cont.innerHTML = '';
-  cont.appendChild(mk('<i class="fa-solid fa-chevron-left" style="font-size:10px"></i>', page <= 1, false, () => { page--; renderTable(); }));
+
+  const leftDisabled = pages <= 1 || page <= 1;
+  cont.appendChild(
+    mk('<i class="fa-solid fa-chevron-left" style="font-size:10px"></i>', leftDisabled, false, () => {
+      page--;
+      renderTable();
+    })
+  );
+
   for (let i = 1; i <= pages; i++) {
     const p = i;
-    cont.appendChild(mk(i, false, i === page, () => { page = p; renderTable(); }));
+    cont.appendChild(
+      mk(String(i), false, i === page, () => {
+        page = p;
+        renderTable();
+      })
+    );
   }
-  cont.appendChild(mk('<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>', page >= pages || !pages, false, () => { page++; renderTable(); }));
+
+  const rightDisabled = pages <= 1 || page >= pages;
+  cont.appendChild(
+    mk('<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>', rightDisabled, false, () => {
+      page++;
+      renderTable();
+    })
+  );
 }
 
 /* ══════════════════════════════════════
@@ -1343,7 +1610,7 @@ function openDetail(id) {
     <div style="flex:1;min-width:0">
       <div class="det-title">${k.title}</div>
       <div class="det-meta">
-        <span class="brand-tag"><i class="fa-solid fa-tag" style="font-size:9px"></i>${k.brand}</span>
+        <span class="brand-tag"><i class="fa-solid fa-tag" style="font-size:9px"></i>${k.brand_name || k.brand || '-'}</span>
         ${platChip(k.platform)}
         ${pill(k.status)}
         ${k.creator
@@ -1434,7 +1701,7 @@ function openEdit(id) {
 }
 
 function prefillForm(k) {
-  set('fDesc',      k.title + ' — ' + k.keyMsg);
+  set('fDesc',      k.description || '');
   set('fTitle',     k.title);
   setSel('fBrand',    k.brand);
   setSel('fPlatform', k.platform);
@@ -1584,51 +1851,133 @@ const VALIDATORS = {
 function wizNext() {
   if (!VALIDATORS[curStep]()) return;
   if (curStep < NSTEPS) { curStep++; updateWizUI(); return; }
-  // SAVE
+  
+  // SAVE TO DATABASE
   const btn = document.getElementById('btnNext');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menyimpan...';
-  setTimeout(() => {
-    const k = {
-      id:        editId || nextId++,
-      title:     get('fTitle').trim(),
-      brand:     get('fBrand'),
-      platform:  get('fPlatform'),
-      format:    get('fFormat'),
-      duration:  get('fDuration').trim(),
-      deadProd:  get('fDeadProd'),
-      deadPub:   get('fDeadPub'),
-      objective: get('fObjective'),
-      audience:  get('fAudience').trim(),
-      keyMsg:    get('fKeyMsg').trim(),
-      hook:      get('fHook').trim(),
-      story:     get('fStory').trim(),
-      visual:    get('fVisual').trim(),
-      caption:   get('fCaption').trim(),
-      cta:       get('fCta').trim(),
-      hashtag:   get('fHashtag').trim(),
-      views:     parseInt(get('fViews')) || 0,
-      engage:    parseFloat(get('fEngage')) || 0,
-      creator:   get('fCreator').trim(),
-      status:    editId ? (db.find(x => x.id === editId) || {}).status || 'In Production' : 'In Production',
-    };
-    if (editId) {
-      const idx = db.findIndex(x => x.id === editId);
-      if (idx > -1) db[idx] = k;
-      toast('s', `Brief "${k.title}" berhasil diperbarui.`);
-    } else {
-      db.unshift(k);
-      const creatorMsg = k.creator ? `Link brief dikirim ke ${k.creator}.` : 'Admin yang akan mengerjakan sendiri.';
-      toast('s', `Brief "${k.title}" berhasil dibuat! ${creatorMsg}`);
-    }
-    filtered = [...db];
-    applyFilter();
-    renderStats();
-    closeModal('ovWizard');
+  
+  // Get form data - Mapping yang benar
+  const formData = {
+    // Informasi Dasar - Step 2
+    title: get('fTitle').trim(),
+    description: get('fDesc').trim(),
+    brand_id: get('fBrand'), // Foreign key ke brands table
+    platform: get('fPlatform'),
+    content_format: get('fFormat'),
+    target_duration: get('fDuration').trim(),
+    production_deadline: get('fDeadProd'),
+    publish_deadline: get('fDeadPub'),
+    
+    // Strategi Konten - Step 3
+    objective: get('fObjective'),
+    target_audience: get('fAudience').trim(),
+    key_message: get('fKeyMsg').trim(),
+    
+    // Brief Kreatif - Step 4
+    hook: get('fHook').trim(),
+    storyline: get('fStory').trim(),
+    visual_direction: get('fVisual').trim(),
+    
+    // Konten & Publishing - Step 5
+    caption: get('fCaption').trim(),
+    cta: get('fCta').trim(),
+    hashtags: get('fHashtag').trim(),
+    
+    // Target KPI - Step 6
+    target_views: get('fViews'),
+    target_engagement: get('fEngage'),
+    
+    // Assign & Summary - Step 7
+    creator_email: get('fCreator').trim() || null,
+  };
+  
+  // Get CSRF token from meta tag
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  
+  if (!csrfToken) {
+    toast('e', 'CSRF Token tidak ditemukan. Silakan refresh halaman.');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brief';
-    editId = null;
-  }, 900);
+    return;
+  }
+  
+  // Send data to database via AJAX
+  const url = editId ? `/content-briefs/${editId}` : '/content-briefs';
+  const method = editId ? 'PUT' : 'POST';
+  
+  fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': csrfToken,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(formData)
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      if (response.status === 419) {
+        throw new Error('CSRF Token mismatch. Silakan refresh halaman dan coba lagi.');
+      }
+      return response.json().then(data => {
+        throw new Error(data.message || 'Terjadi kesalahan saat menyimpan data');
+      });
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response data:', data);
+    
+    if (data.success) {
+      // Success - show notification and redirect
+      toast('s', data.message);
+      
+      // Show email status feedback
+      if (data.creator_email) {
+        setTimeout(() => {
+          if (data.email_sent) {
+            toast('s', `📧 ${data.email_status}`);
+          } else {
+            toast('w', `⚠️ ${data.email_status}`);
+          }
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          toast('i', '� Tugas akan dikerjakan oleh admin (tidak ada email creator)');
+        }, 1500);
+      }
+      
+      // Close modal
+      closeModal('ovWizard');
+      
+      // Reset button
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brief';
+      editId = null;
+      
+      // Redirect to brief list page after short delay
+      setTimeout(() => {
+        window.location.href = '/content-briefs';
+      }, 1000);
+      
+      console.log('Data berhasil disimpan ke database:', data.data);
+    } else {
+      throw new Error(data.message || 'Terjadi kesalahan');
+    }
+  })
+  .catch(error => {
+    console.error('Error saving data:', error);
+    
+    // Show error notification
+    toast('e', error.message || 'Terjadi kesalahan saat menyimpan data');
+    
+    // Reset button
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brief';
+  });
 }
 
 function wizPrev() {
@@ -1651,18 +2000,68 @@ function doDelete() {
   const btn = document.getElementById('delConfirmBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i>';
-  setTimeout(() => {
-    const k = db.find(x => x.id === delId);
-    db       = db.filter(x => x.id !== delId);
-    filtered = filtered.filter(x => x.id !== delId);
-    renderTable();
-    renderStats();
-    closeModal('ovDel');
-    toast('e', `"${k?.title}" berhasil dihapus.`);
+  
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  
+  if (!csrfToken) {
+    toast('e', 'CSRF token tidak ditemukan. Silakan refresh halaman.');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ya, Hapus';
-    delId = null;
-  }, 700);
+    return;
+  }
+  
+  // Send AJAX request to delete from database
+  fetch(`/content-briefs/${delId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': csrfToken,
+      'Accept': 'application/json'
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Gagal menghapus data');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Remove from client-side arrays
+      const k = db.find(x => x.id === delId);
+      db = db.filter(x => x.id !== delId);
+      filtered = filtered.filter(x => x.id !== delId);
+      
+      // Update table and stats
+      renderTable();
+      renderStats();
+      
+      // Close modal and show success message
+      closeModal('ovDel');
+      toast('s', `"${k?.title}" berhasil dihapus.`);
+      
+      // Reset button
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ya, Hapus';
+      delId = null;
+      
+      // Refresh page to show updated data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      throw new Error(data.message || 'Gagal menghapus data');
+    }
+  })
+  .catch(error => {
+    console.error('Delete error:', error);
+    toast('e', 'Gagal menghapus data. Silakan coba lagi.');
+    
+    // Reset button
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ya, Hapus';
+  });
 }
 
 /* ══════════════════════════════════════
@@ -1701,6 +2100,179 @@ function updateCharCounter(inputId, counterId, max) {
   const len = el.value.length;
   cnt.textContent = `${len} / ${max} karakter`;
   cnt.classList.toggle('over', len > max);
+}
+
+/* ══════════════════════════════════════
+   BRAND SEARCH FUNCTIONALITY
+══════════════════════════════════════ */
+function initBrandSearch() {
+  const brandSelect = document.getElementById('fBrand');
+  if (!brandSelect) return;
+  
+  // Convert select to searchable dropdown if there are many brands
+  const options = Array.from(brandSelect.options);
+  if (options.length <= 10) return; // Only enable search if there are many brands
+  
+  // Create searchable dropdown
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'relative';
+  wrapper.style.display = 'inline-block';
+  wrapper.style.width = '100%';
+  
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = 'fsel-f';
+  searchInput.placeholder = 'Cari brand...';
+  searchInput.style.position = 'relative';
+  searchInput.style.zIndex = '10';
+  
+  const dropdown = document.createElement('div');
+  dropdown.style.position = 'absolute';
+  dropdown.style.top = '100%';
+  dropdown.style.left = '0';
+  dropdown.style.right = '0';
+  dropdown.style.background = 'white';
+  dropdown.style.border = '1px solid var(--border)';
+  dropdown.style.borderRadius = 'var(--r-sm)';
+  dropdown.style.maxHeight = '200px';
+  dropdown.style.overflowY = 'auto';
+  dropdown.style.zIndex = '20';
+  dropdown.style.display = 'none';
+  dropdown.style.boxShadow = 'var(--s1)';
+  
+  // Add options to dropdown
+  options.forEach(option => {
+    if (option.value === '') return; // Skip placeholder
+    
+    const item = document.createElement('div');
+    item.style.padding = '8px 12px';
+    item.style.cursor = 'pointer';
+    item.style.borderBottom = '1px solid var(--border-light)';
+    item.style.fontSize = '13px';
+    item.style.fontFamily = 'DM Sans, sans-serif';
+    item.innerHTML = option.textContent;
+    
+    item.addEventListener('click', () => {
+      searchInput.value = option.textContent;
+      brandSelect.value = option.value;
+      dropdown.style.display = 'none';
+      
+      // Trigger change event
+      const event = new Event('change', { bubbles: true });
+      brandSelect.dispatchEvent(event);
+    });
+    
+    item.addEventListener('mouseenter', () => {
+      item.style.background = 'var(--blue-50)';
+    });
+    
+    item.addEventListener('mouseleave', () => {
+      item.style.background = 'white';
+    });
+    
+    dropdown.appendChild(item);
+  });
+  
+  // Search functionality
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    const items = dropdown.children;
+    
+    Array.from(items).forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+    
+    dropdown.style.display = 'block';
+  });
+  
+  // Show/hide dropdown
+  searchInput.addEventListener('focus', () => {
+    dropdown.style.display = 'block';
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+  
+  // Replace original select
+  brandSelect.style.display = 'none';
+  brandSelect.parentNode.insertBefore(wrapper, brandSelect);
+  wrapper.appendChild(searchInput);
+  wrapper.appendChild(dropdown);
+  wrapper.appendChild(brandSelect);
+}
+
+// Initialize brand search when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initBrandSearch();
+});
+
+/* ══════════════════════════════════════
+   DYNAMIC FORMAT OPTIONS BASED ON PLATFORM
+══════════════════════════════════════ */
+function updateFormatOptions() {
+  const platformSelect = document.getElementById('fPlatform');
+  const formatSelect = document.getElementById('fFormat');
+  
+  if (!platformSelect || !formatSelect) return;
+  
+  const selectedPlatform = platformSelect.value;
+  
+  // Clear current options
+  formatSelect.innerHTML = '<option value="">Pilih format...</option>';
+  
+  // Define format options per platform
+  const formatOptions = {
+    'Instagram': [
+      { value: 'IG Feed', text: 'IG Feed (Foto/Carousel)' },
+      { value: 'IG Reels', text: 'IG Reels (Video)' },
+      { value: 'IG Story', text: 'IG Story' }
+    ],
+    'TikTok': [
+      { value: 'Video Vertikal', text: 'Video Vertikal (9:16) – 3 detik hingga 10 menit' },
+      { value: 'Carousel', text: 'Carousel (Foto Slide + Musik)' },
+      { value: 'Teks Statis', text: 'Teks Statis' }
+    ],
+    'YouTube': [
+      { value: 'Video Panjang', text: 'Video Panjang (16:9)' },
+      { value: 'YouTube Shorts', text: 'YouTube Shorts (9:16)' },
+      { value: 'Postingan Komunitas', text: 'Postingan Komunitas (Gambar / Teks / Poll)' }
+    ],
+    'Lainnya': [
+      { value: 'Teks', text: 'Teks' },
+      { value: 'Foto', text: 'Foto' },
+      { value: 'Video', text: 'Video (termasuk short video seperti reels)' },
+      { value: 'Tautan', text: 'Tautan (link post)' },
+      { value: 'Fitur Interaktif', text: 'Fitur interaktif (polling, event, dll)' }
+    ]
+  };
+  
+  // Add options based on selected platform
+  if (selectedPlatform && formatOptions[selectedPlatform]) {
+    formatOptions[selectedPlatform].forEach(option => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option.value;
+      optionElement.textContent = option.text;
+      formatSelect.appendChild(optionElement);
+    });
+  } else {
+    // Default option when no platform selected
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Pilih platform terlebih dahulu...';
+    defaultOption.disabled = true;
+    formatSelect.appendChild(defaultOption);
+  }
+  
+  // Reset format selection when platform changes
+  formatSelect.value = '';
+  
+  // Log for debugging
+  console.log('Platform changed to:', selectedPlatform);
+  console.log('Available formats:', formatOptions[selectedPlatform] || []);
 }
 </script>
 </body>

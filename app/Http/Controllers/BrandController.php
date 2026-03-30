@@ -44,6 +44,7 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         try {
+            // Quick validation
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'pic' => 'required|string|max:255',
@@ -51,9 +52,16 @@ class BrandController extends Controller
                 'target_market' => 'required|string',
                 'tone' => 'required|string',
                 'status' => 'required|in:Active,Non Active',
+            ], [], [
+                'name.required' => 'Nama brand harus diisi',
+                'pic.required' => 'PIC harus diisi',
+                'contact.required' => 'Kontak harus diisi',
+                'target_market.required' => 'Target market harus diisi',
+                'tone.required' => 'Tone harus diisi',
+                'status.required' => 'Status harus diisi',
             ]);
 
-            // Create brand with all required fields
+            // Fast brand creation
             $brand = Brand::create([
                 'name' => $validated['name'],
                 'pic' => $validated['pic'],
@@ -61,29 +69,31 @@ class BrandController extends Controller
                 'target_market' => $validated['target_market'],
                 'tone' => $validated['tone'],
                 'status' => $validated['status'],
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
             
-            // Log successful creation
-            \Log::info('Brand created successfully: ID ' . $brand->id . ', Name: ' . $brand->name);
-            
+            // Fast response
             return response()->json([
                 'success' => true,
-       
                 'message' => 'Brand berhasil ditambahkan!',
-                'brand' => $brand
+                'brand' => [
+                    'id' => $brand->id,
+                    'name' => $brand->name,
+                    'pic' => $brand->pic,
+                    'contact' => $brand->contact,
+                    'target_market' => $brand->target_market,
+                    'tone' => $brand->tone,
+                    'status' => $brand->status,
+                    'created_at' => $brand->created_at->format('Y-m-d H:i:s')
+                ]
             ]);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Brand validation failed: ' . json_encode($e->errors()));
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => 'Validation failed: ' . implode(', ', array_values($e->errors())[0] ?? ['Unknown validation error']),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Brand creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

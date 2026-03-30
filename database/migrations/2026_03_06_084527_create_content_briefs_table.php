@@ -13,27 +13,43 @@ return new class extends Migration
     {
         Schema::create('content_briefs', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->foreignId('brand_id')->constrained()->onDelete('cascade');
-            $table->foreignId('creator_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('platform');
-            $table->string('content_format');
-            $table->string('target_duration');
-            $table->date('production_deadline');
-            $table->date('publish_deadline');
-            $table->text('objective');
-            $table->text('target_audience');
-            $table->text('key_message');
-            $table->text('hook');
-            $table->text('storyline');
-            $table->text('visual_direction');
-            $table->text('caption');
-            $table->text('cta');
-            $table->text('hashtags');
-            $table->string('target_views');
-            $table->string('target_engagement');
-            $table->string('status')->default('In Production');
-            $table->timestamps();
+            
+            // Informasi Dasar - Step 2
+            $table->string('title'); // fTitle - Judul Konten
+            $table->text('description')->nullable(); // fDesc - Deskripsi Tugas Konten
+            $table->foreignId('brand_id')->constrained()->onDelete('cascade'); // fBrand - Foreign Key ke brands
+            $table->string('platform'); // fPlatform - Platform
+            $table->string('content_format'); // fFormat - Format Konten
+            $table->string('target_duration'); // fDuration - Durasi Target
+            $table->date('production_deadline'); // fDeadProd - Deadline Produksi
+            $table->date('publish_deadline'); // fDeadPub - Deadline Publish
+            
+            // Strategi Konten - Step 3
+            $table->text('objective'); // fObjective - Objective
+            $table->text('target_audience'); // fAudience - Target Audience
+            $table->text('key_message'); // fKeyMsg - Key Message
+            
+            // Brief Kreatif - Step 4
+            $table->text('hook'); // fHook - Hook
+            $table->text('storyline'); // fStory - Storyline
+            $table->text('visual_direction'); // fVisual - Visual Direction
+            
+            // Konten & Publishing - Step 5
+            $table->text('caption'); // fCaption - Caption
+            $table->text('cta'); // fCta - Call to Action
+            $table->text('hashtags'); // fHashtag - Hashtag
+            
+            // Target KPI - Step 6
+            $table->string('target_views'); // fViews - Target Views
+            $table->string('target_engagement'); // fEngage - Target Engagement Rate
+            
+            // Assign & Summary - Step 7
+            $table->string('creator_email')->nullable(); // fCreator - Email Content Creator
+            
+            // System Fields
+            $table->foreignId('creator_id')->nullable()->constrained('users')->onDelete('set null'); // User yang membuat
+            $table->string('status')->default('In Production'); // Status default
+            $table->timestamps(); // created_at, updated_at
         });
     }
 
