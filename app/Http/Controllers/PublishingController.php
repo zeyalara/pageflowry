@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ContentTask;
+use App\Models\ContentBrief;
 
 class PublishingController extends Controller
 {
@@ -39,6 +40,13 @@ class PublishingController extends Controller
         ContentTask::whereIn('id', $ids)
             ->where('status', 'ready_to_publish')
             ->update(['status' => 'published']);
+
+        $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+        foreach ($updatedTasks as $task) {
+            ContentBrief::where('title', $task->judul_konten)
+                ->where('brand_id', $task->brand_id)
+                ->update(['status' => 'Published']);
+        }
 
         return response()->json([
             'success' => true,

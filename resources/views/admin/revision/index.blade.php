@@ -414,9 +414,15 @@
                 <button class="btn-action" onclick="openBeriRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Beri Revisi">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
+                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval">
+                  <i class="fa-solid fa-circle-check"></i>
+                </button>
               @elseif($task->status == 'need_revision')
                 <button class="btn-action" onclick="openEditRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}', '{{ addslashes($task->revision_note ?? '') }}', '{{ $task->revision_deadline?->format('Y-m-d') ?? '' }}')" title="Edit Revisi">
                   <i class="fa-solid fa-edit"></i>
+                </button>
+                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval">
+                  <i class="fa-solid fa-circle-check"></i>
                 </button>
               @endif
             </div>
@@ -587,10 +593,43 @@
   </div>
 </div>
 
+<!-- Send To Approval Confirmation Modal -->
+<div class="overlay" id="sendApprovalOverlay" onclick="closeOnOverlay(event, 'sendApprovalOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-circle-check"></i> Approval</div>
+        <div class="modal-title">Kirim ke Approval</div>
+        <div class="modal-subtitle">Konten akan dipindahkan ke tahap approval</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('sendApprovalOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div id="sendApprovalContent"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Status akan berubah menjadi "Ready to Publish"
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('sendApprovalOverlay')">Batal</button>
+        <button class="btn btn-primary" type="button" onclick="confirmSendToApproval(event)">
+          <i class="fa-solid fa-circle-check"></i> Kirim
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+let pendingApprovalTaskId = null;
+
 function openBeriRevisiModal(taskId, taskTitle) {
   document.getElementById('beriRevisiTaskId').value = taskId;
   document.getElementById('beriRevisiTaskTitle').value = taskTitle;
@@ -607,6 +646,9 @@ function openEditRevisiModal(taskId, taskTitle, revisionNote, revisionDeadline) 
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('open');
+  if (modalId === 'sendApprovalOverlay') {
+    pendingApprovalTaskId = null;
+  }
   resetForm(modalId);
 }
 
@@ -713,6 +755,61 @@ function submitEditRevisi(event) {
     .catch(error => {
       console.error('Revision error:', error);
       alert('Terjadi kesalahan saat memperbarui revisi. Silakan coba lagi.');
+    })
+    .finally(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    });
+}
+
+function openSendApprovalModal(taskId, taskTitle) {
+  if (!taskId) return;
+  pendingApprovalTaskId = taskId;
+
+  const content = `
+    <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
+      <div style="font-weight: 600; color: var(--text-900); margin-bottom: 4px;">${taskTitle || '-'}</div>
+      <div style="font-size: 12px; color: var(--text-500);">ID: #${taskId}</div>
+    </div>
+    <p style="font-size: 14px; color: var(--text-700); margin: 0;">
+      Kirim konten ini ke Approval? Konten akan langsung masuk ke halaman Publishing.
+    </p>
+  `;
+
+  document.getElementById('sendApprovalContent').innerHTML = content;
+  document.getElementById('sendApprovalOverlay').classList.add('open');
+}
+
+function confirmSendToApproval(event) {
+  if (!pendingApprovalTaskId) return;
+
+  const submitBtn = event.target;
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+  submitBtn.disabled = true;
+
+  fetch('{{ route("revision.send-to-approval") }}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ ids: [pendingApprovalTaskId] })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        closeModal('sendApprovalOverlay');
+        pendingApprovalTaskId = null;
+        window.location.reload();
+      } else {
+        alert('Gagal kirim ke approval: ' + (data.message || 'Terjadi kesalahan'));
+      }
+    })
+    .catch(error => {
+      console.error('Send to approval error:', error);
+      alert('Terjadi kesalahan saat mengirim ke approval. Silakan coba lagi.');
     })
     .finally(() => {
       submitBtn.innerHTML = originalText;

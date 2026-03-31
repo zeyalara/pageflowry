@@ -207,7 +207,7 @@
         <div class="stat-ic">
             <i class="fa-solid fa-layer-group"></i>
         </div>
-        <div class="stat-val" data-target="128">128</div>
+        <div class="stat-val" data-target="{{ $stats['total'] ?? 0 }}">{{ $stats['total'] ?? 0 }}</div>
         <div class="stat-lbl">Total Content</div>
         <div class="stat-trend trend-up">
             <i class="fa-solid fa-arrow-trend-up"></i>
@@ -219,7 +219,7 @@
         <div class="stat-ic">
             <i class="fa-solid fa-film"></i>
         </div>
-        <div class="stat-val" data-target="24">24</div>
+        <div class="stat-val" data-target="{{ $stats['in_production'] ?? 0 }}">{{ $stats['in_production'] ?? 0 }}</div>
         <div class="stat-lbl">In Production</div>
         <div class="stat-trend trend-up">
             <i class="fa-solid fa-circle-dot"></i>
@@ -231,7 +231,7 @@
         <div class="stat-ic">
             <i class="fa-solid fa-pen-to-square"></i>
         </div>
-        <div class="stat-val" data-target="11">11</div>
+        <div class="stat-val" data-target="{{ $stats['need_revision'] ?? 0 }}">{{ $stats['need_revision'] ?? 0 }}</div>
         <div class="stat-lbl">Need Revision</div>
         <div class="stat-trend trend-warn">
             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -243,7 +243,7 @@
         <div class="stat-ic">
             <i class="fa-solid fa-circle-check"></i>
         </div>
-        <div class="stat-val" data-target="18">18</div>
+        <div class="stat-val" data-target="{{ $stats['ready_to_publish'] ?? 0 }}">{{ $stats['ready_to_publish'] ?? 0 }}</div>
         <div class="stat-lbl">Ready to Publish</div>
         <div class="stat-trend trend-up">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
@@ -255,7 +255,7 @@
         <div class="stat-ic">
             <i class="fa-solid fa-paper-plane"></i>
         </div>
-        <div class="stat-val" data-target="75">75</div>
+        <div class="stat-val" data-target="{{ $stats['published'] ?? 0 }}">{{ $stats['published'] ?? 0 }}</div>
         <div class="stat-lbl">Published</div>
         <div class="stat-trend trend-up">
             <i class="fa-solid fa-sparkles"></i>
@@ -272,57 +272,32 @@
             <h3>Distribusi Konten per Status</h3>
         </div>
         <div class="card-body">
+            @php
+                $totalContent = max(($stats['total'] ?? 0), 1);
+                $statusRows = [
+                    ['label' => 'Total Content', 'value' => $stats['total'] ?? 0, 'color' => '#3b82f6'],
+                    ['label' => 'In Production', 'value' => $stats['in_production'] ?? 0, 'color' => '#f97316'],
+                    ['label' => 'Need Revision', 'value' => $stats['need_revision'] ?? 0, 'color' => '#ef4444'],
+                    ['label' => 'Ready to Publish', 'value' => $stats['ready_to_publish'] ?? 0, 'color' => '#f59e0b'],
+                    ['label' => 'Published', 'value' => $stats['published'] ?? 0, 'color' => '#10b981'],
+                ];
+            @endphp
             <div class="dl-list">
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#3b82f6;"></span>
-                        <span>Total Content</span>
+                @foreach($statusRows as $row)
+                    @php
+                        $width = $row['label'] === 'Total Content' ? 100 : (($row['value'] / $totalContent) * 100);
+                    @endphp
+                    <div class="dl-item">
+                        <div class="dl-left">
+                            <span class="dl-dot" style="background:{{ $row['color'] }};"></span>
+                            <span>{{ $row['label'] }}</span>
+                        </div>
+                        <div class="dl-bar-wrap">
+                            <div class="dl-bar" style="width:{{ max(2, round($width)) }}%;background:{{ $row['color'] }}cc;"></div>
+                        </div>
+                        <span class="dl-pct">{{ $row['value'] }}</span>
                     </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:100%;background:rgba(59,130,246,.7);"></div>
-                    </div>
-                    <span class="dl-pct">128</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#f97316;"></span>
-                        <span>In Production</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:35%;background:rgba(249,115,22,.8);"></div>
-                    </div>
-                    <span class="dl-pct">24</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#ef4444;"></span>
-                        <span>Need Revision</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:20%;background:rgba(239,68,68,.85);"></div>
-                    </div>
-                    <span class="dl-pct">11</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#f59e0b;"></span>
-                        <span>Ready to Publish</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:28%;background:rgba(245,158,11,.9);"></div>
-                    </div>
-                    <span class="dl-pct">18</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#10b981;"></span>
-                        <span>Published</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:60%;background:rgba(16,185,129,.9);"></div>
-                    </div>
-                    <span class="dl-pct">75</span>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -334,36 +309,28 @@
         </div>
         <div class="card-body">
             <div class="dl-list">
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#6366f1;"></span>
-                        <span>Brand A</span>
+                @php $maxBrandCount = max(1, collect($brandStats ?? [])->max('count')); @endphp
+                @forelse($brandStats as $index => $brand)
+                    @php
+                        $palette = ['#6366f1', '#06b6d4', '#a855f7', '#22c55e', '#f97316', '#3b82f6'];
+                        $color = $palette[$index % count($palette)];
+                        $width = ($brand['count'] / $maxBrandCount) * 100;
+                    @endphp
+                    <div class="dl-item">
+                        <div class="dl-left">
+                            <span class="dl-dot" style="background:{{ $color }};"></span>
+                            <span>{{ $brand['name'] }}</span>
+                        </div>
+                        <div class="dl-bar-wrap">
+                            <div class="dl-bar" style="width:{{ max(4, round($width)) }}%;background:{{ $color }}cc;"></div>
+                        </div>
+                        <span class="dl-pct">{{ $brand['count'] }}</span>
                     </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:70%;background:rgba(99,102,241,.9);"></div>
+                @empty
+                    <div class="dl-item">
+                        <span>Belum ada data brand</span>
                     </div>
-                    <span class="dl-pct">52</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#06b6d4;"></span>
-                        <span>Brand B</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:55%;background:rgba(6,182,212,.9);"></div>
-                    </div>
-                    <span class="dl-pct">38</span>
-                </div>
-                <div class="dl-item">
-                    <div class="dl-left">
-                        <span class="dl-dot" style="background:#a855f7;"></span>
-                        <span>Brand C</span>
-                    </div>
-                    <div class="dl-bar-wrap">
-                        <div class="dl-bar" style="width:45%;background:rgba(168,85,247,.9);"></div>
-                    </div>
-                    <span class="dl-pct">29</span>
-                </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -377,14 +344,7 @@
     <div class="card-body">
         <div class="trend-grid">
             @php
-                $months = [
-                    ['label' => 'Jan', 'value' => 18],
-                    ['label' => 'Feb', 'value' => 24],
-                    ['label' => 'Mar', 'value' => 21],
-                    ['label' => 'Apr', 'value' => 27],
-                    ['label' => 'Mei', 'value' => 22],
-                    ['label' => 'Jun', 'value' => 16],
-                ];
+                $months = $monthlyTrend ?? collect();
                 $maxVal = collect($months)->max('value') ?: 1;
             @endphp
 
@@ -415,9 +375,9 @@
                 <label for="filter-brand">Brand</label>
                 <select id="filter-brand" class="form-control">
                     <option value="">Semua</option>
-                    <option value="Brand A">Brand A</option>
-                    <option value="Brand B">Brand B</option>
-                    <option value="Brand C">Brand C</option>
+                    @foreach(($brandStats ?? []) as $brand)
+                        <option value="{{ $brand['name'] }}">{{ $brand['name'] }}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
@@ -457,82 +417,46 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <span class="td-name">Launch Video — New Product Line</span>
-                            <div class="td-brand">Brand A • Instagram</div>
-                        </td>
-                        <td>Brand A</td>
-                        <td>
-                            <span class="pill p-prod">
-                                <span class="pill-dot"></span>
-                                In Production
-                            </span>
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-calendar"></i> 18 Mar 2026
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-clock"></i> 22 Mar 2026
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="td-name">Ramadan Awareness Series</span>
-                            <div class="td-brand">Brand B • TikTok</div>
-                        </td>
-                        <td>Brand B</td>
-                        <td>
-                            <span class="pill p-revision">
-                                <span class="pill-dot"></span>
-                                Need Revision
-                            </span>
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-calendar"></i> 14 Mar 2026
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-clock"></i> -
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="td-name">Evergreen Content — Tips & Tricks</span>
-                            <div class="td-brand">Brand C • YouTube</div>
-                        </td>
-                        <td>Brand C</td>
-                        <td>
-                            <span class="pill p-ready">
-                                <span class="pill-dot"></span>
-                                Ready to Publish
-                            </span>
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-calendar"></i> 10 Mar 2026
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-clock"></i> 15 Mar 2026
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="td-name">Year in Review 2025</span>
-                            <div class="td-brand">Brand A • Multi-platform</div>
-                        </td>
-                        <td>Brand A</td>
-                        <td>
-                            <span class="pill p-pub">
-                                <span class="pill-dot"></span>
-                                Published
-                            </span>
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-calendar"></i> 05 Jan 2026
-                        </td>
-                        <td class="td-date">
-                            <i class="fa-regular fa-calendar-check"></i> 06 Jan 2026
-                        </td>
-                    </tr>
+                    @forelse(($tasks ?? []) as $task)
+                        @php
+                            $production = $task->productions->first();
+                            $statusMap = [
+                                'in_production' => ['label' => 'In Production', 'class' => 'p-prod'],
+                                'under_review' => ['label' => 'Under Review', 'class' => 'p-review'],
+                                'need_revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
+                                'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready'],
+                                'published' => ['label' => 'Published', 'class' => 'p-pub'],
+                            ];
+                            $status = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-review'];
+                        @endphp
+                        <tr>
+                            <td>
+                                <span class="td-name">{{ $task->judul_konten }}</span>
+                                <div class="td-brand">{{ optional($task->brand)->name ?? '-' }}</div>
+                            </td>
+                            <td>{{ optional($task->brand)->name ?? '-' }}</td>
+                            <td>
+                                <span class="pill {{ $status['class'] }}">
+                                    <span class="pill-dot"></span>
+                                    {{ $status['label'] }}
+                                </span>
+                            </td>
+                            <td class="td-date">
+                                <i class="fa-regular fa-calendar"></i>
+                                {{ $task->deadline ? $task->deadline->format('d M Y') : '-' }}
+                            </td>
+                            <td class="td-date">
+                                <i class="fa-regular {{ $task->status === 'published' ? 'fa-calendar-check' : 'fa-clock' }}"></i>
+                                {{ $task->status === 'published' ? optional($task->updated_at)->format('d M Y') : '-' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" style="text-align:center;padding:24px;color:var(--text-400);">
+                                Belum ada data konten.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ContentTask;
+use App\Models\ContentBrief;
 use Illuminate\Support\Facades\DB;
 
 class RevisionController extends Controller
@@ -13,8 +14,8 @@ class RevisionController extends Controller
      */
     public function index()
     {
-        // Tampilkan semua konten yang sudah masuk alur produksi (sama seperti halaman Production)
-        $workflowStatuses = ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'];
+        // Revision only shows items that are currently being reviewed or revised.
+        $workflowStatuses = ['under_review', 'need_revision'];
 
         $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
                 $q->latest()->limit(1);
@@ -51,8 +52,15 @@ class RevisionController extends Controller
         DB::beginTransaction();
         try {
             ContentTask::whereIn('id', $ids)
-                ->where('status', 'under_review')
+                ->whereIn('status', ['under_review', 'need_revision'])
                 ->update(['status' => 'ready_to_publish']);
+
+            $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+            foreach ($updatedTasks as $task) {
+                ContentBrief::where('title', $task->judul_konten)
+                    ->where('brand_id', $task->brand_id)
+                    ->update(['status' => 'Ready to Publish']);
+            }
 
             DB::commit();
 
@@ -90,6 +98,13 @@ class RevisionController extends Controller
                     'revision_note' => $request->revision_note,
                     'revision_deadline' => $request->revision_deadline,
                 ]);
+
+            $task = ContentTask::find($request->content_task_id);
+            if ($task) {
+                ContentBrief::where('title', $task->judul_konten)
+                    ->where('brand_id', $task->brand_id)
+                    ->update(['status' => 'Need Revision']);
+            }
 
             DB::commit();
 

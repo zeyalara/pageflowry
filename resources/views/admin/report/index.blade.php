@@ -186,29 +186,29 @@
         <div class="stat-ic">
             <i class="fa-solid fa-layer-group"></i>
         </div>
-        <div class="stat-val" data-target="128">128</div>
+        <div class="stat-val" data-target="{{ $stats['total'] ?? 0 }}">{{ $stats['total'] ?? 0 }}</div>
         <div class="stat-lbl">Total Konten</div>
     </div>
     <div class="stat-card sc-vio" style="--i:1">
         <div class="stat-ic">
             <i class="fa-solid fa-eye"></i>
         </div>
-        <div class="stat-val" data-target="1200000">1.2M</div>
-        <div class="stat-lbl">Total Views</div>
+        <div class="stat-val" data-target="{{ $stats['published'] ?? 0 }}">{{ $stats['published'] ?? 0 }}</div>
+        <div class="stat-lbl">Total Published</div>
     </div>
     <div class="stat-card sc-amb" style="--i:2">
         <div class="stat-ic">
             <i class="fa-solid fa-heart"></i>
         </div>
-        <div class="stat-val" data-target="89500">89.5K</div>
-        <div class="stat-lbl">Total Engagement</div>
+        <div class="stat-val" data-target="{{ $stats['ready_to_publish'] ?? 0 }}">{{ $stats['ready_to_publish'] ?? 0 }}</div>
+        <div class="stat-lbl">Ready to Publish</div>
     </div>
     <div class="stat-card sc-em" style="--i:3">
         <div class="stat-ic">
             <i class="fa-solid fa-chart-line"></i>
         </div>
-        <div class="stat-val">92%</div>
-        <div class="stat-lbl">KPI vs Realisasi KPI</div>
+        <div class="stat-val" data-target="{{ $stats['need_revision'] ?? 0 }}">{{ $stats['need_revision'] ?? 0 }}</div>
+        <div class="stat-lbl">Need Revision</div>
     </div>
 </div>
 
@@ -222,7 +222,7 @@
             </div>
         </div>
         <div style="font-size:12px;color:var(--text-400);font-weight:700;">
-            <span id="report-count">0</span> item
+            <span id="report-count">{{ ($tasks ?? collect())->count() }}</span> item
         </div>
     </div>
     <div class="card-body">
@@ -243,9 +243,11 @@
                     <label for="rf-brand">Brand</label>
                     <select id="rf-brand" class="form-control">
                         <option value="">Semua</option>
-                        <option value="Brand A">Brand A</option>
-                        <option value="Brand B">Brand B</option>
-                        <option value="Brand C">Brand C</option>
+                        @if(isset($brands) && $brands->count() > 0)
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->name }}">{{ $brand->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
                 <div class="rf-item">
@@ -306,86 +308,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1024</td>
-                        <td>
-                            <span class="td-name">Launch Video — New Product Line</span>
-                            <div class="td-sub">Campaign Q1 • Asset utama untuk paid & organic</div>
-                        </td>
-                        <td>Brand A</td>
-                        <td>Alya Mutia</td>
-                        <td data-status="in_production">
-                            <span class="r-badge rb-prod"><span class="r-dot"></span>in_production</span>
-                        </td>
-                        <td>v2</td>
-                        <td class="td-date">2026-03-18</td>
-                        <td class="td-date">2026-03-12</td>
-                        <td class="td-date">2026-03-22</td>
-                    </tr>
-                    <tr>
-                        <td>1025</td>
-                        <td>
-                            <span class="td-name">Ramadan Awareness Series</span>
-                            <div class="td-sub">Series edukasi • 5 episode short-form</div>
-                        </td>
-                        <td>Brand B</td>
-                        <td>Dimas Pratama</td>
-                        <td data-status="need_revision">
-                            <span class="r-badge rb-revision"><span class="r-dot"></span>need_revision</span>
-                        </td>
-                        <td>v4</td>
-                        <td class="td-date">2026-03-14</td>
-                        <td class="td-date">2026-03-10</td>
-                        <td class="td-date">-</td>
-                    </tr>
-                    <tr>
-                        <td>1026</td>
-                        <td>
-                            <span class="td-name">Evergreen Content — Tips & Tricks</span>
-                            <div class="td-sub">SEO + YouTube • thumbnail & hook di revisi</div>
-                        </td>
-                        <td>Brand C</td>
-                        <td>Rani Putri</td>
-                        <td data-status="under_review">
-                            <span class="r-badge rb-review"><span class="r-dot"></span>under_review</span>
-                        </td>
-                        <td>v1</td>
-                        <td class="td-date">2026-03-20</td>
-                        <td class="td-date">2026-03-13</td>
-                        <td class="td-date">-</td>
-                    </tr>
-                    <tr>
-                        <td>1027</td>
-                        <td>
-                            <span class="td-name">Promo Flash Sale 3.3</span>
-                            <div class="td-sub">Short-form • sudah final, tinggal jadwal tayang</div>
-                        </td>
-                        <td>Brand A</td>
-                        <td>Fajar Hadi</td>
-                        <td data-status="ready_to_publish">
-                            <span class="r-badge rb-ready"><span class="r-dot"></span>ready_to_publish</span>
-                        </td>
-                        <td>v3</td>
-                        <td class="td-date">2026-03-16</td>
-                        <td class="td-date">2026-03-11</td>
-                        <td class="td-date">2026-03-16</td>
-                    </tr>
-                    <tr>
-                        <td>1028</td>
-                        <td>
-                            <span class="td-name">Year in Review 2025</span>
-                            <div class="td-sub">Long-form • highlight performa tahunan</div>
-                        </td>
-                        <td>Brand B</td>
-                        <td>Alya Mutia</td>
-                        <td data-status="published">
-                            <span class="r-badge rb-published"><span class="r-dot"></span>published</span>
-                        </td>
-                        <td>v7</td>
-                        <td class="td-date">2026-01-05</td>
-                        <td class="td-date">2026-01-06</td>
-                        <td class="td-date">2026-01-06</td>
-                    </tr>
+                    @forelse(($tasks ?? []) as $task)
+                        @php
+                            $production = $task->productions->first();
+                            $badgeMap = [
+                                'in_production' => 'rb-prod',
+                                'under_review' => 'rb-review',
+                                'need_revision' => 'rb-revision',
+                                'ready_to_publish' => 'rb-ready',
+                                'published' => 'rb-published',
+                            ];
+                            $badgeClass = $badgeMap[$task->status] ?? 'rb-review';
+                        @endphp
+                        <tr>
+                            <td>{{ $task->id }}</td>
+                            <td>
+                                <span class="td-name">{{ $task->judul_konten }}</span>
+                                <div class="td-sub">{{ Str::limit($task->deskripsi ?? '-', 60) }}</div>
+                            </td>
+                            <td>{{ optional($task->brand)->name ?? '-' }}</td>
+                            <td>{{ optional($task->creator)->name ?? '-' }}</td>
+                            <td data-status="{{ $task->status }}">
+                                <span class="r-badge {{ $badgeClass }}"><span class="r-dot"></span>{{ $task->status }}</span>
+                            </td>
+                            <td>{{ $production?->versi_video ?? '-' }}</td>
+                            <td class="td-date">{{ $task->deadline ? $task->deadline->format('Y-m-d') : '-' }}</td>
+                            <td class="td-date">{{ $production?->created_at?->format('Y-m-d') ?? '-' }}</td>
+                            <td class="td-date">{{ $task->status === 'published' ? optional($task->updated_at)->format('Y-m-d') : '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" style="text-align:center;padding:28px;color:var(--text-400);">
+                                Belum ada data laporan.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

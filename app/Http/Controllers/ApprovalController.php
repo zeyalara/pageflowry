@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ContentTask;
+use App\Models\ContentBrief;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -50,6 +51,13 @@ class ApprovalController extends Controller
                     'approved_at' => now(),
                 ]);
 
+            $task = ContentTask::find($request->content_task_id);
+            if ($task) {
+                ContentBrief::where('title', $task->judul_konten)
+                    ->where('brand_id', $task->brand_id)
+                    ->update(['status' => 'Ready to Publish']);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -90,6 +98,13 @@ class ApprovalController extends Controller
                     'approved_by' => $userId,
                     'approved_at' => now(),
                 ]);
+
+            $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+            foreach ($updatedTasks as $task) {
+                ContentBrief::where('title', $task->judul_konten)
+                    ->where('brand_id', $task->brand_id)
+                    ->update(['status' => 'Ready to Publish']);
+            }
 
             DB::commit();
 

@@ -3,12 +3,31 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Brand;
+use App\Models\ContentTask;
 
 class ReportController extends Controller
 {
     public function index()
     {
-        return view('admin.report.index');
+        $tasks = ContentTask::with([
+                'brand',
+                'creator',
+                'productions' => fn ($q) => $q->latest()->limit(1),
+            ])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $stats = [
+            'total' => $tasks->count(),
+            'published' => $tasks->where('status', 'published')->count(),
+            'ready_to_publish' => $tasks->where('status', 'ready_to_publish')->count(),
+            'need_revision' => $tasks->where('status', 'need_revision')->count(),
+        ];
+
+        $brands = Brand::orderBy('name')->get();
+
+        return view('admin.report.index', compact('tasks', 'stats', 'brands'));
     }
 
     public function create()

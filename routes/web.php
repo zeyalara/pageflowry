@@ -9,6 +9,8 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\PublishingController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     // Always show landing page first
@@ -112,13 +114,8 @@ Route::post('/admin/approval/approve-single', [ApprovalController::class, 'appro
 Route::get('/admin/publishing', [PublishingController::class, 'index'])->middleware('auth')->name('publishing.index');
 Route::post('/admin/publishing/publish', [PublishingController::class, 'publish'])->middleware('auth')->name('publishing.publish');
 
-Route::get('/admin/analytics', function() {
-    return view('admin.analytics.index');
-})->middleware('auth')->name('analytics.index');
-
-Route::get('/admin/report', function() {
-    return view('admin.report.index');
-})->middleware('auth')->name('report.index');
+Route::get('/admin/analytics', [AnalyticsController::class, 'index'])->middleware('auth')->name('analytics.index');
+Route::get('/admin/report', [ReportController::class, 'index'])->middleware('auth')->name('report.index');
 
 Route::get('/admin/settings', function() {
     return view('admin.settings.index');

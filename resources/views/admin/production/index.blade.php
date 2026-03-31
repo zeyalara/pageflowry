@@ -463,9 +463,6 @@
     margin: 20px;
   }
 }
-</style>
-@endpush
-
 /* Modal */
 .overlay {
   position: fixed;

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Models\ContentBrief;
 use App\Models\Production;
 use App\Models\ContentTask;
 use App\Models\Brand;
@@ -18,6 +20,42 @@ class ProductionController extends Controller
      */
     public function index()
     {
+        // Connect "Daftar Tugas Konten" (ContentBrief) -> dropdown in Production (ContentTask).
+        // We only create missing ContentTask rows; we do NOT update existing ones so workflow statuses
+        // (under_review, need_revision, etc.) remain controlled by production/revision/approval actions.
+        $contentBriefs = ContentBrief::select(['id', 'title', 'description', 'brand_id', 'creator_id', 'production_deadline', 'status'])
+            ->get();
+
+        foreach ($contentBriefs as $brief) {
+            $existing = ContentTask::where('judul_konten', $brief->title)
+                ->where('brand_id', $brief->brand_id)
+                ->first();
+
+            if ($existing) {
+                continue;
+            }
+
+            $statusMap = [
+                'In Production' => 'in_production',
+                'Under Review' => 'under_review',
+                'Need Revision' => 'need_revision',
+                'Ready to Publish' => 'ready_to_publish',
+                'Published' => 'published',
+            ];
+
+            $mappedStatus = $statusMap[$brief->status] ?? 'draft';
+            $deadline = $brief->production_deadline ? Carbon::parse($brief->production_deadline)->startOfDay() : null;
+
+            ContentTask::create([
+                'judul_konten' => $brief->title,
+                'deskripsi' => $brief->description,
+                'brand_id' => $brief->brand_id,
+                'creator_id' => $brief->creator_id,
+                'status' => $mappedStatus,
+                'deadline' => $deadline,
+            ]);
+        }
+
         // Base query: task yang tampil di tabel (status workflow produksi)
         $workflowStatuses = ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'];
 
@@ -160,6 +198,11 @@ class ProductionController extends Controller
             // Update content task status to under_review
             ContentTask::where('id', $request->content_task_id)
                 ->update(['status' => 'under_review']);
+
+            // Keep status in "Daftar Tugas Konten" (content_briefs) in sync.
+            ContentBrief::where('title', $contentTask->judul_konten)
+                ->where('brand_id', $contentTask->brand_id)
+                ->update(['status' => 'Under Review']);
 
             DB::commit();
 
