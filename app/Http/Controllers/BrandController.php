@@ -19,21 +19,31 @@ class BrandController extends Controller
             return redirect('/login')->with('error', 'Access denied. Admin role required.');
         }
         
-        // Get ALL brands from database with no filtering - show everything
-        $brands = Brand::orderBy('id', 'asc')->get();
+        // Get ALL brands with workflow counters from ContentTask (real data, not dummy)
+        $brands = Brand::withCount([
+                'contentTasks as contents_count',
+                'contentTasks as published_count' => function ($q) {
+                    $q->where('status', 'published');
+                },
+                'contentTasks as in_progress_count' => function ($q) {
+                    $q->whereIn('status', ['in_production', 'under_review', 'need_revision', 'ready_to_publish']);
+                },
+            ])
+            ->orderBy('id', 'asc')
+            ->get();
         
         // Debug: Log the actual data from database
-        \Log::info('BrandController: Total brands from database: ' . $brands->count());
-        \Log::info('BrandController: Raw database data: ' . json_encode($brands->toArray()));
+        Log::info('BrandController: Total brands from database: ' . $brands->count());
+        Log::info('BrandController: Raw database data: ' . json_encode($brands->toArray()));
         
         // Log each brand individually for verification
         foreach($brands as $index => $brand) {
-            \Log::info("Brand #" . ($index + 1) . " - ID: " . $brand->id . ", Name: '" . $brand->name . "', PIC: '" . $brand->pic . "', Status: '" . $brand->status . "', Created: '" . $brand->created_at . "'");
+            Log::info("Brand #" . ($index + 1) . " - ID: " . $brand->id . ", Name: '" . $brand->name . "', PIC: '" . $brand->pic . "', Status: '" . $brand->status . "', Created: '" . $brand->created_at . "'");
         }
         
         // Verify no brands are missing
         $expectedCount = $brands->count();
-        \Log::info("BrandController: Expected to display " . $expectedCount . " brands in the view");
+        Log::info("BrandController: Expected to display " . $expectedCount . " brands in the view");
         
         return view('brands.index', compact('brands'));
     }

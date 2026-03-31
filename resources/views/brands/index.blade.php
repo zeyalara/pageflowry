@@ -994,7 +994,7 @@ html, body {
                 </td>
                 <td style="color:var(--text-500);font-size:12.5px">{{ $brand->contact ?: 'No Contact' }}</td>
                 <td>
-                  <span class="content-count"><i class="fa-solid fa-film"></i> 0 konten</span>
+                  <span class="content-count"><i class="fa-solid fa-film"></i> {{ $brand->contents_count ?? 0 }} konten</span>
                 </td>
                 <td>
                   <span class="status-pill {{ $brand->status === 'Active' ? 'sp-active' : 'sp-inactive' }}">
@@ -1187,6 +1187,8 @@ brands = brands.map(brand => {
       tone: brand.tone ? (Array.isArray(brand.tone) ? brand.tone : String(brand.tone).split(',')) : [],
       status: brand.status || 'Active',
       contents: brand.contents || 0,
+      published: brand.published_count || 0,
+      onProgress: brand.in_progress_count || 0,
       created: brand.created || 'Unknown'
     };
   } catch (error) {
@@ -1200,6 +1202,8 @@ brands = brands.map(brand => {
       tone: [],
       status: 'Active',
       contents: 0,
+      published: 0,
+      onProgress: 0,
       created: 'Unknown'
     };
   }
@@ -2085,13 +2089,13 @@ function openDetail(id) {
           </div>
           <div class="cb-row">
             <span class="cb-label">Published</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.floor(b.contents*.6)/maxContent*100)}%;background:var(--emerald)"></div></div>
-            <span class="cb-num">${Math.floor(b.contents*.6)}</span>
+            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.published)/maxContent*100)}%;background:var(--emerald)"></div></div>
+            <span class="cb-num">${Math.max(0,b.published || 0)}</span>
           </div>
           <div class="cb-row">
             <span class="cb-label">On Progress</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.ceil(b.contents*.4)/maxContent*100)}%;background:var(--amber)"></div></div>
-            <span class="cb-num">${Math.ceil(b.contents*.4)}</span>
+            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.onProgress)/maxContent*100)}%;background:var(--amber)"></div></div>
+            <span class="cb-num">${Math.max(0,b.onProgress || 0)}</span>
           </div>
         </div>
       </div>

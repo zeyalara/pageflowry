@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Brand extends Model
 {
@@ -29,12 +30,17 @@ class Brand extends Model
 
     public function getContentsAttribute()
     {
-        return 0; // Default 0 for now
+        return (int) ($this->attributes['contents_count'] ?? 0);
     }
 
     public function getCreatedAttribute()
     {
         return $this->created_at ? $this->created_at->format('M Y') : 'Unknown';
+    }
+
+    public function contentTasks(): HasMany
+    {
+        return $this->hasMany(ContentTask::class);
     }
 
     public function contents()
