@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ContentBrief extends Model
 {
     protected $fillable = [
+        'user_id',
         // Informasi Dasar - Step 2
         'title',                    // fTitle - Judul Konten
         'description',               // fDesc - Deskripsi Tugas Konten
@@ -59,5 +60,46 @@ class ContentBrief extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Token akses publik (tanpa login) untuk halaman brief creator — pakai APP_KEY.
+     */
+    public function publicAccessToken(): string
+    {
+        return hash_hmac('sha256', (string) $this->getKey(), config('app.key'));
+    }
+
+    /**
+     * URL lengkap brief publik + token (untuk email).
+     */
+    public function publicViewUrl(): string
+    {
+        return url('/content-briefs/'.$this->getKey().'/view?token='.urlencode($this->publicAccessToken()));
+    }
+
+    /**
+     * Validasi token query ?token= (mendukung token lama md5 untuk email yang sudah terkirim).
+     */
+    public static function publicViewTokenMatches(self $brief, ?string $token): bool
+    {
+        if ($token === null || $token === '') {
+            return false;
+        }
+
+        $expected = hash_hmac('sha256', (string) $brief->getKey(), config('app.key'));
+        if (hash_equals($expected, $token)) {
+            return true;
+        }
+
+        // Legacy: link lama memakai md5(id . created_at)
+        $legacy = md5($brief->id.$brief->created_at);
+
+        return hash_equals($legacy, $token);
     }
 }

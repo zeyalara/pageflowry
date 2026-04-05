@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ContentTask;
 use App\Models\ContentBrief;
+use Illuminate\Support\Facades\Auth;
 
 class PublishingController extends Controller
 {
@@ -14,11 +15,12 @@ class PublishingController extends Controller
     public function index()
     {
         $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => fn ($q) => $q->latest()->limit(1)])
+            ->where('user_id', Auth::id())
             ->where('status', 'ready_to_publish')
             ->orderByDesc('updated_at')
             ->get();
 
-        $publishedCount = ContentTask::where('status', 'published')->count();
+        $publishedCount = ContentTask::where('user_id', Auth::id())->where('status', 'published')->count();
 
         return view('admin.publishing.index', compact('contentTasks', 'publishedCount'));
     }
@@ -37,13 +39,15 @@ class PublishingController extends Controller
             ], 422);
         }
 
-        ContentTask::whereIn('id', $ids)
+        ContentTask::where('user_id', Auth::id())
+            ->whereIn('id', $ids)
             ->where('status', 'ready_to_publish')
             ->update(['status' => 'published']);
 
-        $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+        $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
         foreach ($updatedTasks as $task) {
-            ContentBrief::where('title', $task->judul_konten)
+            ContentBrief::where('user_id', Auth::id())
+                ->where('title', $task->judul_konten)
                 ->where('brand_id', $task->brand_id)
                 ->update(['status' => 'Published']);
         }

@@ -5,159 +5,81 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\Brand;
+use App\Models\ContentBrief;
+use App\Models\ContentTask;
+use App\Models\Production;
 
 class DashboardController extends Controller
 {
     public function admin()
     {
-        // Check if user is admin
-        if (Auth::user()->role !== 'admin') {
-            return redirect('/login')->with('error', 'Access denied. Admin role required.');
-        }
-        
         $user = Auth::user();
-        
-        // Admin sees all brands data
+        $userId = $user->id;
+
+        // Stats must be real and consistent with other pages (workflow uses content_tasks statuses).
         $stats = [
-            'total_brands' => 12,
-            'total_contents' => 45,
-            'in_production' => 15,
-            'under_review' => 8,
-            'need_revision' => 6,
-            'ready_to_publish' => 4,
-            'published' => 12,
+            'total_brands' => Brand::where('user_id', $userId)->count(),
+            'total_briefs' => ContentBrief::where('user_id', $userId)->count(), // Daftar Tugas Konten source
+            'total_tasks' => ContentTask::where('user_id', $userId)->count(),   // Workflow source
+            'in_production' => ContentTask::where('user_id', $userId)->where('status', 'in_production')->count(),
+            'under_review' => ContentTask::where('user_id', $userId)->where('status', 'under_review')->count(),
+            'need_revision' => ContentTask::where('user_id', $userId)->where('status', 'need_revision')->count(),
+            'ready_to_publish' => ContentTask::where('user_id', $userId)->where('status', 'ready_to_publish')->count(),
+            'published' => ContentTask::where('user_id', $userId)->where('status', 'published')->count(),
         ];
 
-        // Data deadline terdekat (admin sees all)
-        $deadlines = [
-            [
-                'title' => 'Product Launch Video',
-                'brand' => 'TechCorp',
-                'deadline' => '2024-03-15',
-                'status' => 'In Production'
-            ],
-            [
-                'title' => 'Brand Story Content',
-                'brand' => 'FashionHub',
-                'deadline' => '2024-03-18',
-                'status' => 'Under Review'
-            ],
-            [
-                'title' => 'Social Media Campaign',
-                'brand' => 'FoodieLife',
-                'deadline' => '2024-03-20',
-                'status' => 'Need Revision'
-            ],
-        ];
+        $upcomingProduction = ContentBrief::where('user_id', $userId)
+            ->with('brand:id,name')
+            ->orderBy('production_deadline', 'asc')
+            ->take(5)
+            ->get();
 
-        // Data aktivitas terbaru
-        $activities = [
-            [
-                'type' => 'brief',
-                'message' => 'Brief baru diberikan untuk "Summer Campaign"',
-                'time' => '2 jam yang lalu',
-                'icon' => '📋'
-            ],
-            [
-                'type' => 'upload',
-                'message' => 'Upload video untuk "Product Launch" berhasil',
-                'time' => '5 jam yang lalu',
-                'icon' => '📤'
-            ],
-            [
-                'type' => 'revision',
-                'message' => 'Revisi diberikan untuk "Brand Story"',
-                'time' => '1 hari yang lalu',
-                'icon' => '🔄'
-            ],
-            [
-                'type' => 'approved',
-                'message' => 'Konten "Tech Review" diapprove',
-                'time' => '2 hari yang lalu',
-                'icon' => '✅'
-            ],
-            [
-                'type' => 'published',
-                'message' => 'Konten "Food Festival" dipublish',
-                'time' => '3 hari yang lalu',
-                'icon' => '🚀'
-            ],
-        ];
+        $upcomingPublish = ContentBrief::where('user_id', $userId)
+            ->with('brand:id,name')
+            ->orderBy('publish_deadline', 'asc')
+            ->take(5)
+            ->get();
 
-        return view('dashboard.admin', compact('user', 'stats', 'deadlines', 'activities'));
+        $recentBriefs = ContentBrief::where('user_id', $userId)
+            ->with('brand:id,name')
+            ->orderByDesc('created_at')
+            ->take(6)
+            ->get();
+
+        $recentUploads = Production::whereHas('contentTask', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->with('contentTask:id,judul_konten,brand_id', 'contentTask.brand:id,name')
+            ->orderByDesc('created_at')
+            ->take(6)
+            ->get();
+
+        return view('dashboard.admin', compact('user', 'stats', 'upcomingProduction', 'upcomingPublish', 'recentBriefs', 'recentUploads'));
     }
 
     public function creator()
     {
         $user = Auth::user();
         
-        // Creator only sees their assigned brands data
+        // Creator only sees their own data
         $stats = [
-            'total_brands' => 3,
-            'total_contents' => 15,
-            'in_production' => 5,
-            'under_review' => 3,
-            'need_revision' => 2,
-            'ready_to_publish' => 2,
-            'published' => 3,
+            'total_brands' => \App\Models\Brand::where('user_id', $user->id)->where('status', 'Active')->count(),
+            'total_contents' => \App\Models\ContentBrief::where('user_id', $user->id)->count(),
+            'in_production' => \App\Models\ContentBrief::where('user_id', $user->id)->where('status', 'In Production')->count(),
+            'under_review' => \App\Models\ContentBrief::where('user_id', $user->id)->where('status', 'Under Review')->count(),
+            'need_revision' => \App\Models\ContentBrief::where('user_id', $user->id)->where('status', 'Need Revision')->count(),
+            'ready_to_publish' => \App\Models\ContentBrief::where('user_id', $user->id)->where('status', 'Ready to Publish')->count(),
+            'published' => \App\Models\ContentBrief::where('user_id', $user->id)->where('status', 'Published')->count(),
         ];
-
-        // Data deadline terdekat (creator only sees their brands)
-        $deadlines = [
-            [
-                'title' => 'Product Review Video',
-                'brand' => 'MyTechBrand',
-                'deadline' => '2024-03-16',
-                'status' => 'In Production'
-            ],
-            [
-                'title' => 'Brand Story Content',
-                'brand' => 'FashionCreator',
-                'deadline' => '2024-03-19',
-                'status' => 'Under Review'
-            ],
-            [
-                'title' => 'Social Media Campaign',
-                'brand' => 'FoodieCreator',
-                'deadline' => '2024-03-21',
-                'status' => 'Ready to Publish'
-            ],
-        ];
-
-        // Data aktivitas terbaru
-        $activities = [
-            [
-                'type' => 'brief',
-                'message' => 'Brief baru diberikan untuk "Summer Campaign"',
-                'time' => '2 jam yang lalu',
-                'icon' => '📋'
-            ],
-            [
-                'type' => 'upload',
-                'message' => 'Upload video untuk "Product Launch" berhasil',
-                'time' => '5 jam yang lalu',
-                'icon' => '📤'
-            ],
-            [
-                'type' => 'revision',
-                'message' => 'Revisi diberikan untuk "Brand Story"',
-                'time' => '1 hari yang lalu',
-                'icon' => '🔄'
-            ],
-            [
-                'type' => 'approved',
-                'message' => 'Konten "Tech Review" diapprove',
-                'time' => '2 hari yang lalu',
-                'icon' => '✅'
-            ],
-            [
-                'type' => 'published',
-                'message' => 'Konten "Food Festival" dipublish',
-                'time' => '3 hari yang lalu',
-                'icon' => '🚀'
-            ],
-        ];
-
-        return view('dashboard.creator', compact('user', 'stats', 'deadlines', 'activities'));
+        
+        // Get recent content briefs for this creator
+        $recentContent = \App\Models\ContentBrief::where('user_id', $user->id)
+            ->with('brand')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        
+        return view('dashboard.creator', compact('user', 'stats', 'recentContent'));
     }
 }

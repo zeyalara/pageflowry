@@ -786,6 +786,13 @@ html, body {
 </style>
 </head>
 <body>
+@php
+  $authName = auth()->user()->name ?? '';
+  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
+  $authFirst = $authParts[0] ?? 'U';
+  $authSecond = $authParts[1] ?? $authFirst;
+  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
+@endphp
 <div class="shell">
 
 <!-- ════════════════ SIDEBAR ════════════════ -->
@@ -854,10 +861,10 @@ html, body {
 
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar">AM</div>
+      <div class="sb-avatar">{{ auth()->check() ? $authInitials : 'U' }}</div>
       <div class="sb-user-info">
-        <div class="sb-user-name">Alya Mutia</div>
-        <div class="sb-user-role">Administrator</div>
+        <div class="sb-user-name">{{ auth()->user()->name ?? 'Guest User' }}</div>
+        <div class="sb-user-role">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
       </div>
       <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
     </div>
@@ -885,7 +892,7 @@ html, body {
       </div>
       <div class="tb-icon-btn"><i class="fa-regular fa-envelope"></i></div>
       <div class="tb-divider"></div>
-      <div class="tb-avatar-btn">AM</div>
+      <div class="tb-avatar-btn">{{ auth()->check() ? $authInitials : 'U' }}</div>
       <div class="tb-icon-btn"><i class="fa-solid fa-sliders"></i></div>
     </div>
   </header>
@@ -933,9 +940,9 @@ html, body {
         <option value="inactive">Non Active</option>
       </select>
       <div class="toolbar-spacer"></div>
-      <button class="btn btn-ghost" onclick="exportData()">
-        <i class="fa-solid fa-download"></i> Export
-      </button>
+      <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
       <button class="btn btn-primary" onclick="openAddModal()">
         <i class="fa-solid fa-plus"></i> Tambah Brand
       </button>
@@ -2288,13 +2295,6 @@ function animateNumber(element, target) {
       element.textContent = Math.round(current);
     }
   }, 50);
-}
-
-/* ══════════════════════════════════════════
-   EXPORT
-══════════════════════════════════════════ */
-function exportData() {
-  showToast('warn', 'Fitur export sedang dalam pengembangan.');
 }
 
 /* ══════════════════════════════════════════

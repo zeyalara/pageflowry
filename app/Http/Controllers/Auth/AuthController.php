@@ -19,15 +19,8 @@ class AuthController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $request->session()->regenerate();
-            
-            // Redirect based on user role
-            if (Auth::user()->role === 'creator') {
-                return redirect()->route('creator.dashboard');
-            } elseif (Auth::user()->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            }
-            
-            return redirect()->intended('/dashboard');
+
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([
@@ -54,14 +47,7 @@ class AuthController extends Controller
         Auth::attempt($request->only('email', 'password'));
         $request->session()->regenerate();
 
-        // Redirect based on user role
-        if (Auth::user()->role === 'creator') {
-            return redirect()->route('creator.dashboard');
-        } elseif (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect('/dashboard');
+        return redirect()->route('dashboard');
     }
 
     public function logout(Request $request)

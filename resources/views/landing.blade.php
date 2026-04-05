@@ -449,7 +449,27 @@
     <li><a href="#roles">Roles</a></li>
     <li><a href="#academic">Project</a></li>
   </ul>
-  <a href="{{ route('login') }}" class="btn-login">🔐 Login</a>
+  @auth
+    @php
+      $name = auth()->user()->name ?? '';
+      $parts = preg_split('/\s+/', trim($name)) ?: [];
+      $first = $parts[0] ?? 'U';
+      $second = $parts[1] ?? $first;
+      $initials = strtoupper(substr($first, 0, 1) . substr($second, 0, 1));
+    @endphp
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="{{ route('dashboard') }}" class="btn-login" style="background:var(--blue);">🏠 Dashboard</a>
+      <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,var(--blue),var(--blue-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.9rem;">
+        {{ $initials }}
+      </div>
+      <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+        @csrf
+        <button type="submit" class="btn-login" style="border:0;cursor:pointer;">Logout</button>
+      </form>
+    </div>
+  @else
+    <a href="{{ route('login') }}" class="btn-login">🔐 Login</a>
+  @endauth
 </nav>
 
 <!-- HERO -->

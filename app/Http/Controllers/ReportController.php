@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Brand;
 use App\Models\ContentTask;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
@@ -15,6 +16,7 @@ class ReportController extends Controller
                 'creator',
                 'productions' => fn ($q) => $q->latest()->limit(1),
             ])
+            ->where('user_id', Auth::id())
             ->orderByDesc('updated_at')
             ->get();
 
@@ -25,7 +27,7 @@ class ReportController extends Controller
             'need_revision' => $tasks->where('status', 'need_revision')->count(),
         ];
 
-        $brands = Brand::orderBy('name')->get();
+        $brands = Brand::where('user_id', Auth::id())->orderBy('name')->get();
 
         return view('admin.report.index', compact('tasks', 'stats', 'brands'));
     }

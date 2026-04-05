@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Brand;
 use App\Models\ContentTask;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AnalyticsController extends Controller
 {
@@ -15,6 +16,7 @@ class AnalyticsController extends Controller
                 'brand',
                 'productions' => fn ($q) => $q->latest()->limit(1),
             ])
+            ->where('user_id', Auth::id())
             ->orderByDesc('updated_at')
             ->get();
 
@@ -27,7 +29,7 @@ class AnalyticsController extends Controller
             'published' => $tasks->where('status', 'published')->count(),
         ];
 
-        $brands = Brand::orderBy('name')->get();
+        $brands = Brand::where('user_id', Auth::id())->orderBy('name')->get();
         $brandStats = $brands->map(function ($brand) use ($tasks) {
             return [
                 'name' => $brand->name,

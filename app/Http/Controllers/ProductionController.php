@@ -12,6 +12,7 @@ use App\Models\ContentBrief;
 use App\Models\Production;
 use App\Models\ContentTask;
 use App\Models\Brand;
+use Illuminate\Support\Facades\Auth;
 
 class ProductionController extends Controller
 {
@@ -23,7 +24,8 @@ class ProductionController extends Controller
         // Connect "Daftar Tugas Konten" (ContentBrief) -> dropdown in Production (ContentTask).
         // We only create missing ContentTask rows; we do NOT update existing ones so workflow statuses
         // (under_review, need_revision, etc.) remain controlled by production/revision/approval actions.
-        $contentBriefs = ContentBrief::select(['id', 'title', 'description', 'brand_id', 'creator_id', 'production_deadline', 'status'])
+        $contentBriefs = ContentBrief::select(['id', 'title', 'description', 'brand_id', 'creator_id', 'user_id', 'production_deadline', 'status'])
+            ->where('user_id', Auth::id())
             ->get();
 
         foreach ($contentBriefs as $brief) {
@@ -47,6 +49,7 @@ class ProductionController extends Controller
             $deadline = $brief->production_deadline ? Carbon::parse($brief->production_deadline)->startOfDay() : null;
 
             ContentTask::create([
+                'user_id' => $brief->user_id ?? $brief->creator_id,
                 'judul_konten' => $brief->title,
                 'deskripsi' => $brief->description,
                 'brand_id' => $brief->brand_id,
@@ -67,6 +70,9 @@ class ProductionController extends Controller
                 },
             ])
             ->whereIn('status', $workflowStatuses);
+        
+        // Scope to current user
+        $baseQuery->where('user_id', Auth::id());
 
         // Data untuk tabel
         $contentTasks = (clone $baseQuery)
@@ -76,7 +82,7 @@ class ProductionController extends Controller
         // Get tasks for dropdown.
         // User expects "Pilih Content Task" to show all content tasks from
         // the "Daftar Tugas Konten" menu, regardless of status.
-        $tasks = ContentTask::orderBy('id', 'asc')->get();
+        $tasks = ContentTask::where('user_id', Auth::id())->orderBy('id', 'asc')->get();
         
         // Debug: Check if tasks exist
         // dd($tasks->toArray()); // Uncomment to debug
@@ -183,7 +189,7 @@ class ProductionController extends Controller
 
             // `productions.judul_konten` adalah field wajib (NOT NULL)
             // Ambil dari ContentTask yang dipilih.
-            $contentTask = ContentTask::findOrFail($request->content_task_id);
+            $contentTask = ContentTask::where('user_id', Auth::id())->findOrFail($request->content_task_id);
 
             // Create production record
             Production::create([
@@ -196,11 +202,13 @@ class ProductionController extends Controller
             ]);
 
             // Update content task status to under_review
-            ContentTask::where('id', $request->content_task_id)
+            ContentTask::where('user_id', Auth::id())
+                ->where('id', $request->content_task_id)
                 ->update(['status' => 'under_review']);
 
             // Keep status in "Daftar Tugas Konten" (content_briefs) in sync.
-            ContentBrief::where('title', $contentTask->judul_konten)
+            ContentBrief::where('user_id', Auth::id())
+                ->where('title', $contentTask->judul_konten)
                 ->where('brand_id', $contentTask->brand_id)
                 ->update(['status' => 'Under Review']);
 

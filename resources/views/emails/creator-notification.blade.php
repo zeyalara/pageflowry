@@ -108,13 +108,22 @@
                 <p>{{ $data['objective'] ?? 'Tidak ada objective' }}</p>
             </div>
 
+            <div style="text-align:center;margin:24px 0;">
+                <a href="{{ $data['briefLink'] ?? '#' }}" class="cta-button" style="color:#ffffff !important;">Buka halaman brief &amp; tugas</a>
+            </div>
+
+            <p style="font-size:13px;color:#64748b;word-break:break-all;margin:16px 0;line-height:1.5;">
+                Jika tombol tidak berfungsi, salin tautan ini ke browser:<br>
+                <a href="{{ $data['briefLink'] ?? '#' }}" style="color:#0ea5e9;">{{ $data['briefLink'] ?? '' }}</a>
+            </p>
+
             <div class="instructions">
-                <h3>� Instruksi Tugas:</h3>
+                <h3>Instruksi singkat</h3>
                 <ol>
-                    <li>Buka link brief lengkap menggunakan tombol di bawah</li>
-                    <li>Isi ide tambahan dan kreativitas Anda</li>
-                    <li>Upload hasil konten sesuai brief</li>
-                    <li>Perhatikan deadline yang telah ditentukan</li>
+                    <li>Buka tautan di atas (tanpa perlu login ke sistem)</li>
+                    <li>Baca brief lengkap, kembangkan ide, lalu produksi konten sesuai deadline</li>
+                    <li>Kirim hasil ke admin sesuai arahan tim (email balasan akan menuju pengirim brief)</li>
+                    <li>Perhatikan deadline produksi yang tertera</li>
                 </ol>
             </div>
         </div>

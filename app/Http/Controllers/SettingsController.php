@@ -3,39 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
     public function index()
     {
-        return view('admin.settings.index');
+        $user = Auth::user();
+        return view('admin.settings.index', compact('user'));
     }
 
-    public function create()
+    public function update(Request $request)
     {
-        return view('admin.settings.create');
-    }
+        $user = Auth::user();
 
-    public function store(Request $request)
-    {
-        // Logic for storing settings data
-        return redirect()->route('settings.index')->with('success', 'Settings created successfully');
-    }
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
 
-    public function edit($id)
-    {
-        return view('admin.settings.edit', ['id' => $id]);
-    }
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
 
-    public function update(Request $request, $id)
-    {
-        // Logic for updating settings data
-        return redirect()->route('settings.index')->with('success', 'Settings updated successfully');
-    }
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
 
-    public function destroy($id)
-    {
-        // Logic for deleting settings data
-        return redirect()->route('settings.index')->with('success', 'Settings deleted successfully');
+        $user->save();
+
+        return redirect()
+            ->route('settings.index')
+            ->with('success', 'Pengaturan akun berhasil diperbarui.');
     }
 }

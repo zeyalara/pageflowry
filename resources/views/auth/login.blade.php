@@ -486,6 +486,15 @@
     });
   }
 
+  // Open tab via querystring (?tab=register)
+  (function initTabFromQuery() {
+    const p = new URLSearchParams(window.location.search);
+    const tab = p.get('tab');
+    if (tab === 'register') {
+      switchTab('register');
+    }
+  })();
+
   // Loading on submit
   function setLoading(btnId, spId, txtId, text) {
     document.getElementById(spId).style.display = 'block';

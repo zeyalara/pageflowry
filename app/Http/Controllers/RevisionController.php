@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ContentTask;
 use App\Models\ContentBrief;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class RevisionController extends Controller
 {
@@ -21,14 +22,15 @@ class RevisionController extends Controller
                 $q->latest()->limit(1);
             }])
             ->whereIn('status', $workflowStatuses)
+            ->where('user_id', Auth::id())
             ->orderBy('id', 'asc')
             ->get();
 
         // Statistics dari content_tasks.status
         $stats = [
-            'total_review' => ContentTask::whereIn('status', ['under_review', 'need_revision'])->count(),
-            'under_review' => ContentTask::where('status', 'under_review')->count(),
-            'need_revision' => ContentTask::where('status', 'need_revision')->count(),
+            'total_review' => ContentTask::where('user_id', Auth::id())->whereIn('status', ['under_review', 'need_revision'])->count(),
+            'under_review' => ContentTask::where('user_id', Auth::id())->where('status', 'under_review')->count(),
+            'need_revision' => ContentTask::where('user_id', Auth::id())->where('status', 'need_revision')->count(),
         ];
 
         return view('admin.revision.index', compact('contentTasks', 'stats'));
@@ -51,13 +53,15 @@ class RevisionController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::whereIn('id', $ids)
+            ContentTask::where('user_id', Auth::id())
+                ->whereIn('id', $ids)
                 ->whereIn('status', ['under_review', 'need_revision'])
                 ->update(['status' => 'ready_to_publish']);
 
-            $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+            $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
             foreach ($updatedTasks as $task) {
-                ContentBrief::where('title', $task->judul_konten)
+                ContentBrief::where('user_id', Auth::id())
+                    ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
                     ->update(['status' => 'Ready to Publish']);
             }
@@ -91,7 +95,8 @@ class RevisionController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::where('id', $request->content_task_id)
+            ContentTask::where('user_id', Auth::id())
+                ->where('id', $request->content_task_id)
                 ->where('status', 'under_review')
                 ->update([
                     'status' => 'need_revision',
@@ -99,9 +104,10 @@ class RevisionController extends Controller
                     'revision_deadline' => $request->revision_deadline,
                 ]);
 
-            $task = ContentTask::find($request->content_task_id);
+            $task = ContentTask::where('user_id', Auth::id())->find($request->content_task_id);
             if ($task) {
-                ContentBrief::where('title', $task->judul_konten)
+                ContentBrief::where('user_id', Auth::id())
+                    ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
                     ->update(['status' => 'Need Revision']);
             }
@@ -134,7 +140,8 @@ class RevisionController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::where('id', $request->content_task_id)
+            ContentTask::where('user_id', Auth::id())
+                ->where('id', $request->content_task_id)
                 ->where('status', 'need_revision')
                 ->update([
                     'revision_note' => $request->revision_note,

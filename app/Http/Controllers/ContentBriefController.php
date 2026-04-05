@@ -17,12 +17,18 @@ class ContentBriefController extends Controller
     public function index()
     {
         // Get only ACTIVE brands for dropdown and filter
-        $brands = Brand::where('status', 'Active')->orderBy('name', 'asc')->get();
+        $brands = Brand::where('user_id', auth()->id())
+            ->where('status', 'Active')
+            ->orderBy('name', 'asc')
+            ->get();
         
-        // Get ALL content briefs with brand relationship
-        $contentBriefs = ContentBrief::with('brand')->orderBy('created_at', 'desc')->get();
+        // Get ONLY content briefs for logged-in user with brand relationship
+        $contentBriefs = ContentBrief::where('user_id', auth()->id())
+            ->with('brand')
+            ->orderBy('created_at', 'desc')
+            ->get();
         
-        // Calculate statistics from database
+        // Calculate statistics from user's data only
         $stats = [
             'total' => $contentBriefs->count(),
             'in_production' => $contentBriefs->where('status', 'In Production')->count(),
@@ -40,7 +46,10 @@ class ContentBriefController extends Controller
     public function create()
     {
         // Get only ACTIVE brands for dropdown
-        $brands = Brand::where('status', 'Active')->orderBy('name', 'asc')->get();
+        $brands = Brand::where('user_id', auth()->id())
+            ->where('status', 'Active')
+            ->orderBy('name', 'asc')
+            ->get();
         
         return view('brief.create', compact('brands'));
     }
@@ -64,8 +73,8 @@ class ContentBriefController extends Controller
                 'brand' => $brand
             ]);
             
-            // Start query with relationship - NO USER FILTER for now
-            $query = ContentBrief::with('brand');
+            // Start query with relationship - ALWAYS FILTER BY USER
+            $query = ContentBrief::with('brand')->where('user_id', auth()->id());
             
             // DEBUG: Log initial query
             Log::info('Initial query before filters', [
@@ -166,6 +175,13 @@ class ContentBriefController extends Controller
     public function store(Request $request)
     {
         try {
+            if ($request->has('creator_email')) {
+                $raw = $request->input('creator_email');
+                $request->merge([
+                    'creator_email' => (is_string($raw) && trim($raw) !== '') ? trim($raw) : null,
+                ]);
+            }
+
             // Validate required fields
             $validated = $request->validate([
                 // Informasi Dasar - Step 2
@@ -224,10 +240,12 @@ class ContentBriefController extends Controller
 
             // Create new content brief with proper user_id
             $contentBrief = ContentBrief::create([
+                'user_id' => auth()->id(),
                 // Informasi Dasar - Step 2
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'brand_id' => $validated['brand_id'], // Foreign key to brands table
+                // Ensure selected brand belongs to logged-in user
+                'brand_id' => Brand::where('user_id', auth()->id())->findOrFail($validated['brand_id'])->id,
                 'platform' => $validated['platform'],
                 'content_format' => $validated['content_format'],
                 'target_duration' => $validated['target_duration'],
@@ -257,53 +275,28 @@ class ContentBriefController extends Controller
                 'creator_email' => $validated['creator_email'] ?? null,
                 
                 // System Fields - WAJIB: user_id harus sesuai user login
-                'creator_id' => auth()->check() ? auth()->user()->id : null, // Current user ID or null
+                'creator_id' => auth()->id(),
                 'status' => 'In Production', // Default status
             ]);
 
-            // Send email to creator if email is provided
             $emailSent = false;
             $emailStatus = '';
             $creatorEmail = '';
-            
-            if (!empty($validated['creator_email'])) {
+
+            if (! empty($validated['creator_email'])) {
                 $creatorEmail = $validated['creator_email'];
-                
-                Log::info('Attempting to send email to creator', [
-                    'content_brief_id' => $contentBrief->id,
-                    'creator_email' => $creatorEmail,
-                    'mail_mailer' => config('mail.default'),
-                    'mail_host' => config('mail.mailers.' . config('mail.default') . '.host')
-                ]);
-                
-                try {
-                    $this->sendCreatorNotificationEmail($contentBrief, $creatorEmail);
-                    $emailSent = true;
-                    $emailStatus = 'Email berhasil terkirim ke ' . $creatorEmail;
-                    
-                    Log::info('Creator notification email sent successfully', [
-                        'content_brief_id' => $contentBrief->id,
-                        'creator_email' => $creatorEmail
-                    ]);
-                } catch (\Exception $e) {
-                    $emailStatus = 'Gagal mengirim email ke ' . $creatorEmail . ': ' . $e->getMessage();
-                    
-                    Log::error('Failed to send creator notification email', [
-                        'content_brief_id' => $contentBrief->id,
-                        'creator_email' => $creatorEmail,
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                }
+                $notify = $this->trySendCreatorNotification($contentBrief, $creatorEmail);
+                $emailSent = $notify['sent'];
+                $emailStatus = $notify['status'];
             } else {
-                $emailStatus = 'Email tidak ditemukan (tidak ada email creator)';
+                $emailStatus = 'Email creator tidak diisi — notifikasi tidak dikirim.';
                 Log::info('No creator email provided, skipping email notification');
             }
 
             // Return success response with data
-            $successMessage = $emailSent 
-                ? 'Data berhasil disimpan. Email notifikasi telah dikirim ke creator.' 
-                : 'Data berhasil disimpan. Tugas ditandai sebagai dikerjakan admin.';
+            $successMessage = $emailSent
+                ? 'Brief disimpan. Email ke creator sudah dikirim otomatis.'
+                : 'Brief disimpan. Tugas ditandai dikerjakan admin (tanpa email creator).';
                 
             return response()->json([
                 'success' => true,
@@ -311,6 +304,9 @@ class ContentBriefController extends Controller
                 'email_sent' => $emailSent,
                 'creator_email' => $creatorEmail,
                 'email_status' => $emailStatus,
+                'mail_config_hint' => config('mail.default') === 'log'
+                    ? 'Untuk email masuk inbox: set MAIL_MAILER=smtp dan konfigurasi MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS di file .env lalu php artisan config:clear.'
+                    : null,
                 'data' => [
                     'id' => $contentBrief->id,
                     'title' => $contentBrief->title,
@@ -337,33 +333,83 @@ class ContentBriefController extends Controller
     }
 
     /**
+     * Kirim email notifikasi ke creator; dipanggil otomatis saat simpan brief (tanpa aksi tambahan).
+     *
+     * @return array{sent: bool, status: string}
+     */
+    protected function trySendCreatorNotification(ContentBrief $contentBrief, string $creatorEmail): array
+    {
+        $contentBrief->loadMissing('brand');
+
+        Log::info('Attempting to send email to creator', [
+            'content_brief_id' => $contentBrief->id,
+            'creator_email' => $creatorEmail,
+            'mail_mailer' => config('mail.default'),
+            'mail_host' => config('mail.mailers.'.config('mail.default').'.host'),
+        ]);
+
+        if (config('mail.default') === 'log') {
+            Log::warning('MAIL_MAILER=log: email tidak dikirim ke inbox, hanya ke file log. Set MAIL_MAILER=smtp dan MAIL_* di .env.');
+        }
+
+        try {
+            $this->sendCreatorNotificationEmail($contentBrief, $creatorEmail);
+
+            Log::info('Creator notification email sent successfully', [
+                'content_brief_id' => $contentBrief->id,
+                'creator_email' => $creatorEmail,
+            ]);
+
+            return [
+                'sent' => true,
+                'status' => 'Email otomatis terkirim ke '.$creatorEmail,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to send creator notification email', [
+                'content_brief_id' => $contentBrief->id,
+                'creator_email' => $creatorEmail,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'sent' => false,
+                'status' => 'Gagal mengirim email ke '.$creatorEmail.': '.$e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Send notification email to content creator
      */
     public function sendCreatorNotificationEmail($contentBrief, $creatorEmail)
     {
         try {
-            // Generate unique link for the brief (accessible without login)
-            $briefLink = url('/content-briefs/' . $contentBrief->id . '/view?token=' . md5($contentBrief->id . $contentBrief->created_at));
-            
-            // Prepare email data with null checks
+            $contentBrief->loadMissing('brand');
+
+            $briefLink = $contentBrief->publicViewUrl();
+
             $emailData = [
                 'title' => $contentBrief->title ?? 'Tidak ada judul',
-                'brand' => isset($contentBrief->brand) ? $contentBrief->brand->name : 'Tidak ada brand',
+                'brand' => $contentBrief->brand->name ?? 'Tidak ada brand',
                 'platform' => $contentBrief->platform ?? 'Tidak ada platform',
-                'deadline' => $contentBrief->production_deadline ? \Carbon\Carbon::parse($contentBrief->production_deadline)->format('d F Y') : 'Tidak ditentukan',
+                'deadline' => $contentBrief->production_deadline
+                    ? $contentBrief->production_deadline->format('d M Y')
+                    : 'Tidak ditentukan',
                 'description' => $contentBrief->description ?? 'Tidak ada deskripsi',
                 'objective' => $contentBrief->objective ?? 'Tidak ada objective',
                 'briefLink' => $briefLink,
-                'creatorEmail' => $creatorEmail
+                'creatorEmail' => $creatorEmail,
+                'reply_to' => auth()->user()->email ?? config('mail.from.address'),
             ];
-            
-            // Send email
+
             Mail::to($creatorEmail)
                 ->send(new \App\Mail\CreatorNotification($emailData));
-                
+
             return true;
         } catch (\Exception $e) {
-            Log::error('Error in sendCreatorNotificationEmail: ' . $e->getMessage());
+            Log::error('Error in sendCreatorNotificationEmail: '.$e->getMessage());
+
             throw $e;
         }
     }
@@ -377,11 +423,9 @@ class ContentBriefController extends Controller
             // Get content brief with brand relationship
             $contentBrief = ContentBrief::with('brand')->findOrFail($id);
             
-            // Verify token for security
-            $expectedToken = md5($contentBrief->id . $contentBrief->created_at);
-            $providedToken = $request->get('token');
-            
-            if ($providedToken !== $expectedToken) {
+            $providedToken = $request->query('token');
+
+            if (! ContentBrief::publicViewTokenMatches($contentBrief, $providedToken)) {
                 abort(403, 'Akses tidak sah. Token tidak valid.');
             }
             
@@ -403,10 +447,15 @@ class ContentBriefController extends Controller
     public function show(string $id)
     {
         // Get only ACTIVE brands for dropdown and filter
-        $brands = Brand::where('status', 'Active')->orderBy('name', 'asc')->get();
+        $brands = Brand::where('user_id', auth()->id())
+            ->where('status', 'Active')
+            ->orderBy('name', 'asc')
+            ->get();
         
         // Get specific content brief with brand relationship
-        $contentBrief = ContentBrief::with('brand')->findOrFail($id);
+        $contentBrief = ContentBrief::with('brand')
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
         
         return view('brief.show', compact('id', 'brands', 'contentBrief'));
     }
@@ -417,25 +466,37 @@ class ContentBriefController extends Controller
     public function edit(string $id)
     {
         // Get only ACTIVE brands for dropdown
-        $brands = Brand::where('status', 'Active')->orderBy('name', 'asc')->get();
+        $brands = Brand::where('user_id', auth()->id())
+            ->where('status', 'Active')
+            ->orderBy('name', 'asc')
+            ->get();
         
         // Get specific content brief for editing
-        $contentBrief = ContentBrief::findOrFail($id);
+        $contentBrief = ContentBrief::where('user_id', auth()->id())->findOrFail($id);
         
         return view('brief.edit', compact('id', 'brands', 'contentBrief'));
     }
 
     /**
      * Update the specified resource in storage.
+     * Wizard mengirim payload lengkap; email creator dikirim otomatis saat simpan jika diisi / diubah.
      */
     public function update(Request $request, string $id)
     {
         try {
-            $contentBrief = ContentBrief::findOrFail($id);
-            
-            // Validate required fields
+            if ($request->has('creator_email')) {
+                $raw = $request->input('creator_email');
+                $request->merge([
+                    'creator_email' => (is_string($raw) && trim($raw) !== '') ? trim($raw) : null,
+                ]);
+            }
+
+            $contentBrief = ContentBrief::where('user_id', auth()->id())->findOrFail($id);
+            $previousCreatorEmail = $contentBrief->creator_email ? trim((string) $contentBrief->creator_email) : null;
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
                 'brand_id' => 'required|exists:brands,id',
                 'platform' => 'required|string',
                 'content_format' => 'required|string',
@@ -445,21 +506,25 @@ class ContentBriefController extends Controller
                 'objective' => 'required|string',
                 'target_audience' => 'required|string',
                 'key_message' => 'required|string',
-                'hook' => 'nullable|string',
-                'storyline' => 'nullable|string',
-                'visual_direction' => 'nullable|string',
-                'caption' => 'nullable|string',
-                'cta' => 'nullable|string',
-                'hashtags' => 'nullable|string',
-                'target_views' => 'nullable|string',
-                'target_engagement' => 'nullable|string',
-                'creator' => 'nullable|string',
+                'hook' => 'required|string',
+                'storyline' => 'required|string',
+                'visual_direction' => 'required|string',
+                'caption' => 'required|string',
+                'cta' => 'required|string',
+                'hashtags' => 'required|string',
+                'target_views' => 'required|string',
+                'target_engagement' => 'required|string',
+                'creator_email' => 'nullable|email',
+            ], [
+                'title.required' => 'Judul konten wajib diisi.',
+                'brand_id.required' => 'Brand wajib dipilih.',
+                'creator_email.email' => 'Email creator tidak valid.',
             ]);
 
-            // Update content brief
             $contentBrief->update([
                 'title' => $validated['title'],
-                'brand_id' => $validated['brand_id'],
+                'description' => $validated['description'] ?? null,
+                'brand_id' => Brand::where('user_id', auth()->id())->findOrFail($validated['brand_id'])->id,
                 'platform' => $validated['platform'],
                 'content_format' => $validated['content_format'],
                 'target_duration' => $validated['target_duration'],
@@ -468,19 +533,56 @@ class ContentBriefController extends Controller
                 'objective' => $validated['objective'],
                 'target_audience' => $validated['target_audience'],
                 'key_message' => $validated['key_message'],
-                'hook' => $validated['hook'] ?? null,
-                'storyline' => $validated['storyline'] ?? null,
-                'visual_direction' => $validated['visual_direction'] ?? null,
-                'caption' => $validated['caption'] ?? null,
-                'cta' => $validated['cta'] ?? null,
-                'hashtags' => $validated['hashtags'] ?? null,
-                'target_views' => $validated['target_views'] ?? null,
-                'target_engagement' => $validated['target_engagement'] ?? null,
+                'hook' => $validated['hook'],
+                'storyline' => $validated['storyline'],
+                'visual_direction' => $validated['visual_direction'],
+                'caption' => $validated['caption'],
+                'cta' => $validated['cta'],
+                'hashtags' => $validated['hashtags'],
+                'target_views' => $validated['target_views'],
+                'target_engagement' => $validated['target_engagement'],
+                'creator_email' => $validated['creator_email'] ?? null,
             ]);
+
+            $contentBrief->refresh();
+            $contentBrief->loadMissing('brand');
+
+            $newCreatorEmail = isset($validated['creator_email']) && $validated['creator_email']
+                ? trim($validated['creator_email'])
+                : null;
+
+            $emailSent = false;
+            $emailStatus = '';
+            $creatorEmailOut = '';
+
+            $shouldSendEmail = $newCreatorEmail !== null
+                && ($previousCreatorEmail === null || $previousCreatorEmail !== $newCreatorEmail);
+
+            if ($shouldSendEmail) {
+                $creatorEmailOut = $newCreatorEmail;
+                $notify = $this->trySendCreatorNotification($contentBrief, $creatorEmailOut);
+                $emailSent = $notify['sent'];
+                $emailStatus = $notify['status'];
+            } elseif ($newCreatorEmail === null) {
+                $emailStatus = 'Email creator kosong — notifikasi tidak dikirim.';
+            } else {
+                $creatorEmailOut = $newCreatorEmail;
+                $emailStatus = 'Email creator sama seperti sebelumnya — tidak dikirim ulang.';
+            }
+
+            $successMessage = $emailSent
+                ? 'Perubahan disimpan. Email ke creator sudah dikirim otomatis.'
+                : 'Data berhasil diperbarui.';
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data berhasil diperbarui',
+                'message' => $successMessage,
+                'email_sent' => $emailSent,
+                'creator_email' => $creatorEmailOut,
+                'email_status' => $emailStatus,
+                'mail_config_hint' => config('mail.default') === 'log'
+                    ? 'Untuk email masuk inbox: set MAIL_MAILER=smtp dan konfigurasi MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS di file .env lalu php artisan config:clear.'
+                    : null,
                 'data' => [
                     'id' => $contentBrief->id,
                     'title' => $contentBrief->title,
@@ -488,19 +590,18 @@ class ContentBriefController extends Controller
                     'platform' => $contentBrief->platform,
                     'format' => $contentBrief->content_format,
                     'status' => $contentBrief->status,
-                ]
+                ],
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui data: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -511,7 +612,7 @@ class ContentBriefController extends Controller
     public function destroy(string $id)
     {
         try {
-            $contentBrief = ContentBrief::findOrFail($id);
+            $contentBrief = ContentBrief::where('user_id', auth()->id())->findOrFail($id);
             $title = $contentBrief->title;
             $contentBrief->delete();
             

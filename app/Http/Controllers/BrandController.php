@@ -14,22 +14,20 @@ class BrandController extends Controller
      */
     public function index()
     {
-        // Check if user is admin
-        if (Auth::user()->role !== 'admin') {
-            return redirect('/login')->with('error', 'Access denied. Admin role required.');
-        }
-        
-        // Get ALL brands with workflow counters from ContentTask (real data, not dummy)
-        $brands = Brand::withCount([
-                'contentTasks as contents_count',
+        // Always scope to logged-in user.
+        $brands = Brand::where('user_id', Auth::id())
+            ->withCount([
+                'contentTasks as contents_count' => function ($q) {
+                    $q->where('user_id', Auth::id());
+                },
                 'contentTasks as published_count' => function ($q) {
-                    $q->where('status', 'published');
+                    $q->where('user_id', Auth::id())->where('status', 'published');
                 },
                 'contentTasks as in_progress_count' => function ($q) {
-                    $q->whereIn('status', ['in_production', 'under_review', 'need_revision', 'ready_to_publish']);
+                    $q->where('user_id', Auth::id())->whereIn('status', ['in_production', 'under_review', 'need_revision', 'ready_to_publish']);
                 },
             ])
-            ->orderBy('id', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
         
         // Debug: Log the actual data from database
@@ -79,6 +77,7 @@ class BrandController extends Controller
                 'target_market' => $validated['target_market'],
                 'tone' => $validated['tone'],
                 'status' => $validated['status'],
+                'user_id' => Auth::id(),
             ]);
             
             // Fast response
@@ -116,7 +115,7 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -127,7 +126,7 @@ class BrandController extends Controller
             'status' => 'required|in:Active,Non Active',
         ]);
 
-        $brand->update($request->all());
+        $brand->update($request->only(['name', 'pic', 'contact', 'target_market', 'tone', 'status']));
         
         return response()->json([
             'success' => true,
@@ -141,7 +140,7 @@ class BrandController extends Controller
      */
     public function destroy(string $id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
         $brand->delete();
         
         return response()->json([

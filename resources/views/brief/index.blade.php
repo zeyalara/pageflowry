@@ -600,6 +600,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 </style>
 </head>
 <body>
+@php
+  $authName = auth()->user()->name ?? '';
+  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
+  $authFirst = $authParts[0] ?? 'U';
+  $authSecond = $authParts[1] ?? $authFirst;
+  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
+@endphp
 <div class="shell">
 
 <!-- ══════════════ SIDEBAR ══════════════ -->
@@ -668,10 +675,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar">AM</div>
+      <div class="sb-avatar">{{ auth()->check() ? $authInitials : 'U' }}</div>
       <div class="sb-user-info">
-        <div class="sb-user-name">Alya Mutia</div>
-        <div class="sb-user-role">Administrator</div>
+        <div class="sb-user-name">{{ auth()->user()->name ?? 'Guest User' }}</div>
+        <div class="sb-user-role">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
       </div>
       <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
     </div>
@@ -700,7 +707,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <i class="fa-regular fa-envelope"></i>
       </div>
       <div class="tb-divider"></div>
-      <div class="tb-avatar-btn" title="Profil">AM</div>
+      <div class="tb-avatar-btn" title="Profil">{{ auth()->check() ? $authInitials : 'U' }}</div>
       <div class="tb-icon-btn" title="Pengaturan">
         <i class="fa-solid fa-sliders"></i>
       </div>
@@ -783,9 +790,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         @endif
       </select>
       <div class="sp"></div>
-      <button class="btn btn-ghost btn-sm" onclick="toast('w','Fitur export sedang dikembangkan.')">
-        <i class="fa-solid fa-download"></i> Export
-      </button>
+      <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost btn-sm" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:6px;">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
     </div>
 
     <!-- TABLE CARD -->
@@ -1134,6 +1141,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <div class="ico-wrap"><i class="fa-solid fa-envelope"></i>
             <input class="finp" id="fCreator" type="email" placeholder="creator@email.com (kosongkan = admin kerjakan sendiri)"/>
           </div>
+          <div style="font-size:11px;color:var(--t4);margin-top:8px;line-height:1.45;">
+            Jika diisi, sistem akan <strong>mengirim email otomatis</strong> ke alamat ini saat kamu menekan <strong>Simpan Brief</strong> (tanpa tombol tambahan).
+          </div>
         </div>
         <div class="assign-hint">
           <i class="fa-solid fa-circle-info"></i>
@@ -1273,7 +1283,7 @@ let db = {!! $contentBriefs->map(function ($brief) {
 let nextId  = 1;
 let filtered = [];
 let page     = 1;
-const PER    = 8;
+const PER    = Number.MAX_SAFE_INTEGER;
 let delId    = null;
 let editId   = null;
 let curStep  = 1;
@@ -1553,46 +1563,18 @@ function mk(html, disabled, on, onClick) {
 
 function renderTable() {
   const total = filtered.length;
-  const pages = Math.ceil(total / PER);
-
-  if (pages > 0) page = Math.max(1, Math.min(page, pages));
-
-  const start = (page - 1) * PER;
-  const end = Math.min(start + PER, total);
-  const rows = total > 0 ? filtered.slice(start, end) : [];
-
+  const rows = total > 0 ? filtered : [];
   renderTableFromDatabase(rows);
 
+  const pgFrom = document.getElementById('pgFrom');
+  const pgTo = document.getElementById('pgTo');
+  const pgTotal = document.getElementById('pgTotal');
+  if (pgFrom) pgFrom.textContent = total > 0 ? '1' : '0';
+  if (pgTo) pgTo.textContent = String(total);
+  if (pgTotal) pgTotal.textContent = String(total);
+
   const cont = document.getElementById('pgBtns');
-  if (!cont) return;
-
-  cont.innerHTML = '';
-
-  const leftDisabled = pages <= 1 || page <= 1;
-  cont.appendChild(
-    mk('<i class="fa-solid fa-chevron-left" style="font-size:10px"></i>', leftDisabled, false, () => {
-      page--;
-      renderTable();
-    })
-  );
-
-  for (let i = 1; i <= pages; i++) {
-    const p = i;
-    cont.appendChild(
-      mk(String(i), false, i === page, () => {
-        page = p;
-        renderTable();
-      })
-    );
-  }
-
-  const rightDisabled = pages <= 1 || page >= pages;
-  cont.appendChild(
-    mk('<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>', rightDisabled, false, () => {
-      page++;
-      renderTable();
-    })
-  );
+  if (cont) cont.innerHTML = '';
 }
 
 /* ══════════════════════════════════════
@@ -1943,10 +1925,13 @@ function wizNext() {
           } else {
             toast('w', `⚠️ ${data.email_status}`);
           }
+          if (data.mail_config_hint) {
+            setTimeout(() => toast('w', data.mail_config_hint), 2200);
+          }
         }, 1500);
       } else {
         setTimeout(() => {
-          toast('i', '� Tugas akan dikerjakan oleh admin (tidak ada email creator)');
+          toast('i', 'Tugas akan dikerjakan oleh admin (tidak ada email creator).');
         }, 1500);
       }
       
@@ -1958,10 +1943,11 @@ function wizNext() {
       btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brief';
       editId = null;
       
-      // Redirect to brief list page after short delay
+      // Redirect setelah toast (email otomatis saat simpan — tidak perlu klik lain)
+      const redirectMs = data.creator_email ? 2400 : 1200;
       setTimeout(() => {
         window.location.href = '/content-briefs';
-      }, 1000);
+      }, redirectMs);
       
       console.log('Data berhasil disimpan ke database:', data.data);
     } else {

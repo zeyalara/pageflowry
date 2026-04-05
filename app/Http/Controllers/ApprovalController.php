@@ -16,15 +16,16 @@ class ApprovalController extends Controller
         $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
             $q->latest()->limit(1);
         }])
+        ->where('user_id', Auth::id())
         ->whereIn('status', ['under_review', 'need_revision', 'ready_to_publish'])
         ->orderBy('id', 'asc')
         ->get();
 
         // Statistics dari content_tasks.status
         $stats = [
-            'total_review' => ContentTask::whereIn('status', ['under_review', 'need_revision', 'ready_to_publish'])->count(),
-            'need_revision' => ContentTask::where('status', 'need_revision')->count(),
-            'ready_to_publish' => ContentTask::where('status', 'ready_to_publish')->count(),
+            'total_review' => ContentTask::where('user_id', Auth::id())->whereIn('status', ['under_review', 'need_revision', 'ready_to_publish'])->count(),
+            'need_revision' => ContentTask::where('user_id', Auth::id())->where('status', 'need_revision')->count(),
+            'ready_to_publish' => ContentTask::where('user_id', Auth::id())->where('status', 'ready_to_publish')->count(),
         ];
 
         return view('admin.approval.index', compact('contentTasks', 'stats'));
@@ -43,7 +44,8 @@ class ApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::where('id', $request->content_task_id)
+            ContentTask::where('user_id', Auth::id())
+                ->where('id', $request->content_task_id)
                 ->whereIn('status', ['under_review', 'need_revision'])
                 ->update([
                     'status' => 'ready_to_publish',
@@ -51,9 +53,10 @@ class ApprovalController extends Controller
                     'approved_at' => now(),
                 ]);
 
-            $task = ContentTask::find($request->content_task_id);
+            $task = ContentTask::where('user_id', Auth::id())->find($request->content_task_id);
             if ($task) {
-                ContentBrief::where('title', $task->judul_konten)
+                ContentBrief::where('user_id', Auth::id())
+                    ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
                     ->update(['status' => 'Ready to Publish']);
             }
@@ -91,7 +94,8 @@ class ApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::whereIn('id', $ids)
+            ContentTask::where('user_id', Auth::id())
+                ->whereIn('id', $ids)
                 ->whereIn('status', ['under_review', 'need_revision'])
                 ->update([
                     'status' => 'ready_to_publish',
@@ -99,9 +103,10 @@ class ApprovalController extends Controller
                     'approved_at' => now(),
                 ]);
 
-            $updatedTasks = ContentTask::whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+            $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
             foreach ($updatedTasks as $task) {
-                ContentBrief::where('title', $task->judul_konten)
+                ContentBrief::where('user_id', Auth::id())
+                    ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
                     ->update(['status' => 'Ready to Publish']);
             }

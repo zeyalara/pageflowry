@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Brand extends Model
 {
@@ -14,6 +15,7 @@ class Brand extends Model
         'target_market',
         'tone',
         'status',
+        'user_id',
     ];
 
     protected $appends = ['target', 'tone_array', 'contents', 'created'];
@@ -46,6 +48,11 @@ class Brand extends Model
     public function contents()
     {
         return $this->hasMany(ContentBrief::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function activeContents()

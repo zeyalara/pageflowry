@@ -12,6 +12,7 @@ class ContentTask extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'judul_konten',
         'deskripsi',
         'brand_id',
@@ -42,6 +43,11 @@ class ContentTask extends Model
      * Get the creator that owns the content task.
      */
     public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

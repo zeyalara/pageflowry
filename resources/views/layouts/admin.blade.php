@@ -889,12 +889,20 @@ tbody tr:hover td { background: var(--blue-50); }
   </div>
 
   @php
-    $revisionBadge = \App\Models\ContentTask::where('status', 'need_revision')->count();
+    $revisionBadge = \App\Models\ContentTask::where('user_id', auth()->id())
+        ->where('status', 'need_revision')
+        ->count();
+
+    $name = auth()->user()->name ?? '';
+    $parts = preg_split('/\s+/', trim($name)) ?: [];
+    $first = $parts[0] ?? 'U';
+    $second = $parts[1] ?? $first;
+    $initials = strtoupper(substr($first, 0, 1) . substr($second, 0, 1));
   @endphp
 
   <nav class="sb-nav">
     <div class="sb-group-label">Overview</div>
-   <a class="sb-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+   <a class="sb-item {{ request()->routeIs('admin.dashboard') || request()->routeIs('creator.dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
       <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
       Dashboard
     </a>
@@ -949,10 +957,10 @@ tbody tr:hover td { background: var(--blue-50); }
 
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar">AM</div>
+      <div class="sb-avatar">{{ auth()->check() ? $initials : 'U' }}</div>
       <div class="sb-user-info">
-        <div class="sb-user-name">Alya Mutia</div>
-        <div class="sb-user-role">Administrator</div>
+        <div class="sb-user-name">{{ auth()->user() ? auth()->user()->name : 'Guest User' }}</div>
+        <div class="sb-user-role">{{ auth()->user() ? ucfirst(auth()->user()->role) : 'Guest' }}</div>
       </div>
       <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
     </div>
@@ -982,7 +990,26 @@ tbody tr:hover td { background: var(--blue-50); }
         <i class="fa-regular fa-envelope"></i>
       </div>
       <div class="tb-divider"></div>
-      <div class="tb-avatar-btn" title="Profil">AM</div>
+      <div class="tb-profile-dropdown">
+        <div class="tb-avatar-btn" title="Profil" onclick="toggleProfileDropdown()">
+          {{ auth()->check() ? $initials : 'U' }}
+        </div>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="{{ route('settings.index') }}" class="dropdown-item">
+            <i class="fa-solid fa-user"></i> Profile
+          </a>
+          <a href="{{ route('settings.index') }}" class="dropdown-item">
+            <i class="fa-solid fa-gear"></i> Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="dropdown-item logout" style="width:100%;border:0;background:transparent;cursor:pointer;">
+              <i class="fa-solid fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
       <div class="tb-icon-btn" title="Pengaturan">
         <i class="fa-solid fa-sliders"></i>
       </div>
@@ -997,35 +1024,92 @@ tbody tr:hover td { background: var(--blue-50); }
 </div>
 
 <script>
+/* ── PROFILE DROPDOWN ───────────────────── */
+function toggleProfileDropdown() {
+  const dropdown = document.getElementById('profileDropdown');
+  dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('profileDropdown');
+  const button = event.target.closest('.tb-avatar-btn');
+  
+  if (!button && !dropdown.contains(event.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
 /* ── TODAY DATE ─────────────────────── */
 const d = new Date();
 document.getElementById('today-date').textContent =
   d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
-/* ── COUNT UP ───────────────────────── */
-const counters = document.querySelectorAll('.stat-val[data-target]');
-counters.forEach((el, i) => {
-  const target = +el.dataset.target;
-  let n = 0;
-  const tick = () => {
-    n = Math.min(n + Math.ceil(target / 25), target);
-    el.textContent = n;
-    if (n < target) setTimeout(tick, 50);
-  };
-  setTimeout(tick, i * 100);
-});
-
-/* ── SIDEBAR ACTIVE ─────────────────── */
-// Removed to allow proper navigation
-
-/* ── QA BUTTON FEEDBACK ─────────────── */
-document.querySelectorAll('.qa-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    btn.style.transform = 'scale(.96)';
-    setTimeout(() => btn.style.transform = '', 150);
-  });
-});
 </script>
+
+<style>
+/* Profile Dropdown Styles */
+.tb-profile-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 180px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  margin-top: 5px;
+}
+
+.profile-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  color: #1A2740;
+  text-decoration: none;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+}
+
+.dropdown-item.logout {
+  color: #dc3545;
+}
+
+.dropdown-item.logout:hover {
+  background: #f8d7da;
+}
+
+.dropdown-item i {
+  width: 16px;
+  text-align: center;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+</style>
 @stack('scripts')
 </body>
 </html>

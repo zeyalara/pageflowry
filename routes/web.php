@@ -11,16 +11,33 @@ use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\PublishingController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ExportPdfController;
 
 Route::get('/', function () {
     // Always show landing page first
     return view('landing');
 });
 
+Route::get('/dashboard', function () {
+    // Single post-auth landing page
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    $role = auth()->user()->role;
+
+    if ($role === 'creator') {
+        return redirect()->route('creator.dashboard');
+    }
+
+    return redirect()->route('admin.dashboard');
+})->middleware('auth')->name('dashboard');
+
 Route::get('/login', function () {
 
     if (auth()->check()) {
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('dashboard');
     }
 
     return view('auth.login');
@@ -32,21 +49,18 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', function () {
 
     if (auth()->check()) {
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('dashboard');
     }
 
-    return view('auth.register');
+    // Use a single combined Login & Register page.
+    return redirect()->route('login', ['tab' => 'register']);
 
 })->name('register.form');
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/password/reset', function () { return 'Coming soon'; })->name('password.request');
 
-Route::get('/dashboard', function () {
-    return 'Dashboard coming soon!';
-})->middleware('auth');
-
-// Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->middleware(['auth'])->name('creator.dashboard');
+Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->middleware(['auth'])->name('creator.dashboard');
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->middleware(['auth'])->name('admin.dashboard');
 
 Route::get('/test-production', function() {
@@ -61,6 +75,7 @@ Route::post('/test-brand', [App\Http\Controllers\TestController::class, 'testBra
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('/brands/export-pdf', [ExportPdfController::class, 'brands'])->name('brands.export-pdf');
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
@@ -90,6 +105,7 @@ Route::get('/admin/production/download/{id}', [ProductionController::class, 'dow
 
 // Content Tasks Routes
 Route::get('/admin/content-tasks', [ContentBriefController::class, 'index'])->middleware('auth')->name('content-tasks.index');
+Route::get('/admin/content-tasks/export-pdf', [ExportPdfController::class, 'contentTasks'])->middleware('auth')->name('content-tasks.export-pdf');
 Route::get('/admin/content-tasks/create', [ContentBriefController::class, 'create'])->middleware('auth')->name('content-tasks.create');
 Route::post('/admin/content-tasks', [ContentBriefController::class, 'store'])->middleware('auth')->name('content-tasks.store');
 
@@ -117,9 +133,8 @@ Route::post('/admin/publishing/publish', [PublishingController::class, 'publish'
 Route::get('/admin/analytics', [AnalyticsController::class, 'index'])->middleware('auth')->name('analytics.index');
 Route::get('/admin/report', [ReportController::class, 'index'])->middleware('auth')->name('report.index');
 
-Route::get('/admin/settings', function() {
-    return view('admin.settings.index');
-})->middleware('auth')->name('settings.index');
+Route::get('/admin/settings', [SettingsController::class, 'index'])->middleware('auth')->name('settings.index');
+Route::put('/admin/settings', [SettingsController::class, 'update'])->middleware('auth')->name('settings.update');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

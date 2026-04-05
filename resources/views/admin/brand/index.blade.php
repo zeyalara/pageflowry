@@ -203,6 +203,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 </style>
 </head>
 <body>
+@php
+  $authName = auth()->user()->name ?? '';
+  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
+  $authFirst = $authParts[0] ?? 'U';
+  $authSecond = $authParts[1] ?? $authFirst;
+  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
+@endphp
 <div class="shell">
 
 <!-- ═══════ SIDEBAR ═══════ -->
@@ -232,10 +239,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </nav>
   <div class="sb-foot">
     <div class="sb-user">
-      <div class="sb-ava">AM</div>
+      <div class="sb-ava">{{ auth()->check() ? $authInitials : 'U' }}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:12.5px;font-weight:600;color:var(--t7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Alya Mutia</div>
-        <div style="font-size:11px;color:var(--blue);font-weight:500">Administrator</div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--t7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ auth()->user()->name ?? 'Guest User' }}</div>
+        <div style="font-size:11px;color:var(--blue);font-weight:500">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
       </div>
       <i class="fa-solid fa-ellipsis-vertical" style="color:var(--t3);font-size:12px"></i>
     </div>
@@ -258,7 +265,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="tb-btn"><i class="fa-regular fa-bell"></i><span class="tb-dot"></span></div>
       <div class="tb-btn"><i class="fa-regular fa-envelope"></i></div>
       <div class="tb-div"></div>
-      <div class="tb-av">AM</div>
+      <div class="tb-av">{{ auth()->check() ? $authInitials : 'U' }}</div>
     </div>
   </header>
 
@@ -302,9 +309,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="card-header">
         <h3 class="card-title">Daftar Brand</h3>
         <div class="card-actions">
-          <button class="btn btn-ghost">
-            <i class="fa-solid fa-download"></i> Export
-          </button>
+          <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;">
+            <i class="fa-solid fa-file-pdf"></i> Export PDF
+          </a>
           <button class="btn btn-primary" onclick="openModal('brandOverlay')">
             <i class="fa-solid fa-plus"></i> Tambah Brand
           </button>
