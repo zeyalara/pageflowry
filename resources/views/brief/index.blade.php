@@ -220,6 +220,72 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   background: var(--border);
   margin: 0 4px;
 }
+
+/* Header dropdown (notifikasi/pesan) */
+.header-dropdown--wide { min-width: 320px; max-width: min(380px, calc(100vw - 24px)); }
+.header-dd-head {
+  padding: 10px 14px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-400);
+  border-bottom: 1px solid var(--border-light);
+}
+.header-dd-empty { padding: 12px 14px; font-size: 12px; color: var(--text-600); line-height: 1.45; }
+.header-dd-item { align-items: flex-start !important; gap: 10px !important; padding: 10px 12px !important; }
+.header-dd-ic {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--blue-50); color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 13px;
+}
+.header-dd-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.header-dd-title { font-size: 13px; font-weight: 700; color: var(--text-900); }
+.header-dd-sub { font-size: 11px; color: var(--text-400); }
+.header-dd-badge {
+  flex-shrink: 0;
+  min-width: 22px; height: 22px; padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(244,63,94,.14);
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Dropdown base style (samakan dengan halaman lain) */
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 180px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all .25s ease;
+  margin-top: 5px;
+}
+.profile-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  color: #1A2740;
+  text-decoration: none;
+  font-size: 13px;
+  transition: background .2s ease;
+}
+.dropdown-item:hover { background: #f8f9fa; }
 .tb-avatar-btn {
   width: 38px;
   height: 38px;
@@ -331,10 +397,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .btn-action {
   width: 32px;
   height: 32px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border);
-  background: var(--white);
-  color: var(--t5);
+  border-radius: 8px;
+  border: none;
+  background: var(--blue-50);
+  color: var(--blue);
   font-size: 13px;
   cursor: pointer;
   transition: var(--tr);
@@ -345,26 +411,36 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 }
 
 .btn-action:hover {
-  background: var(--blue-50);
+  background: var(--blue-100);
   color: var(--blue);
-  border-color: var(--blue-200);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(88,151,254,0.15);
+  transform: scale(1.08);
 }
 
 .btn-action:active {
   transform: scale(0.95);
 }
 
+.btn-action + .btn-action {
+  margin-left: 5px;
+}
+
+.btn-action[title="Edit"] {
+  background: rgba(245,158,11,.10);
+  color: var(--amber);
+}
+.btn-action[title="Edit"]:hover {
+  background: rgba(245,158,11,.2);
+  color: var(--amber);
+}
+
 .btn-action.btn-delete {
+  background: rgba(244,63,94,.10);
   color: var(--rose);
-  border-color: rgba(244,63,94,0.2);
 }
 
 .btn-action.btn-delete:hover {
-  background: rgba(244,63,94,0.08);
+  background: rgba(244,63,94,.2);
   color: var(--rose);
-  border-color: rgba(244,63,94,0.3);
 }
 
 .btn-action i {
@@ -380,12 +456,21 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .tch-l{display:flex;align-items:center;gap:10px}
 .tch-title{font-size:14px;font-weight:700;color:var(--t7)}
 .tch-cnt{font-size:11.5px;font-weight:700;background:var(--blue-50);color:var(--blue);padding:2px 9px;border-radius:99px}
-.tcard-body{flex:1;overflow-y:auto;min-height:0}
+.tcard-body{
+  flex:1;
+  overflow-y:auto;
+  min-height:0;
+  max-height: calc(100vh - 300px);
+  overscroll-behavior: contain;
+}
 .ktable{width:100%;border-collapse:collapse}
 .ktable thead th{
   font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;
   color:var(--t3);padding:12px 16px;text-align:left;
   background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 .ktable tbody tr{border-bottom:1px solid var(--blight);transition:var(--tr);cursor:pointer}
 .ktable tbody tr:last-child{border-bottom:none}
@@ -601,11 +686,70 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 </head>
 <body>
 @php
-  $authName = auth()->user()->name ?? '';
-  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
-  $authFirst = $authParts[0] ?? 'U';
-  $authSecond = $authParts[1] ?? $authFirst;
-  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
+  $uid = auth()->id();
+  $authUser = auth()->user();
+  $authInitials = 'U';
+
+  if ($authUser) {
+    $username = trim((string) ($authUser->username ?? ''));
+    if ($username !== '') {
+      $authInitials = mb_strtoupper(mb_strlen($username) >= 2 ? mb_substr($username, 0, 1).mb_substr($username, 1, 1) : mb_substr($username, 0, 1).mb_substr($username, 0, 1));
+    } else {
+      $authName = trim((string) ($authUser->name ?? ''));
+      $parts = $authName !== '' ? (preg_split('/\s+/u', $authName, -1, PREG_SPLIT_NO_EMPTY) ?: []) : [];
+      if (count($parts) >= 2) {
+        $authInitials = mb_strtoupper(mb_substr($parts[0], 0, 1).mb_substr($parts[count($parts)-1], 0, 1));
+      } elseif (count($parts) === 1) {
+        $w = $parts[0];
+        $authInitials = mb_strtoupper(mb_strlen($w) >= 2 ? mb_substr($w, 0, 1).mb_substr($w, 1, 1) : mb_substr($w, 0, 1).mb_substr($w, 0, 1));
+      } else {
+        $local = explode('@', (string) ($authUser->email ?? ''))[0] ?? '';
+        if ($local !== '') {
+          $authInitials = mb_strtoupper(mb_strlen($local) >= 2 ? mb_substr($local, 0, 1).mb_substr($local, 1, 1) : mb_substr($local, 0, 1).mb_substr($local, 0, 1));
+        }
+      }
+    }
+  }
+
+  $notifRevision = $uid ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'need_revision')->count() : 0;
+  $notifApproval = $uid ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'under_review')->count() : 0;
+  $notifPublish  = $uid ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'ready_to_publish')->count() : 0;
+
+  $deadlineSoonDays = 2;
+  $today = \Carbon\Carbon::today();
+  $soonLimit = (clone $today)->addDays($deadlineSoonDays)->endOfDay();
+
+  $deadlineSoon = $uid
+    ? \App\Models\ContentBrief::where('user_id', $uid)
+        ->whereNotIn('status', ['Published'])
+        ->where(function ($q) use ($today, $soonLimit) {
+          $q->whereBetween('production_deadline', [$today, $soonLimit])
+            ->orWhereBetween('publish_deadline', [$today, $soonLimit]);
+        })
+        ->orderByRaw("LEAST(COALESCE(production_deadline, '2999-12-31'), COALESCE(publish_deadline, '2999-12-31')) asc")
+        ->limit(6)
+        ->get(['id','title','production_deadline','publish_deadline'])
+    : collect();
+
+  $deadlineOverdue = $uid
+    ? \App\Models\ContentBrief::where('user_id', $uid)
+        ->whereNotIn('status', ['Published'])
+        ->where(function ($q) use ($today) {
+          $q->whereDate('production_deadline', '<', $today)
+            ->orWhereDate('publish_deadline', '<', $today);
+        })
+        ->orderByRaw("LEAST(COALESCE(production_deadline, '2999-12-31'), COALESCE(publish_deadline, '2999-12-31')) asc")
+        ->limit(6)
+        ->get(['id','title','production_deadline','publish_deadline'])
+    : collect();
+
+  $deadlineSoonCount = $deadlineSoon->count();
+  $deadlineOverdueCount = $deadlineOverdue->count();
+
+  $msgNeedRevision = $uid ? \App\Models\ContentTask::where('user_id', $uid)->where('status','need_revision')->latest()->limit(5)->get(['judul_konten','revision_note']) : collect();
+  $msgTotal = $msgNeedRevision->count() + $deadlineSoonCount + $deadlineOverdueCount + $notifApproval + $notifPublish;
+
+  $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount;
 @endphp
 <div class="shell">
 
@@ -699,18 +843,124 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
     </div>
     <div class="tb-right">
-      <div class="tb-icon-btn" title="Notifikasi">
-        <i class="fa-regular fa-bell"></i>
-        <span class="tb-notif-dot"></span>
+      <div class="tb-menu-wrap" style="position:relative;display:inline-block;">
+        <button type="button" class="tb-icon-btn" id="tbNotifBtn" title="Notifikasi" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'notifDropdown', this)">
+          <i class="fa-regular fa-bell"></i>
+          @if(($notifTotal ?? 0) > 0)<span class="tb-notif-dot"></span>@endif
+        </button>
+        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="notifDropdown">
+          <div class="header-dd-head">Notifikasi</div>
+          @if(($notifTotal ?? 0) === 0)
+            <div class="header-dd-empty">Tidak ada notifikasi.</div>
+          @else
+            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
+              @foreach($deadlineOverdue as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
+                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Deadline terlewat · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
+                </a>
+              @endforeach
+              @foreach($deadlineSoon as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                  $days = $d ? \Carbon\Carbon::today()->diffInDays($d, false) : null;
+                  $badge = ($days !== null && $days <= 0) ? 'Hari ini' : ('H-'.$days);
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
+                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-clock"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Mendekati deadline · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">{{ $badge }}</span>
+                </a>
+              @endforeach
+            @endif
+            @if($notifRevision > 0)
+              <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item">
+                <span class="header-dd-ic"><i class="fa-solid fa-rotate-left"></i></span>
+                <span class="header-dd-body"><span class="header-dd-title">{{ $notifRevision }} konten perlu revisi</span><span class="header-dd-sub">Buka Revision</span></span>
+                <span class="header-dd-badge">{{ $notifRevision }}</span>
+              </a>
+            @endif
+            @if($notifApproval > 0)
+              <a href="{{ route('approval.index') }}" class="dropdown-item header-dd-item">
+                <span class="header-dd-ic"><i class="fa-solid fa-circle-check"></i></span>
+                <span class="header-dd-body"><span class="header-dd-title">{{ $notifApproval }} menunggu approval</span><span class="header-dd-sub">Buka Approval</span></span>
+                <span class="header-dd-badge">{{ $notifApproval }}</span>
+              </a>
+            @endif
+            @if($notifPublish > 0)
+              <a href="{{ route('publishing.index') }}" class="dropdown-item header-dd-item">
+                <span class="header-dd-ic"><i class="fa-solid fa-paper-plane"></i></span>
+                <span class="header-dd-body"><span class="header-dd-title">{{ $notifPublish }} siap dipublish</span><span class="header-dd-sub">Buka Publishing</span></span>
+                <span class="header-dd-badge">{{ $notifPublish }}</span>
+              </a>
+            @endif
+          @endif
+        </div>
       </div>
-      <div class="tb-icon-btn" title="Pesan">
-        <i class="fa-regular fa-envelope"></i>
+
+      <div class="tb-menu-wrap" style="position:relative;display:inline-block;">
+        <button type="button" class="tb-icon-btn" id="tbMsgBtn" title="Pesan" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'msgDropdown', this)">
+          <i class="fa-regular fa-envelope"></i>
+          @if(($msgTotal ?? 0) > 0)<span class="tb-notif-dot"></span>@endif
+        </button>
+        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="msgDropdown">
+          <div class="header-dd-head">Pesan</div>
+          @if(($msgTotal ?? 0) === 0)
+            <div class="header-dd-empty">Tidak ada pesan/tindakan baru.</div>
+          @else
+            @if($msgNeedRevision->count() > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Perlu revisi</div>
+              @foreach($msgNeedRevision as $t)
+                <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item">
+                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-pen-to-square"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">{{ $t->judul_konten }}</span>
+                    <span class="header-dd-sub">{{ $t->revision_note ? \Illuminate\Support\Str::limit($t->revision_note, 60) : 'Ada catatan revisi — buka Revision' }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">Revisi</span>
+                </a>
+              @endforeach
+            @endif
+            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
+              @foreach($deadlineOverdue as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
+                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  <span class="header-dd-body"><span class="header-dd-title">Overdue · {{ $label }}</span><span class="header-dd-sub">{{ $b->title }}</span></span>
+                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
+                </a>
+              @endforeach
+            @endif
+          @endif
+        </div>
       </div>
+
       <div class="tb-divider"></div>
       <div class="tb-avatar-btn" title="Profil">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="tb-icon-btn" title="Pengaturan">
-        <i class="fa-solid fa-sliders"></i>
-      </div>
+      <a class="tb-icon-btn" href="{{ route('settings.index') }}" title="Pengaturan"><i class="fa-solid fa-sliders"></i></a>
     </div>
   </header>
 
@@ -1234,6 +1484,38 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
      JAVASCRIPT
 ═══════════════════════════════════════════ -->
 <script>
+/* ── HEADER MENUS (notifikasi, pesan) ───────────────────── */
+function closeAllHeaderMenus() {
+  ['notifDropdown', 'msgDropdown'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+  ['tbNotifBtn', 'tbMsgBtn'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleHeaderMenu(e, menuId, trigger) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  var el = document.getElementById(menuId);
+  if (!el || !trigger) return;
+  var willOpen = !el.classList.contains('show');
+  closeAllHeaderMenus();
+  if (willOpen) {
+    el.classList.add('show');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+}
+
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.tb-menu-wrap')) return;
+  closeAllHeaderMenus();
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeAllHeaderMenus();
+});
+
 /* ══════════════════════════════════════
    DATA
 ══════════════════════════════════════ */

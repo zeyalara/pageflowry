@@ -929,23 +929,97 @@ tbody tr:hover td { background: var(--blue-50); }
     $notifPublish = $uid
         ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'ready_to_publish')->count()
         : 0;
-    $notifTotal = $notifRevision + $notifApproval + $notifPublish;
+    // Deadline notifications
+    $deadlineSoonDays = 2; // H-2 (ubah jika perlu)
+    $today = \Carbon\Carbon::today();
+    $soonLimit = (clone $today)->addDays($deadlineSoonDays)->endOfDay();
+
+    $deadlineSoon = collect();
+    $deadlineOverdue = collect();
+
+    if ($uid) {
+        $deadlineSoon = \App\Models\ContentBrief::query()
+            ->where('user_id', $uid)
+            ->whereNotIn('status', ['Published'])
+            ->where(function ($q) use ($today, $soonLimit) {
+                $q->whereBetween('production_deadline', [$today, $soonLimit])
+                  ->orWhereBetween('publish_deadline', [$today, $soonLimit]);
+            })
+            ->orderByRaw("LEAST(COALESCE(production_deadline, '2999-12-31'), COALESCE(publish_deadline, '2999-12-31')) asc")
+            ->limit(6)
+            ->get(['id', 'title', 'production_deadline', 'publish_deadline', 'status']);
+
+        $deadlineOverdue = \App\Models\ContentBrief::query()
+            ->where('user_id', $uid)
+            ->whereNotIn('status', ['Published'])
+            ->where(function ($q) use ($today) {
+                $q->whereDate('production_deadline', '<', $today)
+                  ->orWhereDate('publish_deadline', '<', $today);
+            })
+            ->orderByRaw("LEAST(COALESCE(production_deadline, '2999-12-31'), COALESCE(publish_deadline, '2999-12-31')) asc")
+            ->limit(6)
+            ->get(['id', 'title', 'production_deadline', 'publish_deadline', 'status']);
+    }
+
+    $deadlineSoonCount = $deadlineSoon->count();
+    $deadlineOverdueCount = $deadlineOverdue->count();
+
+    // Pesan (inbox tindakan)
+    $msgNeedRevision = collect();
+    $msgUnderReview = collect();
+    $msgReadyPublish = collect();
+
+    if ($uid) {
+        $msgNeedRevision = \App\Models\ContentTask::query()
+            ->where('user_id', $uid)
+            ->where('status', 'need_revision')
+            ->orderByDesc('updated_at')
+            ->limit(5)
+            ->get(['id', 'judul_konten', 'revision_note', 'updated_at']);
+
+        $msgUnderReview = \App\Models\ContentTask::query()
+            ->where('user_id', $uid)
+            ->where('status', 'under_review')
+            ->orderByDesc('updated_at')
+            ->limit(3)
+            ->get(['id', 'id', 'judul_konten', 'updated_at']);
+
+        $msgReadyPublish = \App\Models\ContentTask::query()
+            ->where('user_id', $uid)
+            ->where('status', 'ready_to_publish')
+            ->orderByDesc('updated_at')
+            ->limit(3)
+            ->get(['id', 'judul_konten', 'updated_at']);
+    }
+
+    $msgTotal = $msgNeedRevision->count() + $msgUnderReview->count() + $msgReadyPublish->count() + $deadlineSoonCount + $deadlineOverdueCount;
+
+    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount;
 
     $initials = 'U';
     if ($authUser) {
-        $name = trim((string) ($authUser->name ?? ''));
-        if ($name !== '') {
-            $parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-            if (count($parts) >= 2) {
-                $initials = mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[count($parts) - 1], 0, 1));
-            } elseif (count($parts) === 1) {
-                $w = $parts[0];
-                $initials = mb_strtoupper(mb_strlen($w) >= 2 ? mb_substr($w, 0, 1) . mb_substr($w, 1, 1) : mb_substr($w, 0, 1) . mb_substr($w, 0, 1));
-            }
+        $username = trim((string) ($authUser->username ?? ''));
+        if ($username !== '') {
+            $initials = mb_strtoupper(
+                mb_strlen($username) >= 2
+                    ? mb_substr($username, 0, 1).mb_substr($username, 1, 1)
+                    : mb_substr($username, 0, 1).mb_substr($username, 0, 1)
+            );
         } else {
-            $local = explode('@', (string) ($authUser->email ?? ''))[0] ?? '';
-            if ($local !== '') {
-                $initials = mb_strtoupper(mb_strlen($local) >= 2 ? mb_substr($local, 0, 1) . mb_substr($local, 1, 1) : mb_substr($local, 0, 1) . mb_substr($local, 0, 1));
+            $name = trim((string) ($authUser->name ?? ''));
+            if ($name !== '') {
+                $parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                if (count($parts) >= 2) {
+                    $initials = mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[count($parts) - 1], 0, 1));
+                } elseif (count($parts) === 1) {
+                    $w = $parts[0];
+                    $initials = mb_strtoupper(mb_strlen($w) >= 2 ? mb_substr($w, 0, 1) . mb_substr($w, 1, 1) : mb_substr($w, 0, 1) . mb_substr($w, 0, 1));
+                }
+            } else {
+                $local = explode('@', (string) ($authUser->email ?? ''))[0] ?? '';
+                if ($local !== '') {
+                    $initials = mb_strtoupper(mb_strlen($local) >= 2 ? mb_substr($local, 0, 1) . mb_substr($local, 1, 1) : mb_substr($local, 0, 1) . mb_substr($local, 0, 1));
+                }
             }
         }
     }
@@ -1045,6 +1119,45 @@ tbody tr:hover td { background: var(--blue-50); }
           @if(($notifTotal ?? 0) === 0)
             <div class="header-dd-empty">Tidak ada item workflow yang perlu perhatian saat ini.</div>
           @else
+            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
+              @foreach($deadlineOverdue as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Deadline terlewat · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
+                </a>
+              @endforeach
+
+              @foreach($deadlineSoon as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                  $days = $d ? \Carbon\Carbon::today()->diffInDays($d, false) : null;
+                  $badge = ($days !== null && $days <= 0) ? 'Hari ini' : ('H-'.$days);
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-clock"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Mendekati deadline · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">{{ $badge }}</span>
+                </a>
+              @endforeach
+            @endif
+
             @if($notifRevision > 0)
               <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item" role="menuitem">
                 <span class="header-dd-ic"><i class="fa-solid fa-rotate-left"></i></span>
@@ -1082,17 +1195,95 @@ tbody tr:hover td { background: var(--blue-50); }
       <div class="tb-menu-wrap">
         <button type="button" class="tb-icon-btn" id="tbMsgBtn" title="Pesan" aria-label="Pesan dan komunikasi" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'msgDropdown', this)">
           <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+          @if(($msgTotal ?? 0) > 0)
+            <span class="tb-notif-dot" aria-hidden="true"></span>
+          @endif
         </button>
         <div class="profile-dropdown header-dropdown header-dropdown--wide" id="msgDropdown" role="menu" aria-labelledby="tbMsgBtn">
           <div class="header-dd-head">Pesan</div>
-          <div class="header-dd-empty">Belum ada percakapan internal di sistem. Gunakan email creator dari brief untuk koordinasi.</div>
-          <a href="{{ route('content-tasks.index') }}" class="dropdown-item header-dd-item" role="menuitem">
-            <span class="header-dd-ic"><i class="fa-solid fa-list-check"></i></span>
-            <span class="header-dd-body">
-              <span class="header-dd-title">Daftar tugas konten</span>
-              <span class="header-dd-sub">Lihat brief &amp; kontak creator</span>
-            </span>
-          </a>
+          @if(($msgTotal ?? 0) === 0)
+            <div class="header-dd-empty">Tidak ada pesan/tindakan baru. Semua tugas aman.</div>
+          @else
+            @if($msgNeedRevision->count() > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Perlu revisi</div>
+              @foreach($msgNeedRevision as $t)
+                <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-pen-to-square"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">{{ $t->judul_konten }}</span>
+                    <span class="header-dd-sub">{{ $t->revision_note ? \Illuminate\Support\Str::limit($t->revision_note, 60) : 'Ada catatan revisi — buka Revision' }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">Revisi</span>
+                </a>
+              @endforeach
+            @endif
+
+            @if($msgUnderReview->count() > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Menunggu approval</div>
+              @foreach($msgUnderReview as $t)
+                <a href="{{ route('approval.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic"><i class="fa-solid fa-circle-check"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">{{ $t->judul_konten }}</span>
+                    <span class="header-dd-sub">Konten siap ditinjau di Approval</span>
+                  </span>
+                  <span class="header-dd-badge">Review</span>
+                </a>
+              @endforeach
+            @endif
+
+            @if($msgReadyPublish->count() > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Siap publish</div>
+              @foreach($msgReadyPublish as $t)
+                <a href="{{ route('publishing.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(16,185,129,.10);color:#047857;"><i class="fa-solid fa-paper-plane"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">{{ $t->judul_konten }}</span>
+                    <span class="header-dd-sub">Buka Publishing untuk pratinjau &amp; salin caption</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(16,185,129,.14);color:#047857;">Publish</span>
+                </a>
+              @endforeach
+            @endif
+
+            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
+              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
+              @foreach($deadlineOverdue as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Overdue · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
+                </a>
+              @endforeach
+              @foreach($deadlineSoon as $b)
+                @php
+                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
+                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
+                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
+                  $label = $d ? $d->format('d M Y') : '—';
+                  $days = $d ? \Carbon\Carbon::today()->diffInDays($d, false) : null;
+                  $badge = ($days !== null && $days <= 0) ? 'Hari ini' : ('H-'.$days);
+                @endphp
+                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item" role="menuitem">
+                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-clock"></i></span>
+                  <span class="header-dd-body">
+                    <span class="header-dd-title">Soon · {{ $label }}</span>
+                    <span class="header-dd-sub">{{ $b->title }}</span>
+                  </span>
+                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">{{ $badge }}</span>
+                </a>
+              @endforeach
+            @endif
+          @endif
         </div>
       </div>
 
