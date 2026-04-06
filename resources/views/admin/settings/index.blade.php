@@ -27,7 +27,7 @@
     @csrf
     @method('PUT')
 
-    <div class="sec-head" style="margin-bottom:16px;">
+    <div id="profil-akun" class="sec-head" style="margin-bottom:16px;scroll-margin-top:88px;">
         <div class="sec-title"><i class="fa-solid fa-user-gear"></i> Profil Akun</div>
     </div>
 
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div class="sec-head" style="margin:22px 0 12px;">
+    <div id="keamanan-akun" class="sec-head" style="margin:22px 0 12px;scroll-margin-top:88px;">
         <div class="sec-title"><i class="fa-solid fa-lock"></i> Ubah Password</div>
     </div>
 

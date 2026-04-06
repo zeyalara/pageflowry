@@ -20,9 +20,34 @@ class PublishingController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
+        $briefs = ContentBrief::where('user_id', Auth::id())
+            ->get()
+            ->keyBy(fn (ContentBrief $b) => $b->brand_id.'|'.$b->title);
+
+        $publishPreviews = $contentTasks->mapWithKeys(function (ContentTask $task) use ($briefs) {
+            $briefKey = $task->brand_id.'|'.$task->judul_konten;
+            $brief = $briefs->get($briefKey);
+            $production = $task->productions->first();
+            $videoPath = ($production && $production->file_video) ? $production->file_video : null;
+
+            return [
+                (string) $task->id => [
+                    'taskId' => $task->id,
+                    'title' => $task->judul_konten,
+                    'brand' => $task->brand?->name ?? '',
+                    'platform' => $brief?->platform ?? 'Lainnya',
+                    'content_format' => $brief?->content_format ?? '',
+                    'caption' => $brief?->caption ?? '',
+                    'hashtags' => $brief?->hashtags ?? '',
+                    'cta' => $brief?->cta ?? '',
+                    'videoUrl' => $videoPath ? asset('storage/'.$videoPath) : null,
+                ],
+            ];
+        });
+
         $publishedCount = ContentTask::where('user_id', Auth::id())->where('status', 'published')->count();
 
-        return view('admin.publishing.index', compact('contentTasks', 'publishedCount'));
+        return view('admin.publishing.index', compact('contentTasks', 'publishedCount', 'publishPreviews'));
     }
 
     /**

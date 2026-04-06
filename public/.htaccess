@@ -23,3 +23,23 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Batas upload PHP (Apache + mod_php / XAMPP). Jika error 500, hapus blok ini dan set di php.ini.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 16384M
+    php_value post_max_size 16384M
+    php_value max_execution_time 0
+    php_value max_input_time -1
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 16384M
+    php_value post_max_size 16384M
+    php_value max_execution_time 0
+    php_value max_input_time -1
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 16384M
+    php_value post_max_size 16384M
+    php_value max_execution_time 0
+    php_value max_input_time -1
+</IfModule>

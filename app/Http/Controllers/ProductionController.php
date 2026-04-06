@@ -13,9 +13,44 @@ use App\Models\Production;
 use App\Models\ContentTask;
 use App\Models\Brand;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\UploadedFile;
 
 class ProductionController extends Controller
 {
+    /**
+     * Aturan upload video: selaras dengan input file accept="video/*" (semua format video di pemilih file).
+     *
+     * @return array<int, string|\Closure>
+     */
+    protected function videoFileRules(): array
+    {
+        return [
+            'required',
+            'file',
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! $value instanceof UploadedFile) {
+                    return;
+                }
+                if (! $value->isValid()) {
+                    return;
+                }
+                $mime = strtolower((string) $value->getMimeType());
+                if ($mime === '' || $mime === 'application/octet-stream') {
+                    $mime = strtolower((string) $value->getClientMimeType());
+                }
+                if ($mime !== '' && str_starts_with($mime, 'video/')) {
+                    return;
+                }
+                $ext = strtolower((string) $value->getClientOriginalExtension());
+                $videoExts = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', 'wmv', 'flv', 'mpeg', 'mpg', 'mpe', '3gp', '3g2', 'ogv', 'ts', 'm2ts', 'asf', 'f4v'];
+                if ($ext !== '' && in_array($ext, $videoExts, true)) {
+                    return;
+                }
+                $fail('File harus berformat video (gunakan filter Video di dialog pilih file).');
+            },
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -139,7 +174,7 @@ class ProductionController extends Controller
                 'content_task_id' => 'required|exists:content_tasks,id',
                 'version' => 'required|string|max:10',
                 'final_duration' => 'required|string|max:20',
-                'video_file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
+                'video_file' => $this->videoFileRules(),
                 'production_notes' => 'nullable|string|max:500'
             ]);
 
@@ -154,12 +189,15 @@ class ProductionController extends Controller
                 'content_task_id' => 'required|exists:content_tasks,id',
                 'version' => 'required|string|max:10',
                 'final_duration' => 'required|string|max:20',
-                'video_file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
+                'video_file' => $this->videoFileRules(),
                 'production_notes' => 'nullable|string|max:500'
             ]);
         }
 
         try {
+            // Video besar butuh waktu baca/move file; hindari timeout default PHP di hosting.
+            set_time_limit(0);
+
             DB::beginTransaction();
 
             // Handle video file upload

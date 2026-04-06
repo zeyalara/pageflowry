@@ -911,7 +911,7 @@
               <div class="file-input-text" id="file-name">
                 <i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload video
               </div>
-              <div class="file-input-hint">Format: MP4, MOV, AVI (Max: 100MB)</div>
+              <div class="file-input-hint">Semua format video yang bisa dipilih di dialog unggah (filter Video)</div>
             </div>
           </div>
 
@@ -1068,64 +1068,81 @@ function submitUpload(event) {
     return;
   }
 
-  const submitBtn = event.target;
+  const uploadOverlay = document.getElementById('uploadOverlay');
+  const submitBtn = uploadOverlay?.querySelector('.mf-right .btn-primary') || event.target;
   const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengupload...';
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan upload...';
   submitBtn.disabled = true;
 
-  formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+  formData.append('_token', csrfToken);
 
-  fetch('{{ route("production.store") }}', {
-    method: 'POST',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
-    },
-    body: formData
-  })
-    .then(response => {
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
-      // Check if response is actually JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        // If not JSON, it's probably an HTML error page
-        return response.text().then(html => {
-          console.error('Server returned HTML instead of JSON:', html.substring(0, 200));
-          throw new Error('Server returned HTML error page instead of JSON. Check server logs for details.');
-        });
+  const url = '{{ route("production.store") }}';
+
+  // fetch tidak punya progress upload — file video besar terlihat "loading terus".
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', url, true);
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.setRequestHeader('Accept', 'application/json');
+  if (csrfToken) {
+    xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+  }
+  xhr.timeout = 0;
+
+  xhr.upload.onprogress = function (e) {
+    if (e.lengthComputable && e.total > 0) {
+      const pct = Math.min(100, Math.round((e.loaded / e.total) * 100));
+      submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Mengupload ' + pct + '%';
+    } else {
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengupload...';
+    }
+  };
+
+  xhr.onload = function () {
+    const contentType = xhr.getResponseHeader('content-type') || '';
+    let data = null;
+    if (contentType.includes('application/json')) {
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch (err) {
+        console.error('Invalid JSON response', err);
       }
-      
-      if (!response.ok) {
-        // Kalau backend ngirim JSON error, tampilkan message-nya biar jelas.
-        return response.json()
-          .then(errData => {
-            throw new Error(errData.message || `HTTP error! status: ${response.status}`);
-          })
-          .catch(() => {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          });
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Response data:', data);
-      if (data.success) {
-        closeModal('uploadOverlay');
-        window.location.reload();
-      } else {
-        alert('Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
-      }
-    })
-    .catch(error => {
-      console.error('Upload error:', error);
-      alert('Terjadi kesalahan saat upload. Silakan coba lagi. Error: ' + error.message);
-    })
-    .finally(() => {
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
-    });
+    }
+
+    if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
+      closeModal('uploadOverlay');
+      window.location.reload();
+      return;
+    }
+
+    if (data && data.message) {
+      alert('Upload gagal: ' + data.message);
+    } else if (xhr.status === 413) {
+      alert('File terlalu besar untuk server (413). Naikkan post_max_size & upload_max_filesize di php.ini (atau public/.user.ini), dan di Nginx: client_max_body_size — lihat deploy/nginx-upload-limits.conf.');
+    } else if (!contentType.includes('application/json') && xhr.responseText) {
+      console.error('Server returned non-JSON:', xhr.responseText.substring(0, 300));
+      alert('Server mengembalikan halaman error (bukan JSON). Cek log server atau ukuran/time limit upload.');
+    } else {
+      alert('Upload gagal (HTTP ' + xhr.status + '). Coba lagi atau periksa koneksi.');
+    }
+
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  };
+
+  xhr.onerror = function () {
+    alert('Koneksi terputus saat upload. Periksa jaringan atau coba file lebih kecil.');
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  };
+
+  xhr.onabort = function () {
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  };
+
+  xhr.send(formData);
 }
 
 function previewVideo(productionId, taskTitle, videoFile) {
@@ -1142,10 +1159,7 @@ function previewVideo(productionId, taskTitle, videoFile) {
   const videoPath = `/storage/${videoFile}`;
   previewContent.innerHTML = `
     <div style="text-align: center;">
-      <video controls style="max-width: 100%; height: auto; border-radius: 8px;" preload="metadata">
-        <source src="${videoPath}" type="video/mp4">
-        <source src="${videoPath}" type="video/mov">
-        <source src="${videoPath}" type="video/avi">
+      <video controls style="max-width: 100%; height: auto; border-radius: 8px;" preload="metadata" src="${videoPath}">
         Browser Anda tidak mendukung video player.
       </video>
       <div style="margin-top: 16px; color: var(--text-400); font-size: 14px;">

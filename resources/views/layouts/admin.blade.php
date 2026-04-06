@@ -334,6 +334,18 @@ html, body {
   color: var(--blue);
   border-color: var(--blue-200);
 }
+a.tb-icon-btn {
+  text-decoration: none;
+  color: var(--text-500);
+  box-sizing: border-box;
+}
+a.tb-icon-btn:hover {
+  color: var(--blue);
+}
+.tb-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
 .tb-notif-dot {
   position: absolute;
   top: 7px; right: 7px;
@@ -356,8 +368,20 @@ html, body {
   cursor: pointer;
   box-shadow: 0 3px 12px rgba(88,151,254,.35);
   transition: var(--t);
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
 }
 .tb-avatar-btn:hover { transform: scale(1.05); box-shadow: var(--s3); }
+.tb-avatar-btn:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+button.tb-icon-btn {
+  font-family: inherit;
+  padding: 0;
+}
 
 .tb-divider {
   width: 1px;
@@ -889,15 +913,42 @@ tbody tr:hover td { background: var(--blue-50); }
   </div>
 
   @php
-    $revisionBadge = \App\Models\ContentTask::where('user_id', auth()->id())
-        ->where('status', 'need_revision')
-        ->count();
+    $authUser = auth()->user();
+    $uid = auth()->id();
 
-    $name = auth()->user()->name ?? '';
-    $parts = preg_split('/\s+/', trim($name)) ?: [];
-    $first = $parts[0] ?? 'U';
-    $second = $parts[1] ?? $first;
-    $initials = strtoupper(substr($first, 0, 1) . substr($second, 0, 1));
+    $revisionBadge = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'need_revision')->count()
+        : 0;
+
+    $notifRevision = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'need_revision')->count()
+        : 0;
+    $notifApproval = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'under_review')->count()
+        : 0;
+    $notifPublish = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'ready_to_publish')->count()
+        : 0;
+    $notifTotal = $notifRevision + $notifApproval + $notifPublish;
+
+    $initials = 'U';
+    if ($authUser) {
+        $name = trim((string) ($authUser->name ?? ''));
+        if ($name !== '') {
+            $parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            if (count($parts) >= 2) {
+                $initials = mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[count($parts) - 1], 0, 1));
+            } elseif (count($parts) === 1) {
+                $w = $parts[0];
+                $initials = mb_strtoupper(mb_strlen($w) >= 2 ? mb_substr($w, 0, 1) . mb_substr($w, 1, 1) : mb_substr($w, 0, 1) . mb_substr($w, 0, 1));
+            }
+        } else {
+            $local = explode('@', (string) ($authUser->email ?? ''))[0] ?? '';
+            if ($local !== '') {
+                $initials = mb_strtoupper(mb_strlen($local) >= 2 ? mb_substr($local, 0, 1) . mb_substr($local, 1, 1) : mb_substr($local, 0, 1) . mb_substr($local, 0, 1));
+            }
+        }
+    }
   @endphp
 
   <nav class="sb-nav">
@@ -982,37 +1033,106 @@ tbody tr:hover td { background: var(--blue-50); }
       </div>
     </div>
     <div class="tb-right">
-      <div class="tb-icon-btn" title="Notifikasi">
-        <i class="fa-regular fa-bell"></i>
-        <span class="tb-notif-dot"></span>
-      </div>
-      <div class="tb-icon-btn" title="Pesan">
-        <i class="fa-regular fa-envelope"></i>
-      </div>
-      <div class="tb-divider"></div>
-      <div class="tb-profile-dropdown">
-        <div class="tb-avatar-btn" title="Profil" onclick="toggleProfileDropdown()">
-          {{ auth()->check() ? $initials : 'U' }}
+      <div class="tb-menu-wrap">
+        <button type="button" class="tb-icon-btn" id="tbNotifBtn" title="Notifikasi" aria-label="Notifikasi workflow" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'notifDropdown', this)">
+          <i class="fa-regular fa-bell" aria-hidden="true"></i>
+          @if(($notifTotal ?? 0) > 0)
+            <span class="tb-notif-dot" aria-hidden="true"></span>
+          @endif
+        </button>
+        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="notifDropdown" role="menu" aria-labelledby="tbNotifBtn">
+          <div class="header-dd-head">Notifikasi</div>
+          @if(($notifTotal ?? 0) === 0)
+            <div class="header-dd-empty">Tidak ada item workflow yang perlu perhatian saat ini.</div>
+          @else
+            @if($notifRevision > 0)
+              <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                <span class="header-dd-ic"><i class="fa-solid fa-rotate-left"></i></span>
+                <span class="header-dd-body">
+                  <span class="header-dd-title">{{ $notifRevision }} konten perlu revisi</span>
+                  <span class="header-dd-sub">Buka halaman Revision</span>
+                </span>
+                <span class="header-dd-badge">{{ $notifRevision }}</span>
+              </a>
+            @endif
+            @if($notifApproval > 0)
+              <a href="{{ route('approval.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                <span class="header-dd-ic"><i class="fa-solid fa-circle-check"></i></span>
+                <span class="header-dd-body">
+                  <span class="header-dd-title">{{ $notifApproval }} menunggu approval</span>
+                  <span class="header-dd-sub">Tinjau di Approval</span>
+                </span>
+                <span class="header-dd-badge">{{ $notifApproval }}</span>
+              </a>
+            @endif
+            @if($notifPublish > 0)
+              <a href="{{ route('publishing.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                <span class="header-dd-ic"><i class="fa-solid fa-paper-plane"></i></span>
+                <span class="header-dd-body">
+                  <span class="header-dd-title">{{ $notifPublish }} siap dipublish</span>
+                  <span class="header-dd-sub">Buka Publishing</span>
+                </span>
+                <span class="header-dd-badge">{{ $notifPublish }}</span>
+              </a>
+            @endif
+          @endif
         </div>
-        <div class="profile-dropdown" id="profileDropdown">
-          <a href="{{ route('settings.index') }}" class="dropdown-item">
-            <i class="fa-solid fa-user"></i> Profile
+      </div>
+
+      <div class="tb-menu-wrap">
+        <button type="button" class="tb-icon-btn" id="tbMsgBtn" title="Pesan" aria-label="Pesan dan komunikasi" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'msgDropdown', this)">
+          <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+        </button>
+        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="msgDropdown" role="menu" aria-labelledby="tbMsgBtn">
+          <div class="header-dd-head">Pesan</div>
+          <div class="header-dd-empty">Belum ada percakapan internal di sistem. Gunakan email creator dari brief untuk koordinasi.</div>
+          <a href="{{ route('content-tasks.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+            <span class="header-dd-ic"><i class="fa-solid fa-list-check"></i></span>
+            <span class="header-dd-body">
+              <span class="header-dd-title">Daftar tugas konten</span>
+              <span class="header-dd-sub">Lihat brief &amp; kontak creator</span>
+            </span>
           </a>
-          <a href="{{ route('settings.index') }}" class="dropdown-item">
-            <i class="fa-solid fa-gear"></i> Settings
+        </div>
+      </div>
+
+      <div class="tb-divider" aria-hidden="true"></div>
+
+      <div class="tb-profile-dropdown tb-menu-wrap">
+        <button type="button" class="tb-avatar-btn" id="tbAvatarBtn" title="Menu akun" aria-label="Menu akun, {{ optional($authUser)->name ?? 'Pengguna' }}" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'profileDropdown', this)">
+          {{ $initials }}
+        </button>
+        <div class="profile-dropdown" id="profileDropdown" role="menu" aria-labelledby="tbAvatarBtn">
+          <div class="header-dd-user">
+            <div class="header-dd-user-avatar">{{ $initials }}</div>
+            <div>
+              <div class="header-dd-user-name">{{ optional($authUser)->name ?? 'Pengguna' }}</div>
+              <div class="header-dd-user-email">{{ optional($authUser)->email ?? '' }}</div>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="{{ route('settings.index') }}#profil-akun" class="dropdown-item" role="menuitem">
+            <i class="fa-solid fa-user"></i> Profil akun
+          </a>
+          <a href="{{ route('settings.index') }}#keamanan-akun" class="dropdown-item" role="menuitem">
+            <i class="fa-solid fa-shield-halved"></i> Keamanan &amp; password
+          </a>
+          <a href="{{ route('settings.index') }}" class="dropdown-item" role="menuitem">
+            <i class="fa-solid fa-gear"></i> Semua pengaturan
           </a>
           <div class="dropdown-divider"></div>
           <form method="POST" action="{{ route('logout') }}" style="margin:0;">
             @csrf
-            <button type="submit" class="dropdown-item logout" style="width:100%;border:0;background:transparent;cursor:pointer;">
-              <i class="fa-solid fa-sign-out-alt"></i> Logout
+            <button type="submit" class="dropdown-item logout" style="width:100%;border:0;background:transparent;cursor:pointer;text-align:left;">
+              <i class="fa-solid fa-sign-out-alt"></i> Keluar
             </button>
           </form>
         </div>
       </div>
-      <div class="tb-icon-btn" title="Pengaturan">
-        <i class="fa-solid fa-sliders"></i>
-      </div>
+
+      <a href="{{ route('settings.index') }}" class="tb-icon-btn" title="Pengaturan akun" aria-label="Pengaturan akun">
+        <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+      </a>
     </div>
   </header>
 
@@ -1024,20 +1144,36 @@ tbody tr:hover td { background: var(--blue-50); }
 </div>
 
 <script>
-/* ── PROFILE DROPDOWN ───────────────────── */
-function toggleProfileDropdown() {
-  const dropdown = document.getElementById('profileDropdown');
-  dropdown.classList.toggle('show');
+/* ── HEADER MENUS (notifikasi, pesan, avatar) ───────────────────── */
+function closeAllHeaderMenus() {
+  ['notifDropdown', 'msgDropdown', 'profileDropdown'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+  document.querySelectorAll('#tbNotifBtn, #tbMsgBtn, #tbAvatarBtn').forEach(function (btn) {
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-  const dropdown = document.getElementById('profileDropdown');
-  const button = event.target.closest('.tb-avatar-btn');
-  
-  if (!button && !dropdown.contains(event.target)) {
-    dropdown.classList.remove('show');
+function toggleHeaderMenu(e, menuId, trigger) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  var el = document.getElementById(menuId);
+  if (!el || !trigger) return;
+  var willOpen = !el.classList.contains('show');
+  closeAllHeaderMenus();
+  if (willOpen) {
+    el.classList.add('show');
+    trigger.setAttribute('aria-expanded', 'true');
   }
+}
+
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.tb-menu-wrap')) return;
+  closeAllHeaderMenus();
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeAllHeaderMenus();
 });
 
 /* ── TODAY DATE ─────────────────────── */
@@ -1074,6 +1210,103 @@ document.getElementById('today-date').textContent =
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+.header-dropdown--wide {
+  min-width: 300px;
+  max-width: min(360px, calc(100vw - 24px));
+}
+.header-dd-head {
+  padding: 10px 14px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-400, #8fa3c4);
+  border-bottom: 1px solid #eef2f7;
+}
+.header-dd-empty {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--text-500, #5c7099);
+  line-height: 1.45;
+}
+.header-dd-item {
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+}
+.header-dd-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.header-dd-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.header-dd-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A2740;
+}
+.header-dd-sub {
+  font-size: 11px;
+  color: #8fa3c4;
+}
+.header-dd-badge {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-dd-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+}
+.header-dd-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #5897fe, #3a7bfe);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.header-dd-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d1526;
+}
+.header-dd-user-email {
+  font-size: 11px;
+  color: #5c7099;
+  word-break: break-all;
 }
 
 .dropdown-item {
