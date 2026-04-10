@@ -13,6 +13,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ExportPdfController;
+use App\Http\Controllers\PublicBriefController;
 
 Route::get('/', function () {
     // Always show landing page first
@@ -169,3 +170,8 @@ Route::get('/create-dummy-data', function() {
     return "Dummy content tasks created";
 
 });
+
+// Public routes for token-based access (no authentication required)
+Route::get('/brief/{token}', [PublicBriefController::class, 'showBrief'])->name('public.brief');
+Route::get('/production/{token}', [PublicBriefController::class, 'showProduction'])->name('public.production');
+Route::get('/all-briefs/{token}', [PublicBriefController::class, 'showAllBriefs'])->name('public.all-briefs');

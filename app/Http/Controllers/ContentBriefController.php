@@ -18,8 +18,8 @@ class ContentBriefController extends Controller
      */
     public function index()
     {
-        // Check and send deadline notifications
-        $this->checkDeadlineNotifications();
+        // Check and send deadline notifications (disabled until notifications table is created)
+        // $this->checkDeadlineNotifications();
         
         // Get only ACTIVE brands for dropdown and filter
         $brands = Brand::where('user_id', auth()->id())
@@ -333,6 +333,9 @@ class ContentBriefController extends Controller
                 'status' => 'In Production', // Default status
             ]);
 
+            // Generate share token for public access
+            $shareToken = $contentBrief->createShareToken(30); // 30 days expiration
+
             $emailSent = false;
             $emailStatus = '';
             $creatorEmail = '';
@@ -347,6 +350,11 @@ class ContentBriefController extends Controller
                 Log::info('No creator email provided, skipping email notification');
             }
 
+            // Generate share links
+            $briefUrl = route('public.brief', $shareToken);
+            $productionUrl = route('public.production', $shareToken);
+            $allBriefsUrl = route('public.all-briefs', $shareToken);
+
             // Return success response with data
             $successMessage = $emailSent
                 ? 'Brief disimpan. Email ke creator sudah dikirim otomatis.'
@@ -358,6 +366,12 @@ class ContentBriefController extends Controller
                 'email_sent' => $emailSent,
                 'creator_email' => $creatorEmail,
                 'email_status' => $emailStatus,
+                'share_token' => $shareToken,
+                'share_links' => [
+                    'brief' => $briefUrl,
+                    'production' => $productionUrl,
+                    'all_briefs' => $allBriefsUrl,
+                ],
                 'mail_config_hint' => config('mail.default') === 'log'
                     ? 'Untuk email masuk inbox: set MAIL_MAILER=smtp dan konfigurasi MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS di file .env lalu php artisan config:clear.'
                     : null,
@@ -678,6 +692,33 @@ class ContentBriefController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate share tokens for existing briefs (for migration purposes)
+     */
+    public function generateTokensForExistingBriefs()
+    {
+        try {
+            $briefs = ContentBrief::whereNull('share_token')->get();
+            $generatedCount = 0;
+            
+            foreach ($briefs as $brief) {
+                $brief->createShareToken(30); // 30 days expiration
+                $generatedCount++;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Generated tokens for {$generatedCount} existing briefs",
+                'count' => $generatedCount
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating tokens: ' . $e->getMessage()
             ], 500);
         }
     }

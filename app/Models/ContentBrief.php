@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class ContentBrief extends Model
 {
@@ -45,6 +47,8 @@ class ContentBrief extends Model
         // System Fields
         'creator_id',               // User yang membuat
         'status',                   // Status
+        'share_token',              // Token untuk berbagi link
+        'share_token_expires_at',   // Expiration untuk token
     ];
 
     protected $casts = [
@@ -101,5 +105,85 @@ class ContentBrief extends Model
         $legacy = md5($brief->id.$brief->created_at);
 
         return hash_equals($legacy, $token);
+    }
+
+    /**
+     * Generate unique share token for the brief
+     */
+    public static function generateShareToken(): string
+    {
+        do {
+            $token = Str::random(32); // Generate 32 character random string
+        } while (self::where('share_token', $token)->exists());
+        
+        return $token;
+    }
+
+    /**
+     * Generate and set share token for this brief
+     */
+    public function createShareToken(?int $expiresInDays = 30): string
+    {
+        // Check if share_token column exists
+        if (!\Schema::hasColumn('content_briefs', 'share_token')) {
+            // Return a temporary token based on existing data
+            return md5($this->id . $this->created_at);
+        }
+        
+        $token = self::generateShareToken();
+        $this->share_token = $token;
+        $this->share_token_expires_at = $expiresInDays ? now()->addDays($expiresInDays) : null;
+        $this->save();
+        
+        return $token;
+    }
+
+    /**
+     * Check if share token is valid (not expired)
+     */
+    public function isShareTokenValid(): bool
+    {
+        // Check if share_token column exists
+        if (!\Schema::hasColumn('content_briefs', 'share_token')) {
+            // For legacy tokens, always consider valid
+            return true;
+        }
+        
+        if (!$this->share_token) {
+            return false;
+        }
+        
+        if ($this->share_token_expires_at && now()->isAfter($this->share_token_expires_at)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Find brief by share token
+     */
+    public static function findByShareToken(string $token): ?self
+    {
+        // Check if share_token column exists
+        if (!\Schema::hasColumn('content_briefs', 'share_token')) {
+            // Fallback to legacy token method (md5 of id + created_at)
+            $briefs = self::all();
+            foreach ($briefs as $brief) {
+                $legacyToken = md5($brief->id . $brief->created_at);
+                if ($legacyToken === $token) {
+                    return $brief;
+                }
+            }
+            return null;
+        }
+        
+        $brief = self::where('share_token', $token)->first();
+        
+        if (!$brief || !$brief->isShareTokenValid()) {
+            return null;
+        }
+        
+        return $brief;
     }
 }
