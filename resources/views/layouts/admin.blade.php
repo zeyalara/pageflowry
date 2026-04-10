@@ -994,7 +994,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
     $msgTotal = $msgNeedRevision->count() + $msgUnderReview->count() + $msgReadyPublish->count() + $deadlineSoonCount + $deadlineOverdueCount;
 
-    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount;
+    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount + ($deadlineSoonCount + $deadlineOverdueCount);
 
     $initials = 'U';
     if ($authUser) {

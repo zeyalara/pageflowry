@@ -75,6 +75,9 @@ Route::post('/test-brand', [App\Http\Controllers\TestController::class, 'testBra
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+    Route::get('/brands/{brand}', [BrandController::class, 'show'])->name('brands.show');
+    Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::get('/brands/export-pdf', [ExportPdfController::class, 'brands'])->name('brands.export-pdf');
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
@@ -82,17 +85,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('content-briefs.index');
-    Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('content-briefs.store');
-    Route::post('/content-briefs/search', [ContentBriefController::class, 'search'])->name('content-briefs.search');
-    Route::get('/content-briefs/{id}', [ContentBriefController::class, 'show'])->name('content-briefs.show');
-    Route::get('/content-briefs/{id}/edit', [ContentBriefController::class, 'edit'])->name('content-briefs.edit');
-    Route::put('/content-briefs/{id}', [ContentBriefController::class, 'update'])->name('content-briefs.update');
-    Route::delete('/content-briefs/{id}', [ContentBriefController::class, 'destroy'])->name('content-briefs.destroy');
+    Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('brief.index');
+    Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('brief.store');
+    Route::post('/content-briefs/search', [ContentBriefController::class, 'search'])->name('brief.search');
+    Route::get('/content-briefs/{id}', [ContentBriefController::class, 'show'])->name('brief.show');
+    Route::get('/content-briefs/{id}/edit', [ContentBriefController::class, 'edit'])->name('brief.edit');
+    Route::put('/content-briefs/{id}', [ContentBriefController::class, 'update'])->name('brief.update');
+    Route::delete('/content-briefs/{id}', [ContentBriefController::class, 'destroy'])->name('brief.destroy');
 });
 
 // Public route for creators to view brief without login
-Route::get('/content-briefs/{id}/view', [ContentBriefController::class, 'publicView'])->name('content-briefs.public-view');
+Route::get('/content-briefs/{id}/view', [ContentBriefController::class, 'publicView'])->name('brief.public-view');
 
 // Email log viewer for testing
 Route::get('/email-log', function() {

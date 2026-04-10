@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<title>Pageflowry — Daftar Tugas Konten</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+@extends('layouts.admin')
+
+@section('content')
+@push('styles')
 <style>
 /* ─────────────────────────────────────────
    RESET & TOKENS
@@ -67,248 +60,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 /* ─────────────────────────────────────────
-   SHELL
-───────────────────────────────────────── */
-.shell{display:flex;height:100vh;overflow:hidden}
-
-/* ─────────────────────────────────────────
-   SIDEBAR
-───────────────────────────────────────── */
-.sidebar{
-  width:var(--sidebar);min-width:var(--sidebar);height:100vh;
-  background:var(--white);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow-y:auto;z-index:200;
-}
-.sb-logo{
-  padding:20px 20px 18px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  border-bottom:1px solid var(--border-light);
-  flex-shrink:0;
-}
-.sb-logo-mark{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--blue),var(--blue-600));
-  display:flex;align-items:center;justify-content:center;
-}
-.sb-logo-mark svg{width:15px;height:15px}
-.sb-logo-name{font-size:1rem;font-weight:800;color:var(--blue);letter-spacing:-.5px;line-height:1}
-.sb-logo-name em{color:var(--text-900);font-style:normal}
-.sb-nav {
-  padding: 14px 12px;
-  flex: 1;
-}
-.sb-group-label{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--text-300);padding:12px 10px 6px}
-.sb-item{
-  display:flex;align-items:center;gap:10px;padding:9.5px 12px;
-  border-radius:var(--r-sm);cursor:pointer;transition:var(--t);
-  font-size:13.5px;font-weight:500;color:var(--text-600);
-  text-decoration:none;position:relative;margin-bottom:1px;
-}
-.sb-item:hover{background:var(--blue-50);color:var(--blue-600)}
-.sb-item.active{background:var(--blue-50);color:var(--blue);font-weight:600}
-.sb-item.active::before{
-  content:'';position:absolute;left:0;top:22%;bottom:22%;
-  width:3px;border-radius:0 3px 3px 0;background:var(--blue);
-}
-.icon-wrap{
-  width:28px;height:28px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12.5px;flex-shrink:0;transition:var(--t);
-}
-.sb-item.active .icon-wrap{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(88,151,254,.35)}
-.sb-item:not(.active) .icon-wrap{color:var(--text-400)}
-.sb-item:hover:not(.active) .icon-wrap{background:var(--blue-100);color:var(--blue)}
-.sb-badge{margin-left:auto;background:var(--rose);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6}
-.sb-footer{padding:14px 12px;border-top:1px solid var(--border-light);flex-shrink:0}
-.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--blue-50);cursor:pointer;transition:var(--t)}
-.sb-user:hover{background:var(--blue-100)}
-.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-600));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
-.sb-user-info{flex:1;min-width:0}
-.sb-user-name{font-size:12.5px;font-weight:600;color:var(--text-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-user-role{font-size:11px;color:var(--blue);font-weight:500}
-
-/* ─────────────────────────────────────────
-   MAIN
-───────────────────────────────────────── */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{
-  height:var(--topbar);min-height:var(--topbar);background:var(--white);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;gap:16px;flex-shrink:0;z-index:100;
-}
-.tb-title{font-size:18px;font-weight:800;color:var(--t9);letter-spacing:-.4px;line-height:1.1}
-.tb-crumb{font-size:12px;color:var(--t4);margin-top:2px;display:flex;align-items:center;gap:5px}
-.tb-crumb span{color:var(--blue);font-weight:500}
-.tb-right{display:flex;align-items:center;gap:8px}
-.tb-btn{
-  width:38px;height:38px;border-radius:var(--rs);border:1px solid var(--border);
-  background:var(--white);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:var(--tr);color:var(--t5);font-size:15px;position:relative;
-}
-.tb-btn:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-.tb-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:1.5px solid #fff}
-.tb-av{
-  width:38px;height:38px;border-radius:var(--rs);
-  background:linear-gradient(145deg,var(--blue),var(--blue-6));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;
-  box-shadow:0 3px 12px rgba(88,151,254,.35);transition:var(--tr);
-}
-.tb-av:hover{transform:scale(1.05)}
-.tb-div{width:1px;height:24px;background:var(--border);margin:0 4px}
-
-/* Dashboard topbar classes */
-.tb-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.tb-page {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-900);
-  letter-spacing: -0.4px;
-  line-height: 1.1;
-}
-.tb-breadcrumb {
-  font-size: 12px;
-  color: var(--text-400);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.tb-breadcrumb span {
-  color: var(--blue);
-  font-weight: 500;
-}
-.tb-icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border);
-  background: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--t);
-  color: var(--text-500);
-  font-size: 15px;
-  position: relative;
-}
-.tb-icon-btn:hover {
-  background: var(--blue-50);
-  color: var(--blue);
-  border-color: var(--blue-200);
-}
-.tb-notif-dot {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--rose);
-  border: 1.5px solid #fff;
-}
-.tb-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--border);
-  margin: 0 4px;
-}
-
-/* Header dropdown (notifikasi/pesan) */
-.header-dropdown--wide { min-width: 320px; max-width: min(380px, calc(100vw - 24px)); }
-.header-dd-head {
-  padding: 10px 14px 6px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--text-400);
-  border-bottom: 1px solid var(--border-light);
-}
-.header-dd-empty { padding: 12px 14px; font-size: 12px; color: var(--text-600); line-height: 1.45; }
-.header-dd-item { align-items: flex-start !important; gap: 10px !important; padding: 10px 12px !important; }
-.header-dd-ic {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--blue-50); color: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 13px;
-}
-.header-dd-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.header-dd-title { font-size: 13px; font-weight: 700; color: var(--text-900); }
-.header-dd-sub { font-size: 11px; color: var(--text-400); }
-.header-dd-badge {
-  flex-shrink: 0;
-  min-width: 22px; height: 22px; padding: 0 7px;
-  border-radius: 999px;
-  background: rgba(244,63,94,.14);
-  color: #b91c1c;
-  font-size: 11px;
-  font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-}
-
-/* Dropdown base style (samakan dengan halaman lain) */
-.profile-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  min-width: 180px;
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all .25s ease;
-  margin-top: 5px;
-}
-.profile-dropdown.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  color: #1A2740;
-  text-decoration: none;
-  font-size: 13px;
-  transition: background .2s ease;
-}
-.dropdown-item:hover { background: #f8f9fa; }
-.tb-avatar-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-sm);
-  background: linear-gradient(145deg, var(--blue), var(--blue-600));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(88,151,254,.35);
-  transition: var(--t);
-}
-.tb-avatar-btn:hover {
-  transform: scale(1.05);
-}
-
-/* ─────────────────────────────────────────
    BODY / SCROLL AREA
 ───────────────────────────────────────── */
-.body{flex:1;overflow-y:auto;padding:26px 28px 60px;display:flex;flex-direction:column;gap:20px}
+.body{padding:26px 28px 60px;display:flex;flex-direction:column;gap:20px}
 
 /* ─────────────────────────────────────────
    PAGE HEADER
@@ -495,6 +249,48 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .p-revision{background:rgba(244,63,94,.1);color:#9f1239}.p-revision .pdot{background:var(--rose)}
 .p-ready{background:rgba(245,158,11,.1);color:#92400e}.p-ready .pdot{background:var(--amber)}
 .p-pub{background:rgba(16,185,129,.1);color:#065f46}.p-pub .pdot{background:var(--emerald)}
+
+/* Status Badge Colors - Matching Production Page */
+.p-in-production {
+  background: rgba(251, 146, 60, 0.1);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+.p-in-production .pdot {
+  background: #fb923c;
+}
+.p-under-review {
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+.p-under-review .pdot {
+  background: #facc15;
+}
+.p-ready-to-publish {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.p-ready-to-publish .pdot {
+  background: #22c55e;
+}
+.p-published {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.p-published .pdot {
+  background: #a855f7;
+}
+.p-need-revision {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.p-need-revision .pdot {
+  background: #ef4444;
+}
 .row-acts{display:flex;align-items:center;gap:5px;opacity:0;transition:var(--tr)}
 .ab{width:32px;height:32px;border-radius:8px;border:none;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:var(--tr)}
 .ab-d{background:var(--blue-50);color:var(--blue)}.ab-d:hover{background:var(--blue-100);transform:scale(1.1)}
@@ -682,9 +478,95 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin .7s linear infinite}
+
+/* Responsive Design - Mobile Friendly */
+@media (max-width: 768px) {
+  .stats-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .stats-row .sc {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .pg-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .pg-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .toolbar .tb-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .tbl-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 600px;
+    font-size: 12px;
+  }
+  
+  table thead th {
+    padding: 8px 4px;
+    font-size: 10px;
+  }
+  
+  table tbody td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .action-buttons {
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  .btn-action {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  .td-name {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  
+  .td-brand {
+    font-size: 11px;
+  }
+  
+  .pill {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .empty-row td {
+    padding: 20px 10px;
+  }
+}
 </style>
-</head>
-<body>
+@endpush
+
 @php
   $uid = auth()->id();
   $authUser = auth()->user();
@@ -751,218 +633,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
   $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount;
 @endphp
-<div class="shell">
-
-<!-- ══════════════ SIDEBAR ══════════════ -->
-<aside class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="sb-logo-name">Page<em>flowry</em></div>
-  </div>
-
-  <nav class="sb-nav">
-    <div class="sb-group-label">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
-      Dashboard
-    </a>
-
-    <div class="sb-group-label">Manajemen</div>
-    <a class="sb-item" href="{{ route('brands.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
-      Brand Management
-    </a>
-    <a class="sb-item active" href="{{ route('content-tasks.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
-      Daftar Tugas Konten
-    </a>
-
-    <div class="sb-group-label">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
-      Production
-    </a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}">
-      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
-      Revision
-      <span class="sb-badge">4</span>
-    </a>
-    <a class="sb-item" href="{{ route('approval.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
-      Approval
-    </a>
-    <a class="sb-item" href="{{ route('publishing.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
-      Publishing
-    </a>
-
-    <div class="sb-group-label">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
-      Analytics
-    </a>
-    <a class="sb-item" href="{{ route('report.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
-      Report
-    </a>
-
-    <div class="sb-group-label">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
-      Settings
-    </a>
-  </nav>
-
-  <div class="sb-footer">
-    <div class="sb-user">
-      <div class="sb-avatar">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="sb-user-info">
-        <div class="sb-user-name">{{ auth()->user()->name ?? 'Guest User' }}</div>
-        <div class="sb-user-role">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
-      </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
-    </div>
-  </div>
-</aside>
-
-<!-- ═══════ MAIN ═══════ -->
-<div class="main">
-
-  <header class="topbar">
-    <div class="tb-left">
-      <div class="tb-page">Daftar Tugas Konten</div>
-      <div class="tb-breadcrumb">
-        <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--text-300)"></i>
-        <span>Daftar Tugas Konten</span>
-        &nbsp;·&nbsp; <span id="today-date"></span>
-      </div>
-    </div>
-    <div class="tb-right">
-      <div class="tb-menu-wrap" style="position:relative;display:inline-block;">
-        <button type="button" class="tb-icon-btn" id="tbNotifBtn" title="Notifikasi" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'notifDropdown', this)">
-          <i class="fa-regular fa-bell"></i>
-          @if(($notifTotal ?? 0) > 0)<span class="tb-notif-dot"></span>@endif
-        </button>
-        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="notifDropdown">
-          <div class="header-dd-head">Notifikasi</div>
-          @if(($notifTotal ?? 0) === 0)
-            <div class="header-dd-empty">Tidak ada notifikasi.</div>
-          @else
-            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
-              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
-              @foreach($deadlineOverdue as $b)
-                @php
-                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
-                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
-                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
-                  $label = $d ? $d->format('d M Y') : '—';
-                @endphp
-                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
-                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                  <span class="header-dd-body">
-                    <span class="header-dd-title">Deadline terlewat · {{ $label }}</span>
-                    <span class="header-dd-sub">{{ $b->title }}</span>
-                  </span>
-                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
-                </a>
-              @endforeach
-              @foreach($deadlineSoon as $b)
-                @php
-                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
-                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
-                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
-                  $label = $d ? $d->format('d M Y') : '—';
-                  $days = $d ? \Carbon\Carbon::today()->diffInDays($d, false) : null;
-                  $badge = ($days !== null && $days <= 0) ? 'Hari ini' : ('H-'.$days);
-                @endphp
-                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
-                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-clock"></i></span>
-                  <span class="header-dd-body">
-                    <span class="header-dd-title">Mendekati deadline · {{ $label }}</span>
-                    <span class="header-dd-sub">{{ $b->title }}</span>
-                  </span>
-                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">{{ $badge }}</span>
-                </a>
-              @endforeach
-            @endif
-            @if($notifRevision > 0)
-              <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item">
-                <span class="header-dd-ic"><i class="fa-solid fa-rotate-left"></i></span>
-                <span class="header-dd-body"><span class="header-dd-title">{{ $notifRevision }} konten perlu revisi</span><span class="header-dd-sub">Buka Revision</span></span>
-                <span class="header-dd-badge">{{ $notifRevision }}</span>
-              </a>
-            @endif
-            @if($notifApproval > 0)
-              <a href="{{ route('approval.index') }}" class="dropdown-item header-dd-item">
-                <span class="header-dd-ic"><i class="fa-solid fa-circle-check"></i></span>
-                <span class="header-dd-body"><span class="header-dd-title">{{ $notifApproval }} menunggu approval</span><span class="header-dd-sub">Buka Approval</span></span>
-                <span class="header-dd-badge">{{ $notifApproval }}</span>
-              </a>
-            @endif
-            @if($notifPublish > 0)
-              <a href="{{ route('publishing.index') }}" class="dropdown-item header-dd-item">
-                <span class="header-dd-ic"><i class="fa-solid fa-paper-plane"></i></span>
-                <span class="header-dd-body"><span class="header-dd-title">{{ $notifPublish }} siap dipublish</span><span class="header-dd-sub">Buka Publishing</span></span>
-                <span class="header-dd-badge">{{ $notifPublish }}</span>
-              </a>
-            @endif
-          @endif
-        </div>
-      </div>
-
-      <div class="tb-menu-wrap" style="position:relative;display:inline-block;">
-        <button type="button" class="tb-icon-btn" id="tbMsgBtn" title="Pesan" aria-expanded="false" aria-haspopup="true" onclick="toggleHeaderMenu(event, 'msgDropdown', this)">
-          <i class="fa-regular fa-envelope"></i>
-          @if(($msgTotal ?? 0) > 0)<span class="tb-notif-dot"></span>@endif
-        </button>
-        <div class="profile-dropdown header-dropdown header-dropdown--wide" id="msgDropdown">
-          <div class="header-dd-head">Pesan</div>
-          @if(($msgTotal ?? 0) === 0)
-            <div class="header-dd-empty">Tidak ada pesan/tindakan baru.</div>
-          @else
-            @if($msgNeedRevision->count() > 0)
-              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Perlu revisi</div>
-              @foreach($msgNeedRevision as $t)
-                <a href="{{ route('revision.index') }}" class="dropdown-item header-dd-item">
-                  <span class="header-dd-ic" style="background:rgba(245,158,11,.12);color:#92400e;"><i class="fa-solid fa-pen-to-square"></i></span>
-                  <span class="header-dd-body">
-                    <span class="header-dd-title">{{ $t->judul_konten }}</span>
-                    <span class="header-dd-sub">{{ $t->revision_note ? \Illuminate\Support\Str::limit($t->revision_note, 60) : 'Ada catatan revisi — buka Revision' }}</span>
-                  </span>
-                  <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">Revisi</span>
-                </a>
-              @endforeach
-            @endif
-            @if(($deadlineOverdueCount ?? 0) > 0 || ($deadlineSoonCount ?? 0) > 0)
-              <div class="header-dd-head" style="border-top:1px solid #eef2f7;">Deadline</div>
-              @foreach($deadlineOverdue as $b)
-                @php
-                  $prod = $b->production_deadline ? \Carbon\Carbon::parse($b->production_deadline) : null;
-                  $pub  = $b->publish_deadline ? \Carbon\Carbon::parse($b->publish_deadline) : null;
-                  $d = $prod && $pub ? ($prod->lte($pub) ? $prod : $pub) : ($prod ?? $pub);
-                  $label = $d ? $d->format('d M Y') : '—';
-                @endphp
-                <a href="{{ route('content-tasks.index') }}?open={{ $b->id }}" class="dropdown-item header-dd-item">
-                  <span class="header-dd-ic" style="background:rgba(239,68,68,.10);color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                  <span class="header-dd-body"><span class="header-dd-title">Overdue · {{ $label }}</span><span class="header-dd-sub">{{ $b->title }}</span></span>
-                  <span class="header-dd-badge" style="background:rgba(239,68,68,.14);color:#b91c1c;">!</span>
-                </a>
-              @endforeach
-            @endif
-          @endif
-        </div>
-      </div>
-
-      <div class="tb-divider"></div>
-      <div class="tb-avatar-btn" title="Profil">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <a class="tb-icon-btn" href="{{ route('settings.index') }}" title="Pengaturan"><i class="fa-solid fa-sliders"></i></a>
-    </div>
-  </header>
 
   <div class="body">
 
@@ -1045,89 +715,98 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </a>
     </div>
 
-    <!-- TABLE CARD -->
-    <div class="tcard">
-      <div class="tcard-head">
-        <div class="tch-l">
-          <span class="tch-title">Daftar Tugas Konten</span>
-          <span class="tch-cnt" id="tblCount">{{ $contentBriefs->count() }} tugas</span>
-        </div>
-      </div>
-      <div class="tcard-body">
-        <table class="ktable">
-          <thead>
-            <tr>
-              <th>Judul Konten</th>
-              <th>Brand</th>
-              <th>Platform</th>
-              <th>Deadline Produksi</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tblBody">
-            @if(isset($contentBriefs) && $contentBriefs->count() > 0)
-              @foreach($contentBriefs as $brief)
-                <tr>
-                  <td>
-                    <div class="task-title">{{ $brief->title }}</div>
-                    <div class="task-desc">{{ Str::limit($brief->description ?? '-', 50) }}</div>
-                  </td>
-                  <td>
-                    <div class="brand-info">
-                      <div class="brand-name">{{ $brief->brand->name ?? '-' }}</div>
-                      <div class="brand-pic">{{ $brief->brand->pic ?? '-' }}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="platform-info">
-                      <i class="fa-brands {{ $brief->platform === 'Instagram' ? 'fa-instagram' : ($brief->platform === 'TikTok' ? 'fa-tiktok' : 'fa-youtube') }} {{ $brief->platform === 'Instagram' ? 'plat-ig' : ($brief->platform === 'TikTok' ? 'plat-tt' : 'plat-yt') }}"></i>
-                      <span>{{ $brief->platform }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="deadline-info">
-                      <div class="prod-deadline">{{ $brief->production_deadline ? \Carbon\Carbon::parse($brief->production_deadline)->format('d M Y') : '-' }}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="status {{ $brief->status === 'In Production' ? 'p-prod' : ($brief->status === 'Under Review' ? 'p-review' : ($brief->status === 'Need Revision' ? 'p-revision' : ($brief->status === 'Published' ? 'p-pub' : 'p-review'))) }}">{{ $brief->status }}</span>
-                  </td>
-                  <td>
-                    <div class="actions">
-                      <button class="btn-action" onclick="openDetail({{ $brief->id }})" title="Detail">
-                        <i class="fa-solid fa-eye"></i>
-                      </button>
-                      <button class="btn-action" onclick="openEdit({{ $brief->id }})" title="Edit">
-                        <i class="fa-solid fa-edit"></i>
-                      </button>
-                      <button class="btn-action btn-delete" onclick="openDel({{ $brief->id }})" title="Delete">
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              @endforeach
-            @else
-              <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-400);">
-                  <i class="fa-solid fa-search"></i> Tidak ada tugas ditemukan
-                </td>
-              </tr>
-            @endif
-          </tbody>
-        </table>
-      </div>
-      <div class="pagi" id="pagiBar">
-        <div class="pagi-info">Menampilkan <b id="pgFrom">{{ isset($contentBriefs) && $contentBriefs->count() > 0 ? '1' : '0' }}</b>–<b id="pgTo">{{ $contentBriefs->count() }}</b> dari <b id="pgTotal">{{ $contentBriefs->count() }}</b> tugas</div>
-        <div class="pagi-btns" id="pgBtns"></div>
-      </div>
+  <div class="card tbl-card">
+  <div class="sec-head" style="margin-bottom:0">
+    <div class="sec-title">
+      <i class="fa-solid fa-list"></i>
+      Daftar Tugas Konten
     </div>
+    <button class="btn btn-primary" onclick="openCreate()">
+      <i class="fa-solid fa-plus"></i> Buat Tugas Konten
+    </button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 5%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">ID</th>
+        <th style="width: 30%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Judul Konten</th>
+        <th style="width: 15%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Brand</th>
+        <th style="width: 12%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Platform</th>
+        <th style="width: 15%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Deadline Produksi</th>
+        <th style="width: 15%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Status</th>
+        <th style="width: 8%; font-size: 11px; font-weight: 700; color: var(--text-300); text-transform: uppercase;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($contentBriefs as $index => $task)
+        @php 
+          $statusMap = [
+            'task' => ['label' => 'Task', 'class' => 'p-task'],
+            'in_production' => ['label' => 'In Production', 'class' => 'p-in-production'],
+            'production' => ['label' => 'Production', 'class' => 'p-production'],
+            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
+            'need_revision' => ['label' => 'Need Revision', 'class' => 'p-need-revision'],
+            'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
+            'published' => ['label' => 'Published', 'class' => 'p-published'],
+            'completed' => ['label' => 'Completed', 'class' => 'p-completed'],
+          ];
+          $s = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-prod'];
+          $rowNumber = $index + 1; // Nomor urut dari 1
+        @endphp
+        <tr>
+          <td style="white-space: nowrap; vertical-align: middle; color: var(--text-700);">{{ $rowNumber }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <span class="td-name">{{ $task->title }}</span>
+              <span style="font-size:11px;color:var(--text-400);">{{ \Illuminate\Support\Str::limit($task->description ?? '-', 40) }}</span>
+            </div>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="td-brand">{{ optional($task->brand)->name ?? '-' }}</span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-500);">
+              <i class="fa-brands {{ $task->platform === 'Instagram' ? 'fa-instagram' : ($task->platform === 'TikTok' ? 'fa-tiktok' : 'fa-youtube') }}"></i>
+              <span>{{ $task->platform }}</span>
+            </div>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span style="font-size:13px;color:var(--text-500);">{{ $task->production_deadline ? \Carbon\Carbon::parse($task->production_deadline)->format('d M Y') : '-' }}</span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="pill {{ $s['class'] }}">
+              <span class="pill-dot"></span>
+              {{ $s['label'] }}
+            </span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div class="action-buttons" style="display:flex;gap:6px;flex-wrap:nowrap;">
+              <button class="btn-action" onclick="openDetail({{ $task->id }})" title="Detail">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+              <button class="btn-action" title="Edit" onclick="openEdit({{ $task->id }})">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-action btn-delete" title="Delete" onclick="openDel({{ $task->id }})">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px 0;color:var(--text-400);">
+            <i class="fa-solid fa-list" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
+            <div style="font-size:15px;font-weight:600;">Belum ada tugas ditemukan</div>
+            <div style="font-size:12.5px;">Buat tugas konten pertama untuk memulai</div>
+          </td>
+        </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
 
-  </div><!-- /body -->
-</div><!-- /main -->
-</div><!-- /shell -->
-
+  
 <!-- ═══════════════════════════════════════════
      MODAL — CREATE/EDIT BRIEF (7-Step Wizard)
 ═══════════════════════════════════════════ -->
@@ -2543,5 +2222,4 @@ function updateFormatOptions() {
   console.log('Available formats:', formatOptions[selectedPlatform] || []);
 }
 </script>
-</body>
-</html>
+@endsection

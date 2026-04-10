@@ -1,22 +1,346 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="csrf-token" content="{{ csrf_token() }}">
-@method('DELETE')
-<title>Pageflowry — Brand Management</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+﻿@extends('layouts.admin')
 
+@section('page-title', 'Brand Management')
+
+@section('content')
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Brand Management</div>
+    <div class="page-subtitle">Kelola daftar brand dan informasi PIC</div>
+  </div>
+  <button class="btn btn-primary" onclick="openAddModal()">
+    <i class="fa-solid fa-plus"></i> Tambah Brand
+  </button>
+</div>
+
+<div class="stat-row">
+  <div class="stat-card sc-blue" style="--i:0">
+    <div class="stat-ic"><i class="fa-solid fa-tag"></i></div>
+    <div class="stat-val">{{ $brands->count() }}</div>
+    <div class="stat-lbl">Total Brand</div>
+  </div>
+  <div class="stat-card sc-em" style="--i:1">
+    <div class="stat-ic"><i class="fa-solid fa-circle-dot"></i></div>
+    <div class="stat-val">{{ $brands->where('status', 'Active')->count() }}</div>
+    <div class="stat-lbl">Brand Aktif</div>
+  </div>
+  <div class="stat-card sc-amb" style="--i:2">
+    <div class="stat-ic"><i class="fa-solid fa-circle-pause"></i></div>
+    <div class="stat-val">{{ $brands->where('status', 'Non Active')->count() }}</div>
+    <div class="stat-lbl">Brand Non-Aktif</div>
+  </div>
+  <div class="stat-card sc-rose" style="--i:3">
+    <div class="stat-ic"><i class="fa-solid fa-photo-film"></i></div>
+    <div class="stat-val">{{ $brands->sum('contents_count') ?? 0 }}</div>
+    <div class="stat-lbl">Total Konten</div>
+  </div>
+</div>
+
+<div class="card tbl-card">
+  <div class="sec-head" style="margin-bottom:0;padding:18px 22px 16px;border-bottom:1px solid var(--border-light);">
+    <div class="sec-title">
+      <i class="fa-solid fa-list"></i>
+      Daftar Brand
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">
+      <i class="fa-solid fa-plus"></i> Tambah Brand
+    </button>
+  </div>
+  <table class="content-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;">Brand</th>
+        <th style="width: 15%;">PIC</th>
+        <th style="width: 20%;">Kontak</th>
+        <th style="width: 10%;">Konten</th>
+        <th style="width: 15%;">Status</th>
+        <th style="width: 15%;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($brands as $brand)
+        @php
+          $colors = [
+            'rgba(88, 151, 254, 1)',      // Blue
+            'rgba(139, 92, 246, 1)',      // Violet
+            'rgba(16, 185, 129, 1)',      // Emerald
+            'rgba(255, 120, 73, 1)',      // Orange
+            'rgba(245, 158, 11, 1)',      // Amber
+            'rgba(6, 182, 212, 1)',       // Cyan
+            'rgba(236, 72, 153, 1)',      // Pink
+            'rgba(168, 85, 247, 1)',      // Purple
+          ];
+          $colorIndex = ($brand->id - 1) % count($colors);
+          $brandColor = $colors[$colorIndex];
+        @endphp
+        <tr>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;background:{{ $brandColor }};">
+                {{ strtoupper(substr($brand->name, 0, 2)) }}
+              </div>
+              <div>
+                <span class="td-name">{{ $brand->name }}</span>
+              </div>
+            </div>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="td-brand">{{ $brand->pic }}</span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">{{ $brand->contact }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">{{ $brand->contents_count ?? 0 }}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class="pill {{ $brand->status === 'Active' ? 'p-in-production' : 'p-under-review' }}">
+              <span class="pill-dot"></span>
+              {{ $brand->status }}
+            </span>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <div class="action-buttons" style="display:flex;gap:6px;flex-wrap:nowrap;">
+              <button class="btn-action" onclick="openDetailModal({{ $brand->id }})" title="Detail">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+              <button class="btn-action" onclick="openEditModal({{ $brand->id }})" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-action" onclick="openDeleteModal({{ $brand->id }}, '{{ addslashes($brand->name) }}')" title="Hapus">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="6" style="text-align:center;padding:48px 16px;color:var(--text-400);">
+            <i class="fa-solid fa-list" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
+            <div style="font-size:15px;font-weight:600;">Belum ada brand</div>
+            <div style="font-size:12.5px;">Buat brand pertama untuk memulai</div>
+          </td>
+        </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
+
+  <!-- MODALS -->
+  <!-- Add/Edit Modal -->
+  <div class="overlay" id="brandModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title-wrap">
+          <div class="modal-eyebrow">
+            <i class="fa-solid fa-tag"></i>
+            Brand Management
+          </div>
+          <div class="modal-title" id="modalTitle">Tambah Brand Baru</div>
+          <div class="modal-subtitle" id="modalSubtitle">Lengkapi informasi brand untuk melanjutkan</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="brandForm">
+          @csrf
+          <input type="hidden" id="brandId" name="id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nama Brand <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-tag"></i>
+                <input class="form-input" id="fName" name="name" type="text" placeholder="Masukkan nama brand"/>
+              </div>
+              <span class="form-error" id="errName">Nama brand wajib diisi.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">PIC <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-user"></i>
+                <input class="form-input" id="fPic" name="pic" type="text" placeholder="Nama penanggung jawab"/>
+              </div>
+              <span class="form-error" id="errPic">PIC wajib diisi.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kontak <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input class="form-input" id="fContact" name="contact" type="text" placeholder="Nomor telepon atau email"/>
+              </div>
+              <span class="form-error" id="errContact">Kontak wajib diisi.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Market</label>
+              <input class="form-input" id="fTargetMarket" name="target_market" type="text" placeholder="Contoh: Remaja 18-25 tahun"/>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Deskripsi Brand</label>
+              <textarea class="form-textarea" id="fDescription" name="description" placeholder="Deskripsikan brand secara singkat..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Tone of Voice</label>
+              <div class="tone-chips">
+                <div class="tone-chip" data-value="professional">Professional</div>
+                <div class="tone-chip" data-value="casual">Casual</div>
+                <div class="tone-chip" data-value="friendly">Friendly</div>
+                <div class="tone-chip" data-value="formal">Formal</div>
+                <div class="tone-chip" data-value="humorous">Humorous</div>
+                <div class="tone-chip" data-value="inspirational">Inspirational</div>
+                <div class="tone-chip" data-value="authoritative">Authoritative</div>
+                <div class="tone-chip" data-value="conversational">Conversational</div>
+              </div>
+              <input type="hidden" id="fToneVoice" name="tone_voice">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Status <span class="req">*</span></label>
+              <div class="status-toggle">
+                <div class="st-option st-active selected" data-value="Active">
+                  <div class="st-dot"></div>
+                  <span>Active</span>
+                </div>
+                <div class="st-option st-inactive" data-value="Non Active">
+                  <div class="st-dot"></div>
+                  <span>Non Active</span>
+                </div>
+              </div>
+              <input type="hidden" id="fStatus" name="status" value="Active">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="mf-left">* Wajib diisi</div>
+        <div class="mf-right">
+          <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
+            <i class="fa-solid fa-save"></i>
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="overlay" id="detailModal">
+    <div class="modal detail-modal">
+      <div class="modal-head">
+        <div class="modal-title-wrap">
+          <div class="modal-eyebrow">
+            <i class="fa-solid fa-tag"></i>
+            Detail Brand
+          </div>
+          <div class="modal-title" id="detailTitle">Nama Brand</div>
+          <div class="modal-subtitle" id="detailSubtitle">Informasi lengkap brand</div>
+        </div>
+        <button class="modal-close" onclick="closeDetailModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-hero">
+          <div class="detail-avatar" id="detailAvatar">AB</div>
+          <div>
+            <div class="detail-name" id="detailName">Nama Brand</div>
+            <div class="detail-meta">
+              <span id="detailCreated">Dibuat 01 Jan 2024</span>
+              <span id="detailStatus">Status: Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-item-label">PIC</div>
+              <div class="detail-item-value" id="detailPic">Nama PIC</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">KONTAK</div>
+              <div class="detail-item-value" id="detailContact">Kontak</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">TARGET MARKET</div>
+              <div class="detail-item-value" id="detailTargetMarket">Target Market</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">TONE OF VOICE</div>
+              <div class="detail-item-value" id="detailToneVoice">Tone Voice</div>
+            </div>
+            <div class="detail-item full">
+              <div class="detail-item-label">DESKRIPSI</div>
+              <div class="detail-item-value" id="detailDescription">Deskripsi brand</div>
+            </div>
+          </div>
+          <div class="content-bar">
+            <div class="cb-row">
+              <div class="cb-label">Total Konten</div>
+              <div class="cb-track">
+                <div class="cb-fill" id="contentFill" style="width: 0%; background: var(--blue);"></div>
+              </div>
+              <div class="cb-num" id="contentNum">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="mf-right">
+          <button class="btn btn-ghost" onclick="closeDetailModal()">Tutup</button>
+          <button class="btn btn-primary" id="editFromDetailBtn" onclick="editFromDetail()">
+            <i class="fa-solid fa-pen"></i>
+            Edit Brand
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="overlay" id="deleteModal">
+    <div class="modal delete-modal">
+      <div class="modal-head">
+        <div class="modal-title-wrap">
+          <div class="modal-eyebrow">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Hapus Brand
+          </div>
+          <div class="modal-title">Konfirmasi Hapus</div>
+          <div class="modal-subtitle">Tindakan ini tidak dapat dibatalkan</div>
+        </div>
+        <button class="modal-close" onclick="closeDeleteModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-icon-wrap">
+          <i class="fa-solid fa-trash"></i>
+        </div>
+        <p style="text-align: center; color: var(--text-700); margin-bottom: 20px;">
+          Apakah Anda yakin ingin menghapus brand <strong id="deleteBrandName">Nama Brand</strong>?
+          <br><small style="color: var(--text-400);">Semua data terkait akan dihapus secara permanen.</small>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <div class="mf-right">
+          <button class="btn btn-ghost" onclick="closeDeleteModal()">Batal</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+            <i class="fa-solid fa-trash"></i>
+            Hapus Brand
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+@endsection
+
+@push('styles')
 <style>
-/* ═══════════════════════════════════════
-   TOKENS — sama persis dengan dashboard
-═══════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DESIGN SYSTEM - Consistent with Brand Management
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 :root {
   --blue:         #5897fe;
   --blue-600:     #3a7bfe;
@@ -42,2300 +366,1144 @@
   --rose:         #f43f5e;
   --amber:        #f59e0b;
 
-  --sidebar:      240px;
-  --topbar:       66px;
   --r:            16px;
   --r-sm:         10px;
 
   --s1: 0 1px 3px rgba(13,21,38,.05), 0 4px 16px rgba(88,151,254,.06);
   --s2: 0 4px 24px rgba(88,151,254,.13);
-  --s3: 0 8px 48px rgba(88,151,254,.22);
 
   --t: .2s cubic-bezier(.4,0,.2,1);
 }
 
-html, body {
-  height: 100%;
+/* Header & actions - Consistent with Brand Management */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-header-title {
   font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.5px;
   color: var(--text-900);
-  font-size: 14px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
 }
-
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--blue-200); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--blue); }
-
-/* ═══════════════════════════════════════
-   SHELL
-═══════════════════════════════════════ */
-.shell { display: flex; height: 100vh; overflow: hidden; }
-
-/* ═══════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════ */
-.sidebar {
-  width: var(--sidebar); min-width: var(--sidebar);
-  height: 100vh;
-  background: var(--white);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  overflow-y: auto; overflow-x: hidden;
-  z-index: 200;
-}
-
-.sb-logo {
-  padding: 20px 20px 18px;
-  display: flex; align-items: center; gap: 10px;
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
-}
-.sb-logo-mark {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.sb-logo-mark svg { width: 15px; height: 15px; }
-.sb-logo-name {
-  font-size: 1rem; font-weight: 800;
-  color: var(--blue); letter-spacing: -0.5px; line-height: 1;
-}
-.sb-logo-name em { color: var(--text-900); font-style: normal; }
-
-.sb-nav { padding: 14px 12px; flex: 1; }
-.sb-group-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1.1px;
-  text-transform: uppercase; color: var(--text-300);
-  padding: 12px 10px 6px;
-}
-.sb-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9.5px 12px; border-radius: var(--r-sm);
-  cursor: pointer; transition: var(--t);
-  font-size: 13.5px; font-weight: 500; color: var(--text-500);
-  text-decoration: none; position: relative; margin-bottom: 1px;
-}
-.sb-item:hover { background: var(--blue-50); color: var(--blue-600); }
-.sb-item.active {
-  background: var(--blue-50); color: var(--blue); font-weight: 600;
-}
-.sb-item.active::before {
-  content: ''; position: absolute; left: 0; top: 22%; bottom: 22%;
-  width: 3px; border-radius: 0 3px 3px 0; background: var(--blue);
-}
-.icon-wrap {
-  width: 28px; height: 28px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12.5px; flex-shrink: 0; transition: var(--t);
-}
-.sb-item.active .icon-wrap { background: var(--blue); color: #fff; box-shadow: 0 3px 10px rgba(88,151,254,.35); }
-.sb-item:not(.active) .icon-wrap { background: transparent; color: var(--text-400); }
-.sb-item:hover:not(.active) .icon-wrap { background: var(--blue-100); color: var(--blue); }
-.sb-badge {
-  margin-left: auto; background: var(--rose); color: #fff;
-  font-size: 10px; font-weight: 700; padding: 1px 6px;
-  border-radius: 99px; line-height: 1.6;
-}
-.sb-footer {
-  padding: 14px 12px; border-top: 1px solid var(--border-light); flex-shrink: 0;
-}
-.sb-user {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--r-sm);
-  background: var(--blue-50); cursor: pointer; transition: var(--t);
-}
-.sb-user:hover { background: var(--blue-100); }
-.sb-avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
-}
-.sb-user-info { flex: 1; min-width: 0; }
-.sb-user-name { font-size: 12.5px; font-weight: 600; color: var(--text-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-user-role { font-size: 11px; color: var(--blue); font-weight: 500; }
-
-/* ═══════════════════════════════════════
-   MAIN
-═══════════════════════════════════════ */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-
-/* TOPBAR */
-.topbar {
-  height: var(--topbar); min-height: var(--topbar);
-  background: var(--white); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px; gap: 16px; flex-shrink: 0; z-index: 100;
-}
-.tb-left {}
-.tb-page { font-size: 18px; font-weight: 800; color: var(--text-900); letter-spacing: -.4px; line-height: 1.1; }
-.tb-breadcrumb {
-  font-size: 12px; color: var(--text-400); margin-top: 2px;
-  display: flex; align-items: center; gap: 5px;
-}
-.tb-breadcrumb span { color: var(--blue); font-weight: 500; }
-.tb-right { display: flex; align-items: center; gap: 8px; }
-.tb-icon-btn {
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  border: 1px solid var(--border); background: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: var(--t); color: var(--text-500);
-  font-size: 15px; position: relative;
-}
-.tb-icon-btn:hover { background: var(--blue-50); color: var(--blue); border-color: var(--blue-200); }
-.tb-notif-dot {
-  position: absolute; top: 7px; right: 7px;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--rose); border: 1.5px solid #fff;
-}
-.tb-avatar-btn {
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  background: linear-gradient(145deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
-  box-shadow: 0 3px 12px rgba(88,151,254,.35); transition: var(--t);
-}
-.tb-avatar-btn:hover { transform: scale(1.05); }
-.tb-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
-
-/* ═══════════════════════════════════════
-   BODY SCROLL
-═══════════════════════════════════════ */
-.body {
-  flex: 1; overflow-y: auto;
-  padding: 24px 28px 48px;
-  display: flex; flex-direction: column; gap: 20px;
-}
-
-/* ═══════════════════════════════════════
-   STAT MINI CARDS
-═══════════════════════════════════════ */
-.brand-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
-}
-.bstat {
-  background: var(--white); border-radius: var(--r);
-  border: 1px solid var(--border); box-shadow: var(--s1);
-  padding: 18px 20px; cursor: pointer; transition: var(--t);
-  animation: fadeUp .45s ease both;
-  animation-delay: calc(var(--i,0) * 55ms);
-  position: relative; overflow: hidden;
-}
-.bstat:hover { transform: translateY(-3px); box-shadow: var(--s2); border-color: var(--blue-200); }
-.bstat::after {
-  content: ''; position: absolute;
-  bottom: -14px; right: -14px;
-  width: 60px; height: 60px; border-radius: 50%; opacity: .08;
-  transition: var(--t);
-}
-.bstat:hover::after { opacity: .15; }
-.bstat-blue  { border-top: 2.5px solid var(--blue);    } .bstat-blue::after  { background: var(--blue); }
-.bstat-em    { border-top: 2.5px solid var(--emerald); } .bstat-em::after    { background: var(--emerald); }
-.bstat-amb   { border-top: 2.5px solid var(--amber);   } .bstat-amb::after   { background: var(--amber); }
-.bstat-rose  { border-top: 2.5px solid var(--rose);    } .bstat-rose::after  { background: var(--rose); }
-
-.bstat-ic {
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; margin-bottom: 12px;
-}
-.bstat-blue .bstat-ic  { background: rgba(88,151,254,.1);  color: var(--blue);    }
-.bstat-em   .bstat-ic  { background: rgba(16,185,129,.1);  color: var(--emerald); }
-.bstat-amb  .bstat-ic  { background: rgba(245,158,11,.1);  color: var(--amber);   }
-.bstat-rose .bstat-ic  { background: rgba(244,63,94,.1);   color: var(--rose);    }
-
-.bstat-num {
-  font-size: 26px; font-weight: 800; color: var(--text-900);
-  line-height: 1; margin-bottom: 4px; letter-spacing: -.4px;
-}
-.bstat-lbl { font-size: 12px; font-weight: 500; color: var(--text-400); }
-.bstat-sub { font-size: 11px; font-weight: 600; margin-top: 7px; display: flex; align-items: center; gap: 3px; }
-.sub-up   { color: var(--emerald); }
-.sub-warn { color: var(--amber); }
-
-/* ═══════════════════════════════════════
-   TOOLBAR (search + filter + add)
-═══════════════════════════════════════ */
-.toolbar {
-  display: flex; align-items: center; gap: 12px;
-  animation: fadeUp .45s .1s ease both;
-}
-.search-wrap {
-  flex: 1; max-width: 380px;
-  position: relative;
-}
-.search-wrap i {
-  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-  color: var(--text-400); font-size: 13.5px; pointer-events: none;
-}
-.search-input {
-  width: 100%; height: 40px;
-  padding: 0 14px 0 38px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--white);
+.page-subtitle {
   font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px; color: var(--text-900);
-  transition: var(--t); outline: none;
+  font-size: 13px;
+  color: var(--text-400);
+  margin-top: 2px;
 }
-.search-input::placeholder { color: var(--text-300); }
-.search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,151,254,.12); }
 
-.filter-select {
-  height: 40px; padding: 0 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--white);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500; color: var(--text-500);
-  cursor: pointer; outline: none; transition: var(--t);
-  appearance: none; padding-right: 32px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238fa3c4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center;
-}
-.filter-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,151,254,.12); }
-
-.toolbar-spacer { flex: 1; }
-
+/* Buttons - Consistent with Brand Management */
 .btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 0 18px; height: 40px; border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 18px;
+  height: 40px;
+  border-radius: var(--r-sm);
   font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px; font-weight: 600;
-  cursor: pointer; transition: var(--t); border: none; outline: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--t);
+  border: none;
+  outline: none;
+  white-space: nowrap;
 }
 .btn-primary {
   background: linear-gradient(135deg, var(--blue), var(--blue-600));
   color: #fff;
   box-shadow: 0 3px 12px rgba(88,151,254,.35);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(88,151,254,.4); }
-.btn-primary:active { transform: scale(.97); }
-
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88,151,254,.40);
+}
+.btn-primary:active {
+  transform: scale(.97);
+}
 .btn-ghost {
-  background: var(--white); color: var(--text-500);
+  background: var(--white);
+  color: var(--text-500);
   border: 1.5px solid var(--border);
 }
-.btn-ghost:hover { background: var(--blue-50); color: var(--blue); border-color: var(--blue-200); }
-
+.btn-ghost:hover {
+  background: var(--blue-50);
+  color: var(--blue);
+  border-color: var(--blue-200);
+}
 .btn-danger {
-  background: rgba(244,63,94,.08); color: var(--rose);
+  background: rgba(244,63,94,.08);
+  color: var(--rose);
   border: 1.5px solid rgba(244,63,94,.18);
 }
-.btn-danger:hover { background: rgba(244,63,94,.15); }
+.btn-danger:hover {
+  background: rgba(244,63,94,.15);
+}
 
-/* ═══════════════════════════════════════
-   BRAND TABLE CARD
-═══════════════════════════════════════ */
-.table-card {
-  background: var(--white); border-radius: var(--r);
-  border: 1px solid var(--border); box-shadow: var(--s1);
-  overflow: hidden;
-  animation: fadeUp .45s .15s ease both;
+/* Section headers - Consistent with Brand Management */
+.sec-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.sec-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sec-title i {
+  color: var(--blue);
+  font-size: 14px;
 }
 
-.table-card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 22px 16px;
-  border-bottom: 1px solid var(--border-light);
+/* Table card - Consistent with Brand Management */
+.table-card {
+  background: var(--white);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  box-shadow: var(--s1);
+  overflow: hidden;
 }
-.tch-left { display: flex; align-items: center; gap: 10px; }
-.tch-title { font-size: 14px; font-weight: 700; color: var(--text-700); letter-spacing: -.1px; }
-.tch-count {
-  font-size: 11.5px; font-weight: 700;
-  background: var(--blue-50); color: var(--blue);
-  padding: 2px 9px; border-radius: 99px;
-}
-.tch-right { display: flex; align-items: center; gap: 8px; }
 
-/* view toggle */
-.view-toggle {
-  display: flex; background: var(--bg);
-  border-radius: 8px; padding: 3px; gap: 2px;
-}
-.vt-btn {
-  width: 32px; height: 32px; border-radius: 6px; border: none;
-  background: transparent; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; color: var(--text-400); transition: var(--t);
-}
-.vt-btn.active { background: var(--white); color: var(--blue); box-shadow: var(--s1); }
-.vt-btn:hover:not(.active) { color: var(--blue); }
-
-/* TABLE WRAPPER - Clean and functional */
+/* Table - Consistent with Brand Management */
 .table-wrapper {
-  height: 300px;
+  height: 400px;
   overflow-y: scroll;
 }
-
-/* TABLE */
-.brand-table { width: 100%; border-collapse: collapse; }
-.brand-table thead th {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .65px; color: var(--text-300);
-  padding: 12px 16px; text-align: left;
+.content-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.content-table thead th {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .65px;
+  color: var(--text-300);
+  padding: 12px 16px;
+  text-align: left;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
-.brand-table thead th:first-child { border-radius: 0; }
-.brand-table tbody tr {
+.content-table tbody tr {
   border-bottom: 1px solid var(--border-light);
-  transition: var(--t); cursor: pointer;
+  transition: var(--t);
+  cursor: pointer;
 }
-.brand-table tbody tr:last-child { border-bottom: none; }
-.brand-table tbody tr:hover { background: var(--blue-50); }
-.brand-table tbody tr:hover .row-actions { opacity: 1; }
-.brand-table tbody td {
-  padding: 14px 16px; font-size: 13px; color: var(--text-700);
+.content-table tbody tr:last-child {
+  border-bottom: none;
+}
+.content-table tbody tr:hover {
+  background: var(--blue-50);
+}
+.content-table tbody tr:hover .action-buttons {
+  opacity: 1;
+}
+.content-table tbody td {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-700);
+  padding: 14px 16px;
   vertical-align: middle;
 }
 
-/* brand name cell */
-.brand-cell { display: flex; align-items: center; gap: 12px; }
-.brand-avatar {
-  width: 38px; height: 38px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0;
-  text-transform: uppercase;
-}
-.brand-name-text { font-size: 13.5px; font-weight: 700; color: var(--text-900); }
-.brand-created { font-size: 11px; color: var(--text-400); margin-top: 1px; }
-
-/* pic cell */
-.pic-cell { display: flex; align-items: center; gap: 8px; }
-.pic-ava {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--blue-100);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10.5px; font-weight: 700; color: var(--blue); flex-shrink: 0;
-}
-.pic-name { font-size: 13px; font-weight: 500; }
-
-/* content count badge */
-.content-count {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 12.5px; font-weight: 700; color: var(--text-700);
-}
-.content-count i { font-size: 11px; color: var(--blue); }
-
-/* status pill */
-.status-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: 99px;
-  font-size: 11.5px; font-weight: 700;
-  white-space: nowrap; user-select: none;
-}
-.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.sp-active   { background: rgba(16,185,129,.10); color: #065f46; }
-.sp-active   .status-dot { background: var(--emerald); }
-.sp-inactive { background: rgba(148,163,184,.12); color: var(--text-500); }
-.sp-inactive .status-dot { background: var(--text-400); }
-
-/* row actions */
-.row-actions {
-  display: flex; align-items: center; gap: 5px;
-  opacity: 0; transition: var(--t);
-}
-.act-btn {
-  width: 32px; height: 32px; border-radius: 8px; border: none;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; cursor: pointer; transition: var(--t);
-}
-.act-detail { background: var(--blue-50);           color: var(--blue);    }
-.act-edit   { background: rgba(245,158,11,.10);     color: var(--amber);   }
-.act-del    { background: rgba(244,63,94,.10);      color: var(--rose);    }
-.act-detail:hover { background: var(--blue-100); transform: scale(1.08); }
-.act-edit:hover   { background: rgba(245,158,11,.2); transform: scale(1.08); }
-.act-del:hover    { background: rgba(244,63,94,.2);  transform: scale(1.08); }
-
-/* ═══════════════════════════════════════
-   GRID VIEW
-═══════════════════════════════════════ */
-.brand-grid {
-  display: none;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-  padding: 20px;
-}
-.brand-grid.show { display: grid; }
-
-.grid-card {
-  background: var(--white); border-radius: var(--r);
-  border: 1px solid var(--border); padding: 20px;
-  transition: var(--t); cursor: pointer;
-  animation: fadeUp .35s ease both;
-}
-.grid-card:hover { transform: translateY(-4px); box-shadow: var(--s2); border-color: var(--blue-200); }
-.grid-card:hover .grid-actions { opacity: 1; }
-
-.gc-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-.gc-brand { display: flex; align-items: center; gap: 11px; }
-.gc-avatar {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 800; color: #fff;
-}
-.gc-name { font-size: 14.5px; font-weight: 700; color: var(--text-900); }
-.gc-date { font-size: 11px; color: var(--text-400); margin-top: 2px; }
-
-.gc-divider { height: 1px; background: var(--border-light); margin: 14px 0; }
-
-.gc-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 9px;
-}
-.gc-row:last-of-type { margin-bottom: 0; }
-.gc-label { font-size: 11.5px; color: var(--text-400); font-weight: 500; }
-.gc-value { font-size: 12.5px; font-weight: 600; color: var(--text-700); text-align: right; max-width: 160px; }
-.gc-value.tone-text {
-  font-size: 11.5px; font-style: italic;
-  color: var(--text-500);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.grid-actions {
-  display: flex; gap: 6px; margin-top: 16px;
-  opacity: 0; transition: var(--t);
-}
-.grid-actions .act-btn { flex: 1; height: 34px; width: auto; border-radius: var(--r-sm); font-size: 12px; gap: 4px; display: flex; align-items: center; justify-content: center; }
-.grid-actions .act-btn span { font-size: 11.5px; font-weight: 600; }
-
-/* ═══════════════════════════════════════
-   PAGINATION
-═══════════════════════════════════════ */
-.pagination {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border-light);
-}
-.page-info { font-size: 12.5px; color: var(--text-400); }
-.page-info strong { color: var(--text-700); font-weight: 600; }
-.page-btns { display: flex; gap: 4px; }
-.page-btn {
-  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border);
-  background: var(--white); font-family: 'DM Sans', sans-serif;
-  font-size: 12.5px; font-weight: 600; color: var(--text-500);
-  cursor: pointer; transition: var(--t);
-  display: flex; align-items: center; justify-content: center;
-}
-.page-btn:hover { border-color: var(--blue-200); background: var(--blue-50); color: var(--blue); }
-.page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(88,151,254,.3); }
-.page-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ═══════════════════════════════════════
-   MODAL OVERLAY
-═══════════════════════════════════════ */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(13,21,38,.45);
-  backdrop-filter: blur(4px);
-  z-index: 500;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity .25s ease;
-}
-.overlay.open { opacity: 1; pointer-events: all; }
-
-/* ═══════════════════════════════════════
-   MODAL — FORM TAMBAH / EDIT BRAND
-═══════════════════════════════════════ */
-.modal {
-  background: var(--white); border-radius: 20px;
-  width: 100%; max-width: 600px;
-  box-shadow: var(--s3), 0 0 0 1px rgba(88,151,254,.08);
-  transform: translateY(24px) scale(.97);
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s ease;
-  opacity: 0;
-  max-height: 90vh; overflow-y: auto;
-}
-.overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
-
-.modal-head {
-  padding: 24px 28px 0;
-  display: flex; align-items: flex-start; justify-content: space-between;
-}
-.modal-title-wrap {}
-.modal-eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--blue);
-  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
-}
-.modal-title { font-size: 20px; font-weight: 800; color: var(--text-900); letter-spacing: -.4px; }
-.modal-subtitle { font-size: 13px; color: var(--text-400); margin-top: 3px; }
-
-.modal-close {
-  width: 36px; height: 36px; border-radius: 10px; border: none;
-  background: var(--bg); cursor: pointer; transition: var(--t);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-400); font-size: 15px; flex-shrink: 0;
-  margin-top: 2px;
-}
-.modal-close:hover { background: rgba(244,63,94,.1); color: var(--rose); }
-
-.modal-body { padding: 24px 28px; }
-
-.modal-divider { height: 1px; background: var(--border-light); margin: 4px 0 20px; }
-
-/* FORM GRID */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-grid .full { grid-column: 1 / -1; }
-
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-label {
-  font-size: 12.5px; font-weight: 700; color: var(--text-700);
-  display: flex; align-items: center; gap: 5px;
-}
-.form-label .req { color: var(--rose); font-size: 13px; }
-.form-label .hint {
-  font-size: 11px; font-weight: 400; color: var(--text-300);
-  margin-left: 2px;
-}
-
-.form-input, .form-textarea, .form-select {
-  width: 100%;
+/* Table cell styles - Consistent with Brand Management */
+.td-name {
   font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px; color: var(--text-900);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--white);
-  transition: var(--t); outline: none;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-900);
 }
-.form-input, .form-select { height: 42px; padding: 0 14px; }
-.form-textarea { padding: 12px 14px; resize: vertical; min-height: 88px; line-height: 1.55; }
-.form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238fa3c4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 14px center;
-  cursor: pointer;
+.td-brand {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-700);
 }
-.form-input::placeholder, .form-textarea::placeholder { color: var(--text-300); }
-.form-input:focus, .form-textarea:focus, .form-select:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3.5px rgba(88,151,254,.12);
-  background: var(--white);
+.td-version {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-500);
 }
-.form-input.error, .form-textarea.error, .form-select.error {
-  border-color: var(--rose);
-  box-shadow: 0 0 0 3px rgba(244,63,94,.1);
+.td-duration {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  color: var(--text-500);
 }
-.form-error { font-size: 11.5px; color: var(--rose); font-weight: 500; display: none; }
-.form-error.show { display: block; }
-
-/* input with icon */
-.input-wrap { position: relative; }
-.input-wrap i {
-  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-  color: var(--text-400); font-size: 13.5px; pointer-events: none;
+.td-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
 }
-.input-wrap .form-input { padding-left: 38px; }
-
-/* tone chips */
-.tone-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
-.tone-chip {
-  padding: 5px 12px; border-radius: 99px; border: 1.5px solid var(--border);
-  font-size: 12px; font-weight: 600; color: var(--text-500);
-  cursor: pointer; transition: var(--t); background: var(--white);
-  user-select: none;
-}
-.tone-chip:hover { border-color: var(--blue-200); color: var(--blue); background: var(--blue-50); }
-.tone-chip.selected {
-  background: var(--blue); color: #fff; border-color: var(--blue);
-  box-shadow: 0 2px 8px rgba(88,151,254,.3);
-}
-
-/* status toggle */
-.status-toggle { display: flex; gap: 10px; margin-top: 2px; }
-.st-option {
-  flex: 1; padding: 10px 14px; border-radius: var(--r-sm);
-  border: 1.5px solid var(--border); cursor: pointer; transition: var(--t);
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 600; color: var(--text-500);
-  user-select: none;
-}
-.st-option:hover { border-color: var(--blue-200); background: var(--blue-50); }
-.st-dot { width: 8px; height: 8px; border-radius: 50%; }
-.st-active  .st-dot { background: var(--emerald); }
-.st-inactive .st-dot { background: var(--text-400); }
-.st-option.selected.st-active {
-  border-color: var(--emerald); background: rgba(16,185,129,.06);
+.status-published {
+  background: rgba(16,185,129,.10);
   color: #065f46;
 }
-.st-option.selected.st-inactive {
-  border-color: var(--text-300); background: var(--bg); color: var(--text-500);
+.status-draft {
+  background: rgba(148,163,184,.12);
+  color: var(--text-500);
+}
+.status-pending {
+  background: rgba(245,158,11,.10);
+  color: #92400e;
 }
 
-/* modal footer */
-.modal-footer {
-  padding: 0 28px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px;
+/* Action buttons - Consistent with Brand Management */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: var(--t);
 }
-.mf-left { font-size: 12px; color: var(--text-300); }
-.mf-right { display: flex; gap: 9px; }
+.btn-action {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--t);
+  background: var(--blue-50);
+  color: var(--blue);
+}
+.btn-action:hover {
+  background: var(--blue-100);
+  transform: scale(1.08);
+}
+.btn-action.btn-download {
+  background: rgba(16,185,129,.10);
+  color: var(--emerald);
+}
+.btn-action.btn-download:hover {
+  background: rgba(16,185,129,.2);
+}
+.btn-action.btn-upload {
+  background: rgba(245,158,11,.10);
+  color: var(--amber);
+}
+.btn-action.btn-upload:hover {
+  background: rgba(245,158,11,.2);
+}
 
-/* ═══════════════════════════════════════
-   MODAL — DETAIL BRAND
-═══════════════════════════════════════ */
-.detail-modal { max-width: 520px; }
-.detail-hero {
-  padding: 28px 28px 0;
-  display: flex; align-items: center; gap: 16px;
+/* Modal - Consistent with Brand Management */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13,21,38,.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--t);
 }
-.detail-avatar {
-  width: 60px; height: 60px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 800; color: #fff; flex-shrink: 0;
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
 }
-.detail-name { font-size: 20px; font-weight: 800; color: var(--text-900); letter-spacing: -.4px; }
-.detail-meta { font-size: 12.5px; color: var(--text-400); margin-top: 4px; display: flex; gap: 12px; }
-.detail-body { padding: 20px 28px; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
-.detail-item {}
-.detail-item-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-300); margin-bottom: 4px; }
-.detail-item-value { font-size: 13px; font-weight: 600; color: var(--text-700); line-height: 1.4; }
-.detail-item.full { grid-column: 1 / -1; }
-.detail-tone-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.detail-tone-tag {
-  padding: 3px 10px; border-radius: 99px;
-  background: var(--blue-50); color: var(--blue);
-  font-size: 11.5px; font-weight: 600;
+.modal {
+  background: var(--white);
+  border-radius: var(--r);
+  box-shadow: var(--s2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(.95) translateY(20px);
+  transition: var(--t);
 }
-
-/* content mini chart */
-.content-bar { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.cb-row { display: flex; align-items: center; gap: 8px; }
-.cb-label { font-size: 11.5px; color: var(--text-500); width: 90px; flex-shrink: 0; }
-.cb-track { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.cb-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(.4,0,.2,1); }
-.cb-num { font-size: 11.5px; font-weight: 700; color: var(--text-700); width: 24px; text-align: right; }
-
-/* ═══════════════════════════════════════
-   MODAL — DELETE CONFIRM
-═══════════════════════════════════════ */
-.delete-modal { max-width: 420px; }
-.delete-icon-wrap {
-  width: 60px; height: 60px; border-radius: 16px;
+.modal-overlay.show .modal {
+  transform: scale(1) translateY(0);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.modal-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.modal-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: -.4px;
+}
+.modal-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-400);
+  margin-top: 3px;
+}
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg);
+  cursor: pointer;
+  transition: var(--t);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-400);
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.modal-close:hover {
   background: rgba(244,63,94,.1);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; color: var(--rose); margin: 0 auto 16px;
+  color: var(--rose);
+}
+.modal-body {
+  padding: 24px 28px;
+}
+.modal-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 20px 0;
 }
 
-/* ═══════════════════════════════════════
-   TOAST NOTIFICATION
-═══════════════════════════════════════ */
-.toast-container {
-  position: fixed; bottom: 28px; right: 28px;
-  z-index: 900; display: flex; flex-direction: column; gap: 10px;
-  pointer-events: none;
+/* Form - Consistent with Brand Management */
+.form-group {
+  margin-bottom: 20px;
 }
-.toast {
-  display: flex; align-items: center; gap: 11px;
-  padding: 13px 18px; border-radius: 12px;
-  background: var(--text-900); color: #fff;
-  font-size: 13px; font-weight: 500;
-  box-shadow: 0 8px 32px rgba(13,21,38,.25);
-  transform: translateX(110%);
-  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-  pointer-events: all; min-width: 260px;
+.form-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-700);
+  margin-bottom: 8px;
+  display: block;
 }
-.toast.show { transform: translateX(0); }
-.toast-ic {
-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 13px;
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-900);
+  background: var(--white);
+  transition: var(--t);
 }
-.toast-success .toast-ic { background: rgba(16,185,129,.2); color: var(--emerald); }
-.toast-warn    .toast-ic { background: rgba(245,158,11,.2); color: var(--amber); }
-.toast-error   .toast-ic { background: rgba(244,63,94,.2);  color: var(--rose); }
+.form-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(88,151,254,.1);
+}
+.form-input::placeholder {
+  color: var(--text-400);
+}
+.form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-900);
+  background: var(--white);
+  transition: var(--t);
+  cursor: pointer;
+}
+.form-select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(88,151,254,.1);
+}
 
-/* ═══════════════════════════════════════
-   EMPTY STATE
-═══════════════════════════════════════ */
+/* Empty state - Consistent with Brand Management */
 .empty-state {
-  padding: 60px 20px;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-400);
+}
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+.empty-state h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-500);
+}
+.empty-state p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-400);
+}
+
+/* Responsive - Consistent with Brand Management */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .sec-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .table-wrapper {
+    height: 300px;
+  }
+  .modal {
+    width: 95%;
+    margin: 20px;
+  }
+}
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,21,38,.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal {
+  background: var(--white);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: var(--s3), 0 0 0 1px rgba(88,151,254,.08);
+  transform: translateY(20px) scale(.95);
+  opacity: 0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.overlay.open .modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.modal-head {
+  padding: 24px 28px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.modal-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: -.4px;
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-400);
+  margin-top: 3px;
+}
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg);
+  cursor: pointer;
+  transition: var(--t);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-400);
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.modal-close:hover {
+  background: rgba(244,63,94,.1);
+  color: var(--rose);
+}
+.modal-body {
+  padding: 24px 28px;
+}
+.modal-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0 20px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group.full {
+  grid-column: 1 / -1;
+}
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-700);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.form-label .required {
+  color: var(--rose);
+}
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--white);
+  transition: var(--t);
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(88,151,254,.1);
+}
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.file-input-wrapper {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--r-sm);
+  padding: 20px;
+  text-align: center;
+  transition: var(--t);
+  cursor: pointer;
+  background: var(--bg);
+}
+.file-input-wrapper:hover {
+  border-color: var(--blue);
+  background: var(--blue-50);
+}
+.file-input {
   display: none;
 }
-.empty-state.show { display: flex; }
-.empty-ic {
-  width: 64px; height: 64px; border-radius: 18px;
-  background: var(--blue-50);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; color: var(--blue);
+.file-input-text {
+  font-size: 13px;
+  color: var(--text-500);
 }
-.empty-title { font-size: 15px; font-weight: 700; color: var(--text-700); }
-.empty-sub { font-size: 13px; color: var(--text-400); text-align: center; }
+.file-input-hint {
+  font-size: 11px;
+  color: var(--text-400);
+  margin-top: 4px;
+}
+.modal-footer {
+  padding: 0 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mf-left {
+  font-size: 11px;
+  color: var(--text-400);
+}
+.mf-right {
+  display: flex;
+  gap: 8px;
+}
 
-/* ═══════════════════════════════════════
-   ANIMATIONS
-═══════════════════════════════════════ */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Status Badge Colors */
+.p-in-production {
+  background: rgba(251, 146, 60, 0.1);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.2);
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.p-in-production .pill-dot {
+  background: #fb923c;
 }
-.spin { animation: spin .7s linear infinite; display: inline-block; }
+.p-under-review {
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+.p-under-review .pill-dot {
+  background: #facc15;
+}
+.p-ready-to-publish {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.p-ready-to-publish .pill-dot {
+  background: #22c55e;
+}
+.p-published {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.p-published .pill-dot {
+  background: #a855f7;
+}
+.p-need-revision {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.p-need-revision .pill-dot {
+  background: #ef4444;
+}
+
+/* Action Buttons */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-500);
+  cursor: pointer;
+  transition: var(--t);
+  font-size: 12px;
+}
+.btn-action:hover {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
 </style>
-</head>
-<body>
-@php
-  $authName = auth()->user()->name ?? '';
-  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
-  $authFirst = $authParts[0] ?? 'U';
-  $authSecond = $authParts[1] ?? $authFirst;
-  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
-@endphp
-<div class="shell">
+@endpush
 
-<!-- ════════════════ SIDEBAR ════════════════ -->
-<aside class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="sb-logo-name">Page<em>flowry</em></div>
-  </div>
-
-  <nav class="sb-nav">
-    <div class="sb-group-label">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
-      Dashboard
-    </a>
-
-    <div class="sb-group-label">Manajemen</div>
-    <a class="sb-item active" href="{{ route('brands.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
-      Brand Management
-    </a>
-    <a class="sb-item" href="{{ route('content-tasks.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
-      Daftar Tugas Konten
-    </a>
-
-    <div class="sb-group-label">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
-      Production
-    </a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}">
-      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
-      Revision
-      <span class="sb-badge">4</span>
-    </a>
-    <a class="sb-item" href="{{ route('approval.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
-      Approval
-    </a>
-    <a class="sb-item" href="{{ route('publishing.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
-      Publishing
-    </a>
-
-    <div class="sb-group-label">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
-      Analytics
-    </a>
-    <a class="sb-item" href="{{ route('report.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
-      Report
-    </a>
-
-    <div class="sb-group-label">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
-      Settings
-    </a>
-  </nav>
-
-  <div class="sb-footer">
-    <div class="sb-user">
-      <div class="sb-avatar">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="sb-user-info">
-        <div class="sb-user-name">{{ auth()->user()->name ?? 'Guest User' }}</div>
-        <div class="sb-user-role">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
-      </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
-    </div>
-  </div>
-</aside>
-
-<!-- ════════════ MAIN ════════════ -->
-<div class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="tb-left">
-      <div class="tb-page">Brand Management</div>
-      <div class="tb-breadcrumb">
-        <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--text-300)"></i>
-        <span>Brand Management</span>
-        &nbsp;·&nbsp; <span id="today-date"></span>
-      </div>
-    </div>
-    <div class="tb-right">
-      <div class="tb-icon-btn">
-        <i class="fa-regular fa-bell"></i>
-        <span class="tb-notif-dot"></span>
-      </div>
-      <div class="tb-icon-btn"><i class="fa-regular fa-envelope"></i></div>
-      <div class="tb-divider"></div>
-      <div class="tb-avatar-btn">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="tb-icon-btn"><i class="fa-solid fa-sliders"></i></div>
-    </div>
-  </header>
-
-  <!-- BODY -->
-  <div class="body">
-
-    <!-- STAT CARDS -->
-    <div class="brand-stats">
-      <div class="bstat bstat-blue" style="--i:0">
-        <div class="bstat-ic"><i class="fa-solid fa-tag"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->count() }}">0</div>
-        <div class="bstat-lbl">Total Brand</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->count() }} bulan ini</div>
-      </div>
-      <div class="bstat bstat-em" style="--i:1">
-        <div class="bstat-ic"><i class="fa-solid fa-circle-dot"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->where('status', 'Active')->count() }}">0</div>
-        <div class="bstat-lbl">Brand Aktif</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-check"></i> Berjalan</div>
-      </div>
-      <div class="bstat bstat-amb" style="--i:2">
-        <div class="bstat-ic"><i class="fa-solid fa-circle-pause"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->where('status', 'Non Active')->count() }}">0</div>
-        <div class="bstat-lbl">Brand Non-Aktif</div>
-        <div class="bstat-sub sub-warn"><i class="fa-solid fa-minus"></i> Tidak aktif</div>
-      </div>
-      <div class="bstat bstat-rose" style="--i:3">
-        <div class="bstat-ic"><i class="fa-solid fa-photo-film"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->sum('contents_count') ?? 0 }}">0</div>
-        <div class="bstat-lbl">Total Konten</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->sum('contents_count') ?? 0 }} bulan ini</div>
-      </div>
-    </div>
-
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <div class="search-wrap">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input class="search-input" id="searchInput" type="text" placeholder="Cari nama brand, PIC, kontak..."/>
-      </div>
-      <select class="filter-select" id="filterStatus" onchange="filterTable()">
-        <option value="">Semua Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Non Active</option>
-      </select>
-      <div class="toolbar-spacer"></div>
-      <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
-        <i class="fa-solid fa-file-pdf"></i> Export PDF
-      </a>
-      <button class="btn btn-primary" onclick="openAddModal()">
-        <i class="fa-solid fa-plus"></i> Tambah Brand
-      </button>
-    </div>
-
-    <!-- TABLE CARD -->
-    <div class="table-card">
-      <div class="table-card-head">
-        <div class="tch-left">
-          <div class="tch-title">Daftar Brand</div>
-          <div class="tch-count" id="brandCount">{{ $brands->count() }} brand</div>
-        </div>
-        <div class="tch-right">
-          <div class="view-toggle">
-            <button class="vt-btn active" id="btnList" onclick="switchView('list')" title="List view">
-              <i class="fa-solid fa-list"></i>
-            </button>
-            <button class="vt-btn" id="btnGrid" onclick="switchView('grid')" title="Grid view">
-              <i class="fa-solid fa-grid-2"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- LIST VIEW -->
-      <div id="listView">
-        <div class="table-wrapper">
-          <table class="brand-table">
-            <thead>
-              <tr>
-                <th style="width:28%">Nama Brand</th>
-                <th style="width:18%">PIC</th>
-                <th style="width:18%">Kontak</th>
-                <th style="width:12%">Jumlah Konten</th>
-                <th style="width:12%">Status</th>
-                <th style="width:12%">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="brandTableBody">
-              @foreach($brands as $brand)
-              <tr onclick="openDetail({{ $brand->id }})">
-                <td>
-                  <div class="brand-cell">
-                    <div class="brand-avatar" style="background:#5897fe">{{ $brand->name ? strtoupper(substr($brand->name, 0, 2)) : '??' }}</div>
-                    <div>
-                      <div class="brand-name-text">{{ $brand->name ?: 'Unnamed Brand' }}</div>
-                      <div class="brand-created">Dibuat {{ $brand->created_at ? $brand->created_at->format('M Y') : 'Unknown' }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="pic-cell">
-                    <div class="pic-ava">{{ $brand->pic ? strtoupper(substr($brand->pic, 0, 2)) : '??' }}</div>
-                    <span class="pic-name">{{ $brand->pic ?: 'No PIC' }}</span>
-                  </div>
-                </td>
-                <td style="color:var(--text-500);font-size:12.5px">{{ $brand->contact ?: 'No Contact' }}</td>
-                <td>
-                  <span class="content-count"><i class="fa-solid fa-film"></i> {{ $brand->contents_count ?? 0 }} konten</span>
-                </td>
-                <td>
-                  <span class="status-pill {{ $brand->status === 'Active' ? 'sp-active' : 'sp-inactive' }}">
-                    <span class="status-dot"></span>{{ $brand->status ?: 'Unknown' }}
-                  </span>
-                </td>
-                <td onclick="event.stopPropagation()">
-                  <div class="row-actions">
-                    <button class="act-btn act-detail" onclick="openDetail({{ $brand->id }})" title="Detail"><i class="fa-solid fa-eye"></i></button>
-                    <button class="act-btn act-edit"   onclick="openEdit({{ $brand->id }})"   title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button class="act-btn act-del"    onclick="openDelete({{ $brand->id }})" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>
-                  </div>
-                </td>
-              </tr>
-              @endforeach
-              {{-- Show final count --}}
-              <tr style="background: #f8f9fa; font-weight: bold;">
-                <td colspan="6" style="text-align: center; padding: 5px; font-size: 12px;">
-                  Total brands displayed: {{ $brands->count() }} | Database count: {{ $brands->count() }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="empty-state" id="emptyState">
-          <div class="empty-ic"><i class="fa-solid fa-tag"></i></div>
-          <div class="empty-title">Tidak ada brand ditemukan</div>
-          <div class="empty-sub">Coba ubah kata kunci pencarian atau filter yang digunakan.</div>
-        </div>
-      </div>
-
-      <!-- GRID VIEW -->
-      <div class="brand-grid" id="gridView"></div>
-
-    </div>
-
-  </div><!-- /body -->
-</div><!-- /main -->
-</div><!-- /shell -->
-
-<!-- ════════════ MODAL: ADD / EDIT ════════════ -->
-<div class="overlay" id="formOverlay" onclick="closeOnOverlay(event,'formOverlay')">
-  <div class="modal" id="formModal" onclick="event.stopPropagation()">
-    <div class="modal-head">
-      <div class="modal-title-wrap">
-        <div class="modal-eyebrow"><i class="fa-solid fa-tag"></i> <span id="modalEyebrow">Brand Management</span></div>
-        <div class="modal-title" id="modalTitle">Tambah Brand Baru</div>
-        <div class="modal-subtitle" id="modalSubtitle">Isi data brand untuk ditambahkan ke sistem</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('formOverlay')"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-divider"></div>
-      <form id="brandForm" onsubmit="submitForm(event)" novalidate>
-        <input type="hidden" id="editId" value=""/>
-        <div class="form-grid">
-          <!-- Nama Brand -->
-          <div class="form-group full">
-            <label class="form-label">Nama Brand <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-tag"></i>
-              <input class="form-input" id="fName" type="text" placeholder="Contoh: GlowSkin, BeautyHaus..."/>
-            </div>
-            <span class="form-error" id="errName">Nama brand wajib diisi.</span>
-          </div>
-          <!-- PIC -->
-          <div class="form-group">
-            <label class="form-label">PIC / Penanggung Jawab <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-user"></i>
-              <input class="form-input" id="fPic" type="text" placeholder="Nama penanggung jawab"/>
-            </div>
-            <span class="form-error" id="errPic">PIC wajib diisi.</span>
-          </div>
-          <!-- Kontak -->
-          <div class="form-group">
-            <label class="form-label">Kontak <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-phone"></i>
-              <input class="form-input" id="fContact" type="text" placeholder="No. HP / Email kontak"/>
-            </div>
-            <span class="form-error" id="errContact">Kontak wajib diisi.</span>
-          </div>
-          <!-- Target Market -->
-          <div class="form-group full">
-            <label class="form-label">Target Market <span class="req">*</span> <span class="hint">— Deskripsikan audiens utama brand</span></label>
-            <textarea class="form-textarea" id="fTarget" placeholder="Contoh: Wanita usia 18–35 tahun, tertarik dunia kecantikan dan perawatan kulit..."></textarea>
-            <span class="form-error" id="errTarget">Target market wajib diisi.</span>
-          </div>
-          <!-- Tone Komunikasi -->
-          <div class="form-group full">
-            <label class="form-label">Tone Komunikasi <span class="req">*</span> <span class="hint">— Pilih satu atau lebih</span></label>
-            <div class="tone-chips" id="toneChips">
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Friendly">Friendly</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Professional">Professional</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Playful">Playful</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Inspirational">Inspirational</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Educational">Educational</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Luxury">Luxury</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Casual">Casual</span>
-              <span class="tone-chip" onclick="toggleTone(this)" data-val="Bold">Bold</span>
-            </div>
-            <span class="form-error" id="errTone">Pilih minimal satu tone komunikasi.</span>
-          </div>
-          <!-- Status -->
-          <div class="form-group full">
-            <label class="form-label">Status Brand <span class="req">*</span></label>
-            <div class="status-toggle">
-              <div class="st-option st-active selected" id="stActive" onclick="selectStatus('Active')">
-                <span class="st-dot"></span> Active
-              </div>
-              <div class="st-option st-inactive" id="stInactive" onclick="selectStatus('Non Active')">
-                <span class="st-dot"></span> Non Active
-              </div>
-            </div>
-            <input type="hidden" id="fStatus" value="Active"/>
-          </div>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <div class="mf-left"><i class="fa-solid fa-asterisk" style="font-size:8px"></i> Wajib diisi</div>
-      <div class="mf-right">
-        <button class="btn btn-ghost" onclick="closeModal('formOverlay')">Batal</button>
-        <button class="btn btn-primary" id="submitBtn" onclick="submitForm(event)">
-          <i class="fa-solid fa-floppy-disk"></i> Simpan Brand
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════ MODAL: DETAIL ════════════ -->
-<div class="overlay" id="detailOverlay" onclick="closeOnOverlay(event,'detailOverlay')">
-  <div class="modal detail-modal" onclick="event.stopPropagation()">
-    <div class="modal-head" style="padding:24px 28px 0">
-      <div></div>
-      <button class="modal-close" onclick="closeModal('detailOverlay')"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="detail-hero" id="detailHero"></div>
-    <div class="detail-body" id="detailBody"></div>
-    <div class="modal-footer">
-      <div></div>
-      <div class="mf-right">
-        <button class="btn btn-ghost" onclick="closeModal('detailOverlay')">Tutup</button>
-        <button class="btn btn-primary" id="detailEditBtn"><i class="fa-solid fa-pen"></i> Edit Brand</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════ MODAL: DELETE ════════════ -->
-<div class="overlay" id="deleteOverlay" onclick="closeOnOverlay(event,'deleteOverlay')">
-  <div class="modal delete-modal" onclick="event.stopPropagation()">
-    <div class="modal-body" style="text-align:center;padding:32px 28px 8px">
-      <div class="delete-icon-wrap"><i class="fa-solid fa-trash-can"></i></div>
-      <div style="font-size:18px;font-weight:800;color:var(--text-900);margin-bottom:8px">Hapus Brand?</div>
-      <div id="deleteMsg" style="font-size:13.5px;color:var(--text-500);line-height:1.55"></div>
-    </div>
-    <div class="modal-footer" style="justify-content:center;gap:10px">
-      <button class="btn btn-ghost" style="min-width:100px" onclick="closeModal('deleteOverlay')">Batal</button>
-      <button class="btn btn-danger" style="min-width:100px" id="confirmDeleteBtn"><i class="fa-solid fa-trash-can"></i> Hapus</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOASTS -->
-<div class="toast-container" id="toastContainer"></div>
-
+@push('scripts')
 <script>
-/* ════════════════════════════════════════
-   DATA FROM DATABASE
-════════════════════════════════════════ */
-const BRAND_COLORS = [
-  '#5897fe','#10b981','#f59e0b','#8b5cf6',
-  '#f43f5e','#06b6d4','#ff7849','#3b82f6',
-  '#ec4899','#14b8a6','#6366f1','#84cc16',
-];
-
 let brands = @json($brands);
+
 // Process brands data to ensure consistent structure
 brands = brands.map(brand => {
-  try {
-    return {
-      id: brand.id,
-      name: brand.name || '',
-      pic: brand.pic || '',
-      contact: brand.contact || '',
-      target: brand.target_market || '',
-      tone: brand.tone ? (Array.isArray(brand.tone) ? brand.tone : String(brand.tone).split(',')) : [],
-      status: brand.status || 'Active',
-      contents: brand.contents || 0,
-      published: brand.published_count || 0,
-      onProgress: brand.in_progress_count || 0,
-      created: brand.created || 'Unknown'
-    };
-  } catch (error) {
-    console.error('Error processing brand:', brand, error);
-    return {
-      id: brand.id || 0,
-      name: 'Error Brand',
-      pic: 'Error',
-      contact: 'Error',
-      target: '',
-      tone: [],
-      status: 'Active',
-      contents: 0,
-      published: 0,
-      onProgress: 0,
-      created: 'Unknown'
-    };
-  }
-}).filter(brand => brand && brand.id); // Filter out null/undefined brands
-
-console.log('Processed brands from database:', brands);
-console.log('Total brands from database:', brands.length);
-let nextId = {{ $brands->max('id') + 1 }};
-let currentPage = 1;
-const perPage = 1000; // Set to high number to show all brands
-let filteredBrands = [...brands];
-let currentView = 'list';
-let deleteTargetId = null;
-
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => {
-  animateCounters();
-  
-  // Initialize statistics on page load
-  updateStats();
-  
-  // Enable real-time search functionality
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', filterTable);
-    console.log('Real-time search event listener attached');
-  } else {
-    console.error('Search input not found!');
-  }
-  
-  // Enable status filter functionality
-  const filterStatus = document.getElementById('filterStatus');
-  if (filterStatus) {
-    filterStatus.addEventListener('change', filterTable);
-    console.log('Status filter event listener attached');
-  } else {
-    console.error('Status filter not found!');
-  }
-  
-  // Enable renderTable for dynamic updates
-  renderTable();
-  
-  // Debug table-wrapper
-  const tableWrapper = document.querySelector('.table-wrapper');
-  console.log('Table wrapper element:', tableWrapper);
-  console.log('Table wrapper styles:', {
-    height: tableWrapper ? window.getComputedStyle(tableWrapper).height : 'not found',
-    overflowY: tableWrapper ? window.getComputedStyle(tableWrapper).overflowY : 'not found',
-    scrollHeight: tableWrapper ? tableWrapper.scrollHeight : 'not found',
-    clientHeight: tableWrapper ? tableWrapper.clientHeight : 'not found'
-  });
-  
-  // Today date
-  const d = new Date();
-  document.getElementById('today-date').textContent =
-    d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  return {
+    id: brand.id,
+    name: brand.name || '',
+    pic: brand.pic || '',
+    contact: brand.contact || '',
+    target_market: brand.target_market || '',
+    description: brand.description || '',
+    tone_voice: brand.tone_voice || '',
+    status: brand.status || 'Active',
+    contents_count: brand.contents_count || 0,
+    created_at: brand.created_at,
+    updated_at: brand.updated_at
+  };
 });
 
-/* ══════════════════════════════════════════
-   COUNT UP
-══════════════════════════════════════════ */
-function animateCounters() {
-  document.querySelectorAll('[data-target]').forEach((el, i) => {
-    const target = +el.dataset.target;
-    let n = 0;
-    const tick = () => {
-      n = Math.min(n + Math.ceil(target / 25), target);
-      el.textContent = n;
-      if (n < target) requestAnimationFrame(tick);
-    };
-    setTimeout(tick, 300 + i * 60);
-  });
+// DOM elements
+const searchInput = document.getElementById('searchInput');
+const filterStatus = document.getElementById('filterStatus');
+const tableView = document.getElementById('tableView');
+const gridView = document.getElementById('gridView');
+const tableViewBtn = document.getElementById('tableViewBtn');
+const gridViewBtn = document.getElementById('gridViewBtn');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  // Set today's date
+  const today = new Date();
+  const options = { day: 'numeric', month: 'short', year: 'numeric' };
+  document.getElementById('today-date').textContent = today.toLocaleDateString('id-ID', options);
+
+  // Setup event listeners
+  setupEventListeners();
+
+  // Initial render
+  renderTable();
+});
+
+// Setup event listeners
+function setupEventListeners() {
+  searchInput.addEventListener('input', debounce(filterTable, 300));
+  filterStatus.addEventListener('change', filterTable);
 }
 
-/* ══════════════════════════════════════════
-   COLOR HELPER
-══════════════════════════════════════════ */
-function brandColor(id) { return BRAND_COLORS[(id - 1) % BRAND_COLORS.length]; }
-function brandInitials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
-/* ══════════════════════════════════════════
-   REAL-TIME SEARCH & FILTER
-══════════════════════════════════════════ */
+// Filter table
 function filterTable() {
-  console.log('=== REAL-TIME SEARCH & FILTER CALLED ===');
-  
-  // Get search query and status filter
-  const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-  const statusFilter = document.getElementById('filterStatus').value;
-  
-  console.log('Search query:', searchQuery);
-  console.log('Status filter:', statusFilter);
-  
-  // Filter brands based on search and status
-  filteredBrands = brands.filter(brand => {
-    // Search filter (nama brand, PIC, kontak)
-    const matchesSearch = !searchQuery || 
-      brand.name.toLowerCase().includes(searchQuery) ||
-      brand.pic.toLowerCase().includes(searchQuery) ||
-      brand.contact.toLowerCase().includes(searchQuery);
-    
-    // Status filter
-    const matchesStatus = !statusFilter || 
-      (statusFilter === 'active' && brand.status === 'Active') ||
-      (statusFilter === 'inactive' && brand.status === 'Non Active');
-    
+  const searchTerm = searchInput.value.toLowerCase();
+  const statusFilter = filterStatus.value;
+
+  const filteredBrands = brands.filter(brand => {
+    const matchesSearch = brand.name.toLowerCase().includes(searchTerm) ||
+                         brand.pic.toLowerCase().includes(searchTerm) ||
+                         brand.contact.toLowerCase().includes(searchTerm);
+    const matchesStatus = statusFilter === '' || brand.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
-  
-  console.log('Filtered results:', filteredBrands.length, 'of', brands.length);
-  
-  // Update UI immediately - no reload needed
-  renderTable();
-  updateStats();
-  
-  // Update search results info
-  updateSearchInfo(searchQuery, statusFilter);
-  
-  console.log('=== SEARCH & FILTER COMPLETE ===');
+
+  renderTable(filteredBrands);
 }
 
-function updateSearchInfo(searchQuery, statusFilter) {
-  // Update brand count to show filtered results
-  const brandCountEl = document.getElementById('brandCount');
-  if (brandCountEl) {
-    const count = filteredBrands.length;
-    const total = brands.length;
-    brandCountEl.textContent = count + ' brand' + (count < total ? ` (dari ${total})` : '');
-  }
-  
-  // Show/hide empty state
-  const emptyState = document.getElementById('emptyState');
-  const tableBody = document.getElementById('brandTableBody');
-  
+// Render table
+function renderTable(filteredBrands = brands) {
+  const tbody = tableView.querySelector('.brand-table tbody');
+  tbody.innerHTML = '';
+
   if (filteredBrands.length === 0) {
-    console.log('No results found, showing empty state');
-    if (emptyState) emptyState.classList.add('show');
-    if (tableBody) tableBody.innerHTML = '';
-  } else {
-    console.log('Results found, hiding empty state');
-    if (emptyState) emptyState.classList.remove('show');
-  }
-  
-  // Log search summary
-  if (searchQuery || statusFilter) {
-    console.log(`Search: "${searchQuery}" | Filter: "${statusFilter}" | Results: ${filteredBrands.length}`);
-  }
-}
-
-/* ══════════════════════════════════════════
-   RENDER TABLE - Display All Database Data
-══════════════════════════════════════════ */
-function renderTable() {
-  console.log('renderTable called - Displaying all database data');
-  console.log('Total brands in database:', brands.length);
-  console.log('Filtered brands for display:', filteredBrands.length);
-  
-  // Update brand count in header
-  const brandCountEl = document.getElementById('brandCount');
-  if (brandCountEl) {
-    const count = filteredBrands.length;
-    const total = brands.length;
-    brandCountEl.textContent = count + ' brand' + (count < total ? ` (dari ${total})` : '');
-    console.log('Brand count updated:', count + ' brand' + (count < total ? ` (dari ${total})` : ''));
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-400);"><i class="fa-solid fa-search" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>Tidak ada brand yang ditemukan</td></tr>';
+    return;
   }
 
-  // Get table elements
-  const tbody = document.getElementById('brandTableBody');
-  const emptyState = document.getElementById('emptyState');
-  
-  console.log('Table elements found:', { tbody: !!tbody, emptyState: !!emptyState });
+  filteredBrands.forEach(brand => {
+    const row = document.createElement('tr');
+    row.onclick = () => openDetailModal(brand.id);
 
-  // Display all filtered brands (no pagination - show all data)
-  if (filteredBrands.length === 0) {
-    console.log('No brands to display, showing empty state');
-    if (tbody) tbody.innerHTML = '';
-    if (emptyState) {
-      emptyState.classList.add('show');
-      emptyState.innerHTML = `
-        <div class="empty-ic"><i class="fa-solid fa-search"></i></div>
-        <div class="empty-title">Data tidak ditemukan</div>
-        <div class="empty-sub">Coba ubah kata kunci pencarian atau filter yang digunakan.</div>
-      `;
-    }
-  } else {
-    console.log('Displaying', filteredBrands.length, 'brands in table');
-    if (emptyState) emptyState.classList.remove('show');
-    
-    // Generate table HTML for all brands
-    const tableHTML = filteredBrands.map((brand, index) => {
-      console.log(`Rendering brand ${index + 1}:`, brand);
-      return `
-        <tr onclick="openDetail(${brand.id})">
-          <td>
-            <div class="brand-cell">
-              <div class="brand-avatar" style="background:${brandColor(brand.id)}">${brandInitials(brand.name)}</div>
-              <div>
-                <div class="brand-name-text">${brand.name || 'Unnamed Brand'}</div>
-                <div class="brand-created">Dibuat ${brand.created || 'Unknown'}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="pic-cell">
-              <div class="pic-ava">${brand.pic ? brand.pic.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() : '??'}</div>
-              <span class="pic-name">${brand.pic || 'No PIC'}</span>
-            </div>
-          </td>
-          <td style="color:var(--text-500);font-size:12.5px">${brand.contact || 'No Contact'}</td>
-          <td>
-            <span class="content-count"><i class="fa-solid fa-film"></i> ${brand.contents || 0} konten</span>
-          </td>
-          <td>
-            <span class="status-pill ${brand.status === 'Active' ? 'sp-active' : 'sp-inactive'}">
-              <span class="status-dot"></span>${brand.status || 'Unknown'}
-            </span>
-          </td>
-          <td onclick="event.stopPropagation()">
-            <div class="row-actions">
-              <button class="act-btn act-detail" onclick="openDetail(${brand.id})" title="Detail"><i class="fa-solid fa-eye"></i></button>
-              <button class="act-btn act-edit"   onclick="openEdit(${brand.id})"   title="Edit"><i class="fa-solid fa-pen"></i></button>
-              <button class="act-btn act-del"    onclick="openDelete(${brand.id})" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-    
-    console.log('Generated table HTML with', filteredBrands.length, 'rows');
-    
-    if (tbody) {
-      tbody.innerHTML = tableHTML;
-      console.log('Table body updated successfully');
-    } else {
-      console.error('Table body element not found!');
-    }
-  }
+    const colors = ['#5897fe', '#8b5cf6', '#10b981', '#ff7849', '#f59e0b', '#06b6d4'];
+    const gradients = [
+      ['#5897fe', '#3a7bfe'], ['#8b5cf6', '#7c3aed'], ['#10b981', '#059669'],
+      ['#ff7849', '#f97316'], ['#f59e0b', '#d97706'], ['#06b6d4', '#0891b2']
+    ];
+    const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
 
-  console.log('=== TABLE RENDER COMPLETE ===');
-  console.log('✅ All database data displayed');
-  console.log('✅ Search connected to table');
-  console.log('✅ Real-time filtering active');
-}
-
-/* ══════════════════════════════════════════
-   RENDER GRID
-══════════════════════════════════════════ */
-function renderGrid(page) {
-  const grid = document.getElementById('gridView');
-  if (!page.length) { grid.innerHTML = ''; return; }
-  grid.innerHTML = page.map(b => `
-    <div class="grid-card" onclick="openDetail(${b.id})">
-      <div class="gc-head">
-        <div class="gc-brand">
-          <div class="gc-avatar" style="background:${brandColor(b.id)}">${brandInitials(b.name)}</div>
+    row.innerHTML = `
+      <td>
+        <div class="brand-cell">
+          <div class="brand-avatar" style="background: linear-gradient(135deg, ${randomGradient[0]}, ${randomGradient[1]})">
+            ${brand.name.substring(0, 2).toUpperCase()}
+          </div>
           <div>
-            <div class="gc-name">${b.name}</div>
-            <div class="gc-date">Dibuat ${b.created}</div>
+            <div class="brand-name-text">${brand.name}</div>
+            <div class="brand-created">${new Date(brand.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
           </div>
         </div>
-        <span class="status-pill ${b.status==='Active'?'sp-active':'sp-inactive'}">
-          <span class="status-dot"></span>${b.status}
-        </span>
-      </div>
-      <div class="gc-divider"></div>
-      <div class="gc-row"><span class="gc-label">PIC</span><span class="gc-value">${b.pic}</span></div>
-      <div class="gc-row"><span class="gc-label">Kontak</span><span class="gc-value" style="font-size:12px">${b.contact}</span></div>
-      <div class="gc-row"><span class="gc-label">Konten</span><span class="gc-value">${b.contents} konten</span></div>
-      <div class="gc-row"><span class="gc-label">Tone</span><span class="gc-value tone-text">${b.tone.join(', ')}</span></div>
-      <div class="grid-actions" onclick="event.stopPropagation()">
-        <button class="act-btn act-detail" onclick="openDetail(${b.id})"><i class="fa-solid fa-eye"></i> <span>Detail</span></button>
-        <button class="act-btn act-edit"   onclick="openEdit(${b.id})">  <i class="fa-solid fa-pen"></i> <span>Edit</span></button>
-        <button class="act-btn act-del"    onclick="openDelete(${b.id})"><i class="fa-solid fa-trash-can"></i> <span>Hapus</span></button>
-      </div>
-    </div>
-  `).join('');
+      </td>
+      <td>
+        <div class="pic-cell">
+          <div class="pic-ava">${brand.pic.substring(0, 2).toUpperCase()}</div>
+          <div class="pic-name">${brand.pic}</div>
+        </div>
+      </td>
+      <td>${brand.contact}</td>
+      <td>
+        <div class="content-count">
+          <i class="fa-solid fa-photo-film"></i>
+          ${brand.contents_count}
+        </div>
+      </td>
+      <td>
+        <div class="status-pill ${brand.status === 'Active' ? 'sp-active' : 'sp-inactive'}">
+          <div class="status-dot"></div>
+          ${brand.status}
+        </div>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button class="act-btn act-detail" onclick="event.stopPropagation(); openDetailModal(${brand.id})" title="Detail">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button class="act-btn act-edit" onclick="event.stopPropagation(); openEditModal(${brand.id})" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="act-btn act-del" onclick="event.stopPropagation(); openDeleteModal(${brand.id}, '${brand.name}')" title="Hapus">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
 }
 
-/* ══════════════════════════════════════════
-   PAGINATION
-══════════════════════════════════════════ */
-function renderPagination() {
-  const total = Math.ceil(filteredBrands.length / perPage);
-  const c = document.getElementById('pageBtns');
-  c.innerHTML = '';
-
-  const prev = document.createElement('button');
-  prev.className = 'page-btn'; prev.innerHTML = '<i class="fa-solid fa-chevron-left" style="font-size:10px"></i>';
-  prev.disabled = currentPage === 1;
-  prev.onclick = () => { currentPage--; renderTable(); };
-  c.appendChild(prev);
-
-  for (let i = 1; i <= total; i++) {
-    const b = document.createElement('button');
-    b.className = 'page-btn' + (i === currentPage ? ' active' : '');
-    b.textContent = i;
-    b.onclick = ((p) => () => { currentPage = p; renderTable(); })(i);
-    c.appendChild(b);
+// Toggle view
+function toggleView(view) {
+  if (view === 'table') {
+    tableView.style.display = 'block';
+    gridView.style.display = 'none';
+    tableViewBtn.classList.add('active');
+    gridViewBtn.classList.remove('active');
+  } else {
+    tableView.style.display = 'none';
+    gridView.classList.add('show');
+    gridViewBtn.classList.add('active');
+    tableViewBtn.classList.remove('active');
   }
-
-  const next = document.createElement('button');
-  next.className = 'page-btn'; next.innerHTML = '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>';
-  next.disabled = currentPage === total || total === 0;
-  next.onclick = () => { currentPage++; renderTable(); };
-  c.appendChild(next);
 }
 
-/* ══════════════════════════════════════════
-   VIEW TOGGLE
-══════════════════════════════════════════ */
-function switchView(v) {
-  currentView = v;
-  document.getElementById('btnList').classList.toggle('active', v==='list');
-  document.getElementById('btnGrid').classList.toggle('active', v==='grid');
-  document.getElementById('listView').style.display  = v==='list' ? '' : 'none';
-  const grid = document.getElementById('gridView');
-  grid.classList.toggle('show', v==='grid');
-}
-
-/* ══════════════════════════════════════════
-   MODAL HELPERS
-══════════════════════════════════════════ */
-function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
-function closeOnOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
-
-/* ══════════════════════════════════════════
-   FORM — ADD
-══════════════════════════════════════════ */
+// Modal functions
 function openAddModal() {
-  document.getElementById('editId').value = '';
-  document.getElementById('modalEyebrow').textContent = 'Tambah Brand';
-  document.getElementById('modalTitle').textContent   = 'Tambah Brand Baru';
-  document.getElementById('modalSubtitle').textContent = 'Isi data brand untuk ditambahkan ke sistem';
-  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brand';
-  resetForm();
-  openModal('formOverlay');
+  document.getElementById('brandId').value = '';
+  document.getElementById('modalTitle').textContent = 'Tambah Brand Baru';
+  document.getElementById('modalSubtitle').textContent = 'Lengkapi informasi brand untuk melanjutkan';
+  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-save"></i> Simpan';
+
+  // Reset form
+  document.getElementById('brandForm').reset();
+  document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.form-input, .form-textarea').forEach(el => el.classList.remove('error'));
+
+  // Reset tone chips
+  document.querySelectorAll('.tone-chip').forEach(chip => chip.classList.remove('selected'));
+  document.getElementById('fToneVoice').value = '';
+
+  // Reset status toggle
+  document.querySelectorAll('.st-option').forEach(opt => opt.classList.remove('selected'));
+  document.querySelector('.st-active').classList.add('selected');
+  document.getElementById('fStatus').value = 'Active';
+
+  document.getElementById('brandModal').classList.add('open');
 }
 
-/* ══════════════════════════════════════════
-   FORM — EDIT
-══════════════════════════════════════════ */
-function openEdit(id) {
-  closeModal('detailOverlay');
-  const b = brands.find(x => x.id === id);
-  if (!b) return;
-  document.getElementById('editId').value = id;
-  document.getElementById('modalEyebrow').textContent = 'Edit Brand';
-  document.getElementById('modalTitle').textContent   = 'Edit Brand';
-  document.getElementById('modalSubtitle').textContent = `Mengubah data brand: ${b.name}`;
-  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Brand';
+function openEditModal(id) {
+  const brand = brands.find(b => b.id == id);
+  if (!brand) return;
 
-  resetForm();
-  document.getElementById('fName').value    = b.name;
-  document.getElementById('fPic').value     = b.pic;
-  document.getElementById('fContact').value = b.contact;
-  document.getElementById('fTarget').value  = b.target;
-  document.getElementById('fStatus').value  = b.status;
+  document.getElementById('brandId').value = brand.id;
+  document.getElementById('modalTitle').textContent = 'Edit Brand';
+  document.getElementById('modalSubtitle').textContent = 'Perbarui informasi brand';
+  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-save"></i> Perbarui';
 
-  // tone chips
+  // Fill form
+  document.getElementById('fName').value = brand.name;
+  document.getElementById('fPic').value = brand.pic;
+  document.getElementById('fContact').value = brand.contact;
+  document.getElementById('fTargetMarket').value = brand.target_market;
+  document.getElementById('fDescription').value = brand.description;
+
+  // Set tone voice
   document.querySelectorAll('.tone-chip').forEach(chip => {
-    chip.classList.toggle('selected', b.tone.includes(chip.dataset.val));
+    if (chip.dataset.value === brand.tone_voice) {
+      chip.classList.add('selected');
+    } else {
+      chip.classList.remove('selected');
+    }
   });
+  document.getElementById('fToneVoice').value = brand.tone_voice;
 
-  // status
-  selectStatus(b.status);
-  openModal('formOverlay');
-}
-
-/* ══════════════════════════════════════════
-   FORM — RESET
-══════════════════════════════════════════ */
-function resetForm() {
-  ['fName','fPic','fContact','fTarget'].forEach(id => {
-    const el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('error');
-  });
-  document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
-  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
-  selectStatus('Active');
-}
-
-/* ══════════════════════════════════════════
-   TONE CHIP
-══════════════════════════════════════════ */
-function toggleTone(chip) {
-  chip.classList.toggle('selected');
-  document.getElementById('errTone').classList.remove('show');
-}
-
-/* ══════════════════════════════════════════
-   STATUS SELECT
-══════════════════════════════════════════ */
-function selectStatus(val) {
-  document.getElementById('fStatus').value = val;
-  document.getElementById('stActive').classList.toggle('selected',   val === 'Active');
-  document.getElementById('stInactive').classList.toggle('selected', val === 'Non Active');
-}
-
-/* ══════════════════════════════════════════
-   FORM SUBMIT
-══════════════════════════════════════════ */
-function submitForm(e) {
-  e.preventDefault();
-  console.log('=== SUBMIT FORM CALLED ===');
-  
-  const btn = document.getElementById('submitBtn');
-  if (!btn) {
-    console.error('Submit button not found!');
-    return;
+  // Set status
+  document.querySelectorAll('.st-option').forEach(opt => opt.classList.remove('selected'));
+  if (brand.status === 'Active') {
+    document.querySelector('.st-active').classList.add('selected');
+  } else {
+    document.querySelector('.st-inactive').classList.add('selected');
   }
-  
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menyimpan...';
-  btn.disabled = true;
+  document.getElementById('fStatus').value = brand.status;
+
+  document.getElementById('brandModal').classList.add('open');
+}
+
+function openDetailModal(id) {
+  const brand = brands.find(b => b.id == id);
+  if (!brand) return;
+
+  const colors = ['#5897fe', '#8b5cf6', '#10b981', '#ff7849', '#f59e0b', '#06b6d4'];
+  const gradients = [
+    ['#5897fe', '#3a7bfe'], ['#8b5cf6', '#7c3aed'], ['#10b981', '#059669'],
+    ['#ff7849', '#f97316'], ['#f59e0b', '#d97706'], ['#06b6d4', '#0891b2']
+  ];
+  const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+
+  document.getElementById('detailAvatar').style.background = `linear-gradient(135deg, ${randomGradient[0]}, ${randomGradient[1]})`;
+  document.getElementById('detailAvatar').textContent = brand.name.substring(0, 2).toUpperCase();
+  document.getElementById('detailTitle').textContent = brand.name;
+  document.getElementById('detailName').textContent = brand.name;
+  document.getElementById('detailCreated').textContent = `Dibuat ${new Date(brand.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  document.getElementById('detailStatus').textContent = `Status: ${brand.status}`;
+
+  document.getElementById('detailPic').textContent = brand.pic;
+  document.getElementById('detailContact').textContent = brand.contact;
+  document.getElementById('detailTargetMarket').textContent = brand.target_market || '-';
+  document.getElementById('detailToneVoice').textContent = brand.tone_voice || '-';
+  document.getElementById('detailDescription').textContent = brand.description || '-';
+
+  // Animate content bar
+  const contentFill = document.getElementById('contentFill');
+  const contentNum = document.getElementById('contentNum');
+  contentFill.style.width = '0%';
+  contentNum.textContent = '0';
+
+  setTimeout(() => {
+    const percentage = Math.min((brand.contents_count / 10) * 100, 100); // Assuming max 10 for demo
+    contentFill.style.width = `${percentage}%`;
+    contentFill.style.background = `linear-gradient(90deg, ${randomGradient[0]}, ${randomGradient[1]})`;
+    animateNumber(contentNum, 0, brand.contents_count, 1000);
+  }, 300);
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function openDeleteModal(id, name) {
+  document.getElementById('deleteBrandName').textContent = name;
+  document.getElementById('confirmDeleteBtn').onclick = () => confirmDelete(id);
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('brandModal').classList.remove('open');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+}
+
+function editFromDetail() {
+  const brandId = brands.find(b => b.name === document.getElementById('detailName').textContent)?.id;
+  if (brandId) {
+    closeDetailModal();
+    openEditModal(brandId);
+  }
+}
+
+// Form submission
+async function submitForm() {
+  const formData = new FormData(document.getElementById('brandForm'));
+  const brandId = formData.get('id');
+  const isEdit = !!brandId;
+
+  // Validate form
+  if (!validateForm()) return;
+
+  // Show loading
+  const submitBtn = document.getElementById('submitBtn');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Menyimpan...';
+  submitBtn.disabled = true;
 
   try {
-    // Check if this is EDIT or ADD mode
-    const editId = document.getElementById('editId').value;
-    const isEditMode = editId && editId !== '' && editId !== '0';
-    
-    console.log('Form mode:', isEditMode ? 'EDIT' : 'ADD');
-    console.log('Edit ID:', editId);
-    
-    // Get form values with safe access
-    const nameEl = document.getElementById('fName');
-    const picEl = document.getElementById('fPic');
-    const contactEl = document.getElementById('fContact');
-    const targetEl = document.getElementById('fTarget');
-    const statusEl = document.getElementById('fStatus');
-    
-    const name = nameEl ? nameEl.value.trim() : '';
-    const pic = picEl ? picEl.value.trim() : '';
-    const contact = contactEl ? contactEl.value.trim() : '';
-    const target = targetEl ? targetEl.value.trim() : '';
-    
-    // Get selected tone chips
-    const toneChips = document.querySelectorAll('.tone-chip.selected');
-    const tone = Array.from(toneChips).map(c => c.dataset.val || c.textContent).join(',');
-    
-    const status = statusEl ? statusEl.value : 'Active';
-    
-    console.log('Form values:', { name, pic, contact, target, tone, status });
-
-    // Validate required fields
-    if (!name || !pic || !contact || !target) {
-      console.log('Required fields missing:', { name: !!name, pic: !!pic, contact: !!contact, target: !!target });
-      showToast('error', 'Nama Brand, PIC, Kontak, dan Target Market wajib diisi!');
-      resetButton();
-      return;
-    }
-    
-    // If no tone selected, use default
-    const finalTone = tone || 'Modern';
-    console.log('Using tone:', finalTone);
-
-    // Prepare data for database
-    const brandData = {
-      name: name,
-      pic: pic,
-      contact: contact,
-      target_market: target,
-      tone: finalTone,
-      status: status
-    };
-
-    console.log('Brand data for database:', brandData);
-
-    // Submit to database with correct method (EDIT vs ADD)
-    if (isEditMode) {
-      console.log('=== EDIT MODE - Update existing brand ===');
-      submitEditToDatabase(editId, brandData, btn);
-    } else {
-      console.log('=== ADD MODE - Create new brand ===');
-      submitAddToDatabase(brandData, btn);
-    }
-
-  } catch (error) {
-    console.error('Submit form error:', error);
-    showToast('error', 'Terjadi kesalahan saat menyimpan brand: ' + error.message);
-    resetButton();
-  }
-}
-
-function submitEditToDatabase(editId, brandData, btn) {
-  console.log('=== EDIT BRAND - ID:', editId, '===');
-  
-  // Get CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]');
-  if (!csrfToken) {
-    console.error('CSRF Token not found!');
-    showToast('error', 'CSRF Token tidak ditemukan!');
-    resetButton();
-    return;
-  }
-
-  console.log('CSRF Token found:', csrfToken.getAttribute('content'));
-  console.log('Updating brand:', brandData);
-
-  // Close modal immediately
-  closeModal('formOverlay');
-
-  // Send UPDATE request to database
-  fetch(`/brands/${editId}`, {
-    method: 'PUT', // Use PUT method for update
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      _method: 'PUT', // Laravel method spoofing
-      ...brandData
-    })
-  })
-  .then(response => {
-    console.log('Database update response status:', response.status);
-    
-    if (response.status >= 200 && response.status < 300) {
-      return response.json();
-    } else {
-      return response.text().then(text => {
-        console.error('Database error response:', text);
-        try {
-          const jsonData = JSON.parse(text);
-          if (jsonData.success) {
-            console.log('Database actually succeeded despite status code!');
-            return jsonData;
-          }
-        } catch (e) {
-          console.log('Response is not JSON, treating as error');
-        }
-        throw new Error(`Database error: ${response.status}`);
-      });
-    }
-  })
-  .then(data => {
-    console.log('Database update response data:', data);
-    
-    if (data.success) {
-      console.log('Brand successfully updated in database!');
-      console.log('Updated brand:', data.brand);
-      
-      // UPDATE EXISTING BRAND IN LOCAL ARRAY (not add new)
-      const existingBrandIndex = brands.findIndex(b => b.id === parseInt(editId));
-      if (existingBrandIndex !== -1) {
-        console.log('Updating existing brand at index:', existingBrandIndex);
-        
-        // Update the existing brand data
-        brands[existingBrandIndex] = {
-          id: data.brand.id,
-          name: data.brand.name,
-          pic: data.brand.pic,
-          contact: data.brand.contact,
-          target: data.brand.target_market,
-          tone: data.brand.tone ? data.brand.tone.split(',') : [],
-          status: data.brand.status,
-          contents: data.brand.contents || 0,
-          created: brands[existingBrandIndex].created // Keep original creation date
-        };
-        
-        console.log('Updated brand in local array:', brands[existingBrandIndex]);
-        
-        // Update filtered array as well
-        const filteredIndex = filteredBrands.findIndex(b => b.id === parseInt(editId));
-        if (filteredIndex !== -1) {
-          filteredBrands[filteredIndex] = brands[existingBrandIndex];
-          console.log('Updated brand in filtered array');
-        }
-      } else {
-        console.error('Brand not found in local array for update!');
-      }
-      
-      // UPDATE ALL COMPONENTS AUTOMATICALLY
-      updateStats();
-      renderTable();
-      
-      // Show success message
-      showToast('success', `Brand "${data.brand.name}" berhasil diperbarui!`);
-      
-      console.log('=== BRAND UPDATE COMPLETE ===');
-      console.log('✅ Data updated in database (not added)');
-      console.log('✅ No duplicate created');
-      console.log('✅ Existing brand replaced with new data');
-      
-    } else {
-      console.error('Database returned error:', data);
-      showToast('error', 'Gagal memperbarui brand: ' + (data.message || 'Unknown error'));
-    }
-    
-    resetButton();
-  })
-  .catch(error => {
-    console.error('Brand update error:', error);
-    console.log('Error occurred but trying to update local data anyway...');
-    
-    // Update local array even if error occurred
-    const existingBrandIndex = brands.findIndex(b => b.id === parseInt(editId));
-    if (existingBrandIndex !== -1) {
-      brands[existingBrandIndex] = {
-        ...brands[existingBrandIndex],
-        name: brandData.name,
-        pic: brandData.pic,
-        contact: brandData.contact,
-        target: brandData.target_market,
-        tone: brandData.tone.split(','),
-        status: brandData.status
-      };
-      
-      const filteredIndex = filteredBrands.findIndex(b => b.id === parseInt(editId));
-      if (filteredIndex !== -1) {
-        filteredBrands[filteredIndex] = brands[existingBrandIndex];
-      }
-      
-      updateStats();
-      renderTable();
-      showToast('success', `Brand "${brandData.name}" berhasil diperbarui!`);
-    }
-    
-    console.log('=== BRAND UPDATE (WITH ERROR) COMPLETE ===');
-    resetButton();
-  });
-}
-
-function submitAddToDatabase(brandData, btn) {
-  console.log('=== ADD BRAND - NEW BRAND ===');
-  
-  // Get CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]');
-  if (!csrfToken) {
-    console.error('CSRF Token not found!');
-    showToast('error', 'CSRF Token tidak ditemukan!');
-    resetButton();
-    return;
-  }
-
-  console.log('CSRF Token found:', csrfToken.getAttribute('content'));
-  console.log('Creating new brand:', brandData);
-
-  // Close modal immediately
-  closeModal('formOverlay');
-
-  // Send CREATE request to database
-  fetch('/brands', {
-    method: 'POST', // Use POST method for create
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(brandData)
-  })
-  .then(response => {
-    console.log('Database create response status:', response.status);
-    
-    if (response.status >= 200 && response.status < 300) {
-      return response.json();
-    } else {
-      return response.text().then(text => {
-        console.error('Database error response:', text);
-        try {
-          const jsonData = JSON.parse(text);
-          if (jsonData.success) {
-            console.log('Database actually succeeded despite status code!');
-            return jsonData;
-          }
-        } catch (e) {
-          console.log('Response is not JSON, treating as error');
-        }
-        throw new Error(`Database error: ${response.status}`);
-      });
-    }
-  })
-  .then(data => {
-    console.log('Database create response data:', data);
-    
-    if (data.success) {
-      console.log('Brand successfully created in database!');
-      console.log('New brand:', data.brand);
-      
-      // ADD NEW BRAND TO LOCAL ARRAY
-      const newBrand = {
-        id: data.brand.id,
-        name: data.brand.name,
-        pic: data.brand.pic,
-        contact: data.brand.contact,
-        target: data.brand.target_market,
-        tone: data.brand.tone ? data.brand.tone.split(',') : [],
-        status: data.brand.status,
-        contents: data.brand.contents || 0,
-        created: data.brand.created_at ? new Date(data.brand.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : 'Unknown'
-      };
-      
-      console.log('Adding new brand to local array:', newBrand);
-      
-      // Add to beginning of brands array
-      brands.unshift(newBrand);
-      filteredBrands = [...brands];
-      
-      console.log('Brands array after adding:', brands);
-      
-      // UPDATE ALL COMPONENTS AUTOMATICALLY
-      updateStats();
-      renderTable();
-      
-      // Show success message
-      showToast('success', `Brand "${data.brand.name}" berhasil ditambahkan!`);
-      
-      console.log('=== BRAND CREATE COMPLETE ===');
-      
-    } else {
-      console.error('Database returned error:', data);
-      showToast('error', 'Gagal menambah brand: ' + (data.message || 'Unknown error'));
-    }
-    
-    resetButton();
-  })
-  .catch(error => {
-    console.error('Brand create error:', error);
-    console.log('Error occurred but adding to local array anyway...');
-    
-    // Add to local array even if error occurred
-    const newBrand = {
-      id: Date.now(), // Temporary ID
-      name: brandData.name,
-      pic: brandData.pic,
-      contact: brandData.contact,
-      target: brandData.target_market,
-      tone: brandData.tone.split(','),
-      status: brandData.status,
-      contents: 0,
-      created: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
-    };
-    
-    brands.unshift(newBrand);
-    filteredBrands = [...brands];
-    updateStats();
-    renderTable();
-    
-    showToast('success', `Brand "${brandData.name}" berhasil ditambahkan!`);
-    console.log('=== BRAND CREATE (WITH ERROR) COMPLETE ===');
-    resetButton();
-  });
-}
-
-function submitViaForm(brandData) {
-  console.log('=== SUBMITTING VIA FORM ===');
-  
-  try {
-    // Get the form element
-    const form = document.getElementById('brandForm');
-    if (!form) {
-      console.error('Form not found!');
-      showToast('error', 'Form tidak ditemukan!');
-      resetButton();
-      return;
-    }
-
-    // Clear existing hidden inputs
-    const existingInputs = form.querySelectorAll('input[type="hidden"]');
-    existingInputs.forEach(input => input.remove());
-
-    // Create hidden inputs for all data
-    Object.entries(brandData).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
-      console.log(`Added hidden input: ${key} = ${value}`);
+    const response = await fetch(`{{ url('brands') }}/${brandId || ''}`, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json',
+      },
+      body: formData
     });
 
-    // Set form action
-    form.action = '/brands';
-    form.method = 'POST';
+    const data = await response.json();
 
-    // Submit the form
-    console.log('Submitting form to database...');
-    console.log('Brand berhasil disimpan, halaman akan refresh...');
-    
-    // Show success message before refresh
-    showToast('success', 'Brand berhasil disimpan ke database! Halaman akan refresh...');
-    
-    // Submit form (this will cause page refresh)
-    form.submit();
-    
+    if (response.ok && data.success) {
+      showToast('success', isEdit ? 'Brand berhasil diperbarui!' : 'Brand berhasil ditambahkan!');
+      closeModal();
+
+      // Reload page to refresh data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      throw new Error(data.message || 'Terjadi kesalahan saat menyimpan brand');
+    }
   } catch (error) {
-    console.error('Form submission error:', error);
-    showToast('error', 'Gagal menyimpan brand: ' + error.message);
-    resetButton();
+    console.error('Error saving brand:', error);
+    showToast('error', error.message || 'Terjadi kesalahan saat menyimpan brand');
+  } finally {
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
   }
 }
 
-function resetButton() {
-  const btn = document.getElementById('submitBtn');
-  if (btn) {
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brand';
-    btn.disabled = false;
+// Delete confirmation
+async function confirmDelete(id) {
+  const confirmBtn = document.getElementById('confirmDeleteBtn');
+  const originalText = confirmBtn.innerHTML;
+  confirmBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Menghapus...';
+  confirmBtn.disabled = true;
+
+  try {
+    const response = await fetch(`{{ url('brands') }}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json',
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showToast('success', 'Brand berhasil dihapus!');
+      closeDeleteModal();
+
+      // Reload page to refresh data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      throw new Error(data.message || 'Terjadi kesalahan saat menghapus brand');
+    }
+  } catch (error) {
+    console.error('Error deleting brand:', error);
+    showToast('error', error.message || 'Terjadi kesalahan saat menghapus brand');
+  } finally {
+    confirmBtn.innerHTML = originalText;
+    confirmBtn.disabled = false;
   }
 }
 
-/* ══════════════════════════════════════════
-   VALIDATE
-══════════════════════════════════════════ */
+// Form validation
 function validateForm() {
-  let ok = true;
-  const fields = [
-    { id:'fName',    errId:'errName',    msg:'Nama brand wajib diisi.' },
-    { id:'fPic',     errId:'errPic',     msg:'PIC wajib diisi.' },
-    { id:'fContact', errId:'errContact', msg:'Kontak wajib diisi.' },
-    { id:'fTarget',  errId:'errTarget',  msg:'Target market wajib diisi.' },
+  let isValid = true;
+
+  // Reset errors
+  document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.form-input, .form-textarea').forEach(el => el.classList.remove('error'));
+
+  // Required fields
+  const requiredFields = [
+    { id: 'fName', errorId: 'errName', message: 'Nama brand wajib diisi.' },
+    { id: 'fPic', errorId: 'errPic', message: 'PIC wajib diisi.' },
+    { id: 'fContact', errorId: 'errContact', message: 'Kontak wajib diisi.' }
   ];
-  fields.forEach(f => {
-    const el = document.getElementById(f.id);
-    const err = document.getElementById(f.errId);
-    if (!el.value.trim()) {
-      el.classList.add('error'); err.classList.add('show'); ok = false;
-    } else {
-      el.classList.remove('error'); err.classList.remove('show');
+
+  requiredFields.forEach(field => {
+    const element = document.getElementById(field.id);
+    if (!element.value.trim()) {
+      document.getElementById(field.errorId).textContent = field.message;
+      document.getElementById(field.errorId).classList.add('show');
+      element.classList.add('error');
+      isValid = false;
     }
   });
-  const tones = document.querySelectorAll('.tone-chip.selected');
-  if (!tones.length) {
-    document.getElementById('errTone').classList.add('show'); ok = false;
-  } else {
-    document.getElementById('errTone').classList.remove('show');
+
+  return isValid;
+}
+
+// Tone chip selection
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('tone-chip')) {
+    document.querySelectorAll('.tone-chip').forEach(chip => chip.classList.remove('selected'));
+    e.target.classList.add('selected');
+    document.getElementById('fToneVoice').value = e.target.dataset.value;
   }
-  return ok;
-}
-
-/* ══════════════════════════════════════════
-   DETAIL
-══════════════════════════════════════════ */
-function openDetail(id) {
-  const b = brands.find(x => x.id === id);
-  if (!b) return;
-  const c = brandColor(b.id);
-
-  document.getElementById('detailHero').innerHTML = `
-    <div class="detail-avatar" style="background:${c}">${brandInitials(b.name)}</div>
-    <div>
-      <div class="detail-name">${b.name}</div>
-      <div class="detail-meta">
-        <span><i class="fa-solid fa-film" style="color:var(--blue);margin-right:4px"></i>${b.contents} konten</span>
-        <span><i class="fa-regular fa-calendar" style="color:var(--blue);margin-right:4px"></i>Dibuat ${b.created}</span>
-        <span class="status-pill ${b.status==='Active'?'sp-active':'sp-inactive'}" style="padding:2px 9px">
-          <span class="status-dot"></span>${b.status}
-        </span>
-      </div>
-    </div>
-  `;
-
-  const maxContent = Math.max(...brands.map(x=>x.contents), 1);
-  document.getElementById('detailBody').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item">
-        <div class="detail-item-label">PIC</div>
-        <div class="detail-item-value">${b.pic}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-label">Kontak</div>
-        <div class="detail-item-value">${b.contact}</div>
-      </div>
-      <div class="detail-item full">
-        <div class="detail-item-label">Target Market</div>
-        <div class="detail-item-value" style="font-weight:400;color:var(--text-500)">${b.target}</div>
-      </div>
-      <div class="detail-item full">
-        <div class="detail-item-label">Tone Komunikasi</div>
-        <div class="detail-tone-tags">
-          ${b.tone.map(t => `<span class="detail-tone-tag">${t}</span>`).join('')}
-        </div>
-      </div>
-      <div class="detail-item full">
-        <div class="detail-item-label">Distribusi Konten</div>
-        <div class="content-bar" style="margin-top:8px">
-          <div class="cb-row">
-            <span class="cb-label">Total Konten</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(b.contents/maxContent*100)}%;background:${c}"></div></div>
-            <span class="cb-num">${b.contents}</span>
-          </div>
-          <div class="cb-row">
-            <span class="cb-label">Published</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.published)/maxContent*100)}%;background:var(--emerald)"></div></div>
-            <span class="cb-num">${Math.max(0,b.published || 0)}</span>
-          </div>
-          <div class="cb-row">
-            <span class="cb-label">On Progress</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.onProgress)/maxContent*100)}%;background:var(--amber)"></div></div>
-            <span class="cb-num">${Math.max(0,b.onProgress || 0)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('detailEditBtn').onclick = () => openEdit(id);
-  openModal('detailOverlay');
-}
-
-/* ══════════════════════════════════════════
-   DELETE
-══════════════════════════════════════════ */
-function openDelete(id) {
-  const b = brands.find(x => x.id === id);
-  if (!b) return;
-  deleteTargetId = id;
-  document.getElementById('deleteMsg').innerHTML =
-    `Kamu akan menghapus brand <strong>${b.name}</strong>. Brand yang sudah dihapus tidak dapat dipulihkan kembali.`;
-  document.getElementById('confirmDeleteBtn').onclick = () => confirmDelete();
-  openModal('deleteOverlay');
-}
-
-function confirmDelete() {
-  const btn = document.getElementById('confirmDeleteBtn');
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i>';
-  btn.disabled  = true;
-
-  fetch(`/brands/${deleteTargetId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      const b = brands.find(x => x.id === deleteTargetId);
-      brands = brands.filter(x => x.id !== deleteTargetId);
-      filteredBrands = filteredBrands.filter(x => x.id !== deleteTargetId);
-      renderTable();
-      updateStats();
-      closeModal('deleteOverlay');
-      showToast('error', `Brand "${b?.name}" berhasil dihapus.`);
-    } else {
-      showToast('error', 'Gagal menghapus brand!');
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    showToast('error', 'Terjadi kesalahan saat menghapus brand!');
-  })
-  .finally(() => {
-    btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Hapus';
-    btn.disabled = false;
-    deleteTargetId = null;
-  });
-}
-
-/* ══════════════════════════════════════════
-   UPDATE STATISTICS
-══════════════════════════════════════════ */
-function updateStats() {
-  console.log('=== REAL-TIME STATISTICS UPDATE ===');
-  console.log('Calculating from database-synced brands array...');
-  
-  // Calculate from current brands array (synced with database)
-  const totalBrands = brands.length;
-  const activeBrands = brands.filter(b => b.status === 'Active').length;
-  const nonActiveBrands = brands.filter(b => b.status === 'Non Active').length;
-  const totalContents = brands.reduce((sum, b) => sum + (b.contents || 0), 0);
-  
-  console.log('Real-time calculations:', {
-    totalBrands,
-    activeBrands, 
-    nonActiveBrands,
-    totalContents,
-    dataSource: 'brands array (synced with database)'
-  });
-  
-  // Update Total Brand - bstat-blue
-  const totalBrandEl = document.querySelector('.bstat-blue .bstat-num');
-  console.log('Total Brand element:', totalBrandEl);
-  if (totalBrandEl) {
-    animateNumber(totalBrandEl, totalBrands);
-    console.log('✅ Total Brand updated:', totalBrands);
-  } else {
-    console.error('❌ Total Brand element not found');
-  }
-  
-  // Update Brand Aktif - bstat-em
-  const activeBrandEl = document.querySelector('.bstat-em .bstat-num');
-  console.log('Active Brand element:', activeBrandEl);
-  if (activeBrandEl) {
-    animateNumber(activeBrandEl, activeBrands);
-    console.log('✅ Brand Aktif updated:', activeBrands);
-  } else {
-    console.error('❌ Brand Aktif element not found');
-  }
-  
-  // Update Brand Non-Aktif - bstat-amb
-  const nonActiveBrandEl = document.querySelector('.bstat-amb .bstat-num');
-  console.log('Non-Active Brand element:', nonActiveBrandEl);
-  if (nonActiveBrandEl) {
-    animateNumber(nonActiveBrandEl, nonActiveBrands);
-    console.log('✅ Brand Non-Aktif updated:', nonActiveBrands);
-  } else {
-    console.error('❌ Brand Non-Aktif element not found');
-  }
-  
-  // Update Total Konten - bstat-rose (changed from empty data to total contents)
-  const totalContentEl = document.querySelector('.bstat-rose .bstat-num');
-  console.log('Total Content element:', totalContentEl);
-  if (totalContentEl) {
-    animateNumber(totalContentEl, totalContents);
-    console.log('✅ Total Konten updated:', totalContents);
-  } else {
-    console.error('❌ Total Konten element not found');
-  }
-  
-  // Update brand count in table header
-  const brandCountEl = document.getElementById('brandCount');
-  console.log('Brand count element:', brandCountEl);
-  if (brandCountEl) {
-    brandCountEl.textContent = totalBrands + ' brand';
-    console.log('✅ Header brand count updated:', totalBrands + ' brand');
-  } else {
-    console.error('❌ Brand count element not found');
-  }
-  
-  // Update summary info if exists
-  const summaryEl = document.querySelector('.summary-info');
-  if (summaryEl) {
-    summaryEl.innerHTML = `
-      Total Brand: <strong>${totalBrands}</strong> (bertambah +${totalBrands} pada bulan ini)<br>
-      Brand Aktif: <strong>${activeBrands}</strong> (sedang berjalan)<br>
-      Brand Non-Aktif: <strong>${nonActiveBrands}</strong> (tidak aktif)<br>
-      Total Konten: <strong>${totalContents}</strong> (bertambah +${totalContents} bulan ini)
-    `;
-    console.log('✅ Summary info updated');
-  } else {
-    console.log('ℹ️ Summary info element not found (optional)');
-  }
-  
-  // Update statistics labels if they exist
-  updateStatisticsLabels(totalBrands, activeBrands, nonActiveBrands, totalContents);
-  
-  console.log('=== REAL-TIME STATISTICS UPDATE COMPLETE ===');
-  console.log(`📊 Summary: ${totalBrands} Total | ${activeBrands} Aktif | ${nonActiveBrands} Non-Aktif | ${totalContents} Konten`);
-  console.log('✅ All data synchronized with database');
-  console.log('✅ No hardcoded values - all calculated dynamically');
-  console.log('✅ Live update without refresh');
-}
-
-function updateStatisticsLabels(totalBrands, activeBrands, nonActiveBrands, totalContents) {
-  // Update any additional statistics labels or descriptions
-  const statLabels = document.querySelectorAll('.stat-label, .stat-description');
-  statLabels.forEach((label, index) => {
-    if (label.textContent.includes('Total Brand')) {
-      // Could update additional info here if needed
-    }
-  });
-  
-  // Log current database state
-  console.log('📈 Database State Snapshot:', {
-    timestamp: new Date().toLocaleTimeString(),
-    totalRecords: totalBrands,
-    activeRecords: activeBrands,
-    inactiveRecords: nonActiveBrands,
-    totalContentRecords: totalContents,
-    dataFreshness: 'Real-time from database'
-  });
-}
-
-function animateNumber(element, target) {
-  const start = parseInt(element.textContent) || 0;
-  const increment = (target - start) / 20;
-  let current = start;
-  let step = 0;
-  
-  const timer = setInterval(() => {
-    step++;
-    current += increment;
-    
-    if (step >= 20) {
-      element.textContent = target;
-      clearInterval(timer);
-    } else {
-      element.textContent = Math.round(current);
-    }
-  }, 50);
-}
-
-/* ══════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════ */
-function showToast(type, msg) {
-  const icons = { success:'fa-circle-check', warn:'fa-triangle-exclamation', error:'fa-circle-exclamation' };
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`;
-  t.innerHTML = `<div class="toast-ic"><i class="fa-solid ${icons[type]}"></i></div>${msg}`;
-  document.getElementById('toastContainer').appendChild(t);
-  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 400);
-  }, 3200);
-}
-
-/* ══════════════════════════════════════════
-   SIDEBAR NAV
-══════════════════════════════════════════ */
-document.querySelectorAll('.sb-item').forEach(el => {
-  el.addEventListener('click', function(e) {
-    // Only prevent default if it's a placeholder link (href="#")
-    if (this.getAttribute('href') === '#') {
-      e.preventDefault();
-    }
-    document.querySelectorAll('.sb-item').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-  });
 });
 
-/* live input clear error */
-['fName','fPic','fContact','fTarget'].forEach(id => {
-  document.getElementById(id).addEventListener('input', function() {
-    this.classList.remove('error');
-    const errId = 'err' + id.charAt(1).toUpperCase() + id.slice(2);
-    const err = document.getElementById(errId);
-    if (err) err.classList.remove('show');
-  });
+// Status toggle
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('st-option') || e.target.closest('.st-option')) {
+    const option = e.target.classList.contains('st-option') ? e.target : e.target.closest('.st-option');
+    document.querySelectorAll('.st-option').forEach(opt => opt.classList.remove('selected'));
+    option.classList.add('selected');
+    document.getElementById('fStatus').value = option.classList.contains('st-active') ? 'Active' : 'Non Active';
+  }
+});
+
+// Toast notifications
+function showToast(type, message) {
+  const toastContainer = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-ic">
+      <i class="fa-solid ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-xmark' : 'fa-exclamation'}"></i>
+    </div>
+    <div>${message}</div>
+  `;
+
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => toast.classList.add('show'), 100);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 350);
+  }, 3000);
+}
+
+// Close modals on escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDetailModal();
+    closeDeleteModal();
+  }
+});
+
+// Close modals on outside click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('overlay')) {
+    closeModal();
+    closeDetailModal();
+    closeDeleteModal();
+  }
 });
 </script>
-</body>
-</html>
+@endpush
+

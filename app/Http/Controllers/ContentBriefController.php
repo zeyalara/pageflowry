@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ContentBrief;
 use App\Models\Brand;
+use App\Notifications\DeadlineTaskNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -16,6 +18,9 @@ class ContentBriefController extends Controller
      */
     public function index()
     {
+        // Check and send deadline notifications
+        $this->checkDeadlineNotifications();
+        
         // Get only ACTIVE brands for dropdown and filter
         $brands = Brand::where('user_id', auth()->id())
             ->where('status', 'Active')
@@ -38,6 +43,55 @@ class ContentBriefController extends Controller
         ];
         
         return view('brief.index', compact('brands', 'contentBriefs', 'stats'));
+    }
+
+    /**
+     * Check and send deadline notifications
+     */
+    private function checkDeadlineNotifications()
+    {
+        $today = Carbon::today();
+        $twoDaysFromNow = (clone $today)->addDays(2)->endOfDay();
+
+        // Get tasks with deadlines in the next 2 days or overdue
+        $tasks = ContentBrief::whereNotNull('production_deadline')
+            ->where(function ($query) use ($today, $twoDaysFromNow) {
+                $query->where('production_deadline', '<=', $twoDaysFromNow);
+            })
+            ->with('brand', 'user')
+            ->get();
+
+        foreach ($tasks as $task) {
+            $daysLeft = $today->diffInDays($task->production_deadline, false);
+            
+            if ($task->production_deadline->isPast()) {
+                // Overdue deadline
+                $task->user->notify(new DeadlineTaskNotification($task, 'overdue', null));
+                
+                // Notify all admin users
+                $this->notifyAdmins(new DeadlineTaskNotification($task, 'overdue', null));
+            } elseif ($daysLeft <= 2) {
+                // Approaching deadline (2 days or less)
+                $task->user->notify(new DeadlineTaskNotification($task, 'approaching', $daysLeft));
+                
+                // Notify all admin users
+                $this->notifyAdmins(new DeadlineTaskNotification($task, 'approaching', $daysLeft));
+            }
+        }
+    }
+
+    /**
+     * Notify all admin users
+     */
+    private function notifyAdmins($notification)
+    {
+        $adminUsers = \App\Models\User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->get();
+
+        foreach ($adminUsers as $admin) {
+            $admin->notify($notification);
+        }
     }
 
     /**

@@ -47,67 +47,63 @@ class BrandController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('brands.create');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
+        return view('brands.show', compact('brand'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
+        return view('brands.edit', compact('brand'));
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        try {
-            // Quick validation
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'pic' => 'required|string|max:255',
-                'contact' => 'required|string|max:255',
-                'target_market' => 'required|string',
-                'tone' => 'required|string',
-                'status' => 'required|in:Active,Non Active',
-            ], [], [
-                'name.required' => 'Nama brand harus diisi',
-                'pic.required' => 'PIC harus diisi',
-                'contact.required' => 'Kontak harus diisi',
-                'target_market.required' => 'Target market harus diisi',
-                'tone.required' => 'Tone harus diisi',
-                'status.required' => 'Status harus diisi',
-            ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'pic' => 'required|string|max:255',
+            'contact' => 'required|string|max:255',
+            'target_market' => 'required|string',
+            'tone' => 'required|string',
+            'status' => 'required|in:Active,Non Active',
+        ], [], [
+            'name.required' => 'Nama brand harus diisi',
+            'pic.required' => 'PIC harus diisi',
+            'contact.required' => 'Kontak harus diisi',
+            'target_market.required' => 'Target market harus diisi',
+            'tone.required' => 'Tone harus diisi',
+            'status.required' => 'Status harus diisi',
+        ]);
 
-            // Fast brand creation
-            $brand = Brand::create([
-                'name' => $validated['name'],
-                'pic' => $validated['pic'],
-                'contact' => $validated['contact'],
-                'target_market' => $validated['target_market'],
-                'tone' => $validated['tone'],
-                'status' => $validated['status'],
-                'user_id' => Auth::id(),
-            ]);
-            
-            // Fast response
-            return response()->json([
-                'success' => true,
-                'message' => 'Brand berhasil ditambahkan!',
-                'brand' => [
-                    'id' => $brand->id,
-                    'name' => $brand->name,
-                    'pic' => $brand->pic,
-                    'contact' => $brand->contact,
-                    'target_market' => $brand->target_market,
-                    'tone' => $brand->tone,
-                    'status' => $brand->status,
-                    'created_at' => $brand->created_at->format('Y-m-d H:i:s')
-                ]
-            ]);
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed: ' . implode(', ', array_values($e->errors())[0] ?? ['Unknown validation error']),
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
+        Brand::create([
+            'name' => $request->name,
+            'pic' => $request->pic,
+            'contact' => $request->contact,
+            'target_market' => $request->target_market,
+            'tone' => $request->tone,
+            'status' => $request->status,
+            'user_id' => Auth::id(),
+        ]);
+
+        return redirect()->route('brands.index')->with('success', 'Brand berhasil ditambahkan!');
     }
 
     /**
@@ -128,11 +124,7 @@ class BrandController extends Controller
 
         $brand->update($request->only(['name', 'pic', 'contact', 'target_market', 'tone', 'status']));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Brand berhasil diperbarui!',
-            'brand' => $brand
-        ]);
+        return redirect()->route('brands.index')->with('success', 'Brand berhasil diperbarui!');
     }
 
     /**
@@ -143,9 +135,6 @@ class BrandController extends Controller
         $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
         $brand->delete();
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Brand berhasil dihapus!'
-        ]);
+        return redirect()->route('brands.index')->with('success', 'Brand berhasil dihapus!');
     }
 }
