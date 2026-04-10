@@ -894,6 +894,97 @@ tbody tr:hover td { background: var(--blue-50); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Responsive Sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.tb-hamburger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .shell {
+    position: relative;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  .tb-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+  }
+  
+  .tb-hamburger:hover {
+    background: var(--blue-50);
+    color: var(--blue-600);
+  }
+  
+  .main {
+    margin-left: 0 !important;
+  }
+  
+  .tb-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .tb-page {
+    font-size: 1.1rem;
+  }
+  
+  .tb-breadcrumb {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+  
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+  
+  .tb-hamburger {
+    display: none !important;
+  }
+}
+
 </style>
 @stack('styles')
 <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -1092,12 +1183,19 @@ tbody tr:hover td { background: var(--blue-50); }
   </div>
 </aside>
 
+<!-- Mobile Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <!-- ════════════════ MAIN ════════════════ -->
 <div class="main">
 
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="tb-left">
+      <!-- Hamburger Menu Button for Mobile -->
+      <button type="button" class="tb-icon-btn tb-hamburger" id="sidebarToggle" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
      <div class="tb-page">@yield('page-title','Dashboard')</div>
       <div class="tb-breadcrumb">
         <i class="fa-solid fa-house" style="font-size:10px"></i>
@@ -1371,6 +1469,61 @@ document.addEventListener('keydown', function (e) {
 const d = new Date();
 document.getElementById('today-date').textContent =
   d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+/* SIDEBAR TOGGLE FOR MOBILE */
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebar = document.querySelector('.sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+function toggleSidebar() {
+  sidebar.classList.toggle('active');
+  sidebarOverlay.classList.toggle('active');
+  
+  // Prevent body scroll when sidebar is open on mobile
+  if (sidebar.classList.contains('active')) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('active');
+  sidebarOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Event listeners
+if (sidebarToggle) {
+  sidebarToggle.addEventListener('click', toggleSidebar);
+}
+
+if (sidebarOverlay) {
+  sidebarOverlay.addEventListener('click', closeSidebar);
+}
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(e) {
+  if (window.innerWidth <= 768) {
+    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+      closeSidebar();
+    }
+  }
+});
+
+// Close sidebar when pressing Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+    closeSidebar();
+  }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 768) {
+    closeSidebar();
+  }
+});
 
 </script>
 
