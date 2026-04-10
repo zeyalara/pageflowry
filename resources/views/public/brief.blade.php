@@ -477,7 +477,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>© {{ date('Y') }} PageFlowry - Sistem Manajemen Konten</p>
-            <p><a href="{{ route('public.production', $brief->share_token) }}">Lihat Production</a> · <a href="{{ route('public.all-briefs', $brief->share_token) }}">Lihat Semua Brief</a></p>
+            <p><a href="{{ route('public.production', $brief->public_token) }}">Lihat Production</a> · <a href="{{ route('public.all-briefs', $brief->public_token) }}">Lihat Semua Brief</a></p>
         </div>
     </div>
 </body>

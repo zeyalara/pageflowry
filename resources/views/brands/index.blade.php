@@ -141,7 +141,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="brandForm">
+        <form id="brandForm" method="POST" action="{{ route('brands.store') }}">
           @csrf
           <input type="hidden" id="brandId" name="id">
           <div class="form-grid">
@@ -206,17 +206,17 @@
               <input type="hidden" id="fStatus" name="status" value="Active">
             </div>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <div class="mf-left">* Wajib diisi</div>
-        <div class="mf-right">
-          <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
-          <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
-            <i class="fa-solid fa-save"></i>
-            Simpan
-          </button>
+        <div class="modal-footer">
+          <div class="mf-left">* Wajib diisi</div>
+          <div class="mf-right">
+            <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn" name="submit">
+              <i class="fa-solid fa-save"></i>
+              Simpan
+            </button>
+          </div>
         </div>
+        </form>
       </div>
     </div>
   </div>
@@ -1038,6 +1038,94 @@
   border-color: var(--blue);
   transform: translateY(-1px);
 }
+
+/* Tone Chips - Modern Pill Style */
+.tone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.tone-chip {
+  padding: 6px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--text-500);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--t);
+  user-select: none;
+}
+.tone-chip:hover {
+  border-color: var(--blue);
+  background: var(--blue-50);
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+.tone-chip.selected {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(88,151,254,.3);
+}
+
+/* Status Toggle - Modern Badge Style */
+.status-toggle {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.st-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--text-500);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--t);
+  user-select: none;
+}
+.st-option:hover {
+  border-color: var(--blue);
+  background: var(--blue-50);
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+.st-option.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(88,151,254,.3);
+}
+.st-option.st-active.selected {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--white);
+}
+.st-option.st-inactive.selected {
+  background: var(--rose);
+  border-color: var(--rose);
+  color: var(--white);
+}
+.st-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-300);
+  transition: var(--t);
+}
+.st-option.st-active.selected .st-dot {
+  background: var(--white);
+}
+.st-option.st-inactive.selected .st-dot {
+  background: var(--white);
+}
 </style>
 @endpush
 
@@ -1212,6 +1300,16 @@ function openAddModal() {
   document.getElementById('modalSubtitle').textContent = 'Lengkapi informasi brand untuk melanjutkan';
   document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-save"></i> Simpan';
 
+  // Reset form action for create mode
+  document.getElementById('brandForm').action = '{{ route('brands.store') }}';
+  document.getElementById('brandForm').method = 'POST';
+  
+  // Remove method spoofing if exists
+  const methodInput = document.getElementById('_method');
+  if (methodInput) {
+    methodInput.remove();
+  }
+
   // Reset form
   document.getElementById('brandForm').reset();
   document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
@@ -1237,6 +1335,21 @@ function openEditModal(id) {
   document.getElementById('modalTitle').textContent = 'Edit Brand';
   document.getElementById('modalSubtitle').textContent = 'Perbarui informasi brand';
   document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-save"></i> Perbarui';
+  
+  // Update form action for edit
+  document.getElementById('brandForm').action = `{{ route('brands.update', ':id') }}`.replace(':id', brand.id);
+  document.getElementById('brandForm').method = 'POST';
+  
+  // Add method spoofing for PUT
+  let methodInput = document.getElementById('_method');
+  if (!methodInput) {
+    methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.id = '_method';
+    document.getElementById('brandForm').appendChild(methodInput);
+  }
+  methodInput.value = 'PUT';
 
   // Fill form
   document.getElementById('fName').value = brand.name;
@@ -1333,51 +1446,12 @@ function editFromDetail() {
   }
 }
 
-// Form submission
-async function submitForm() {
-  const formData = new FormData(document.getElementById('brandForm'));
-  const brandId = formData.get('id');
-  const isEdit = !!brandId;
-
-  // Validate form
-  if (!validateForm()) return;
-
-  // Show loading
-  const submitBtn = document.getElementById('submitBtn');
-  const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Menyimpan...';
-  submitBtn.disabled = true;
-
-  try {
-    const response = await fetch(`{{ url('brands') }}/${brandId || ''}`, {
-      method: isEdit ? 'PUT' : 'POST',
-      headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        'Accept': 'application/json',
-      },
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success) {
-      showToast('success', isEdit ? 'Brand berhasil diperbarui!' : 'Brand berhasil ditambahkan!');
-      closeModal();
-
-      // Reload page to refresh data
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } else {
-      throw new Error(data.message || 'Terjadi kesalahan saat menyimpan brand');
-    }
-  } catch (error) {
-    console.error('Error saving brand:', error);
-    showToast('error', error.message || 'Terjadi kesalahan saat menyimpan brand');
-  } finally {
-    submitBtn.innerHTML = originalText;
-    submitBtn.disabled = false;
+// Form validation before submission
+function validateFormSubmission() {
+  if (!validateForm()) {
+    return false;
   }
+  return true;
 }
 
 // Delete confirmation
@@ -1463,6 +1537,12 @@ document.addEventListener('click', function(e) {
     option.classList.add('selected');
     document.getElementById('fStatus').value = option.classList.contains('st-active') ? 'Active' : 'Non Active';
   }
+});
+
+// Form submission - allow normal form submission
+document.getElementById('brandForm').addEventListener('submit', function(e) {
+  console.log('Form submitting...');
+  // Allow form to submit normally
 });
 
 // Toast notifications

@@ -85,6 +85,18 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 });
 
+// Debug route for testing
+Route::get('/debug-token/{token}', function($token) {
+    return response()->json([
+        'token' => $token,
+        'message' => 'Debug route working',
+        'timestamp' => now()->toDateTimeString()
+    ]);
+});
+
+// Public route for token-based access (no authentication required) - MUST BE BEFORE AUTH ROUTES
+Route::get('/brief/{token}', [ContentBriefController::class, 'showByToken'])->name('brief.public');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('brief.index');
     Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('brief.store');
@@ -172,6 +184,5 @@ Route::get('/create-dummy-data', function() {
 });
 
 // Public routes for token-based access (no authentication required)
-Route::get('/brief/{token}', [PublicBriefController::class, 'showBrief'])->name('public.brief');
 Route::get('/production/{token}', [PublicBriefController::class, 'showProduction'])->name('public.production');
 Route::get('/all-briefs/{token}', [PublicBriefController::class, 'showAllBriefs'])->name('public.all-briefs');

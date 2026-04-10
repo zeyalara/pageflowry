@@ -372,12 +372,17 @@
             </div>
           </div>
           <div class="field">
-            <label>👑 Role</label>
+            <label>Role</label>
             <div class="role-row">
               <label class="role-opt selected" id="r-admin">
                 <input type="radio" name="role" value="admin" checked/>
                 <span class="role-ico">👑</span>
                 <span class="role-name">Admin</span>
+              </label>
+              <label class="role-opt" id="r-creator">
+                <input type="radio" name="role" value="creator"/>
+                <span class="role-ico">📝</span>
+                <span class="role-name">Creator</span>
               </label>
             </div>
           </div>

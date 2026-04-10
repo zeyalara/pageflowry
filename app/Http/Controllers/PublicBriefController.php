@@ -10,14 +10,15 @@ use Illuminate\Support\Facades\View;
 class PublicBriefController extends Controller
 {
     /**
-     * Show brief details via share token
+     * Show brief details via UUID token
      */
     public function showBrief($token)
     {
-        $brief = ContentBrief::findByShareToken($token);
+        // Find brief by public_token (UUID)
+        $brief = ContentBrief::where('public_token', $token)->first();
         
         if (!$brief) {
-            abort(404, 'Brief tidak ditemukan atau link sudah kadaluarsa');
+            abort(404, 'Brief tidak ditemukan atau link tidak valid');
         }
         
         // Load all related data based on admin who created the brief
@@ -29,14 +30,15 @@ class PublicBriefController extends Controller
     }
     
     /**
-     * Show production page via share token
+     * Show production page via UUID token
      */
     public function showProduction($token)
     {
-        $brief = ContentBrief::findByShareToken($token);
+        // Find brief by public_token (UUID)
+        $brief = ContentBrief::where('public_token', $token)->first();
         
         if (!$brief) {
-            abort(404, 'Brief tidak ditemukan atau link sudah kadaluarsa');
+            abort(404, 'Brief tidak ditemukan atau link tidak valid');
         }
         
         // Load productions for this brief (admin's data)
@@ -49,17 +51,18 @@ class PublicBriefController extends Controller
     }
     
     /**
-     * Show all briefs for admin (via token)
+     * Show all briefs for admin (via UUID token)
      */
     public function showAllBriefs($token)
     {
-        $brief = ContentBrief::findByShareToken($token);
+        // Find brief by public_token (UUID)
+        $brief = ContentBrief::where('public_token', $token)->first();
         
         if (!$brief) {
-            abort(404, 'Brief tidak ditemukan atau link sudah kadaluarsa');
+            abort(404, 'Brief tidak ditemukan atau link tidak valid');
         }
         
-        // Get all briefs from the same admin who created the original brief
+        // Get all briefs from same admin who created original brief
         $adminId = $brief->user_id;
         $allBriefs = ContentBrief::where('user_id', $adminId)
             ->with('brand')

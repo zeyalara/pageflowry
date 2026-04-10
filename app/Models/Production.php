@@ -18,6 +18,7 @@ class Production extends Model
         'catatan_produksi',
         'file_video',
         'status',
+        'user_id',
     ];
 
     protected $casts = [
@@ -36,6 +37,14 @@ class Production extends Model
      * Get the creator that owns the production.
      */
     public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the user (admin) who owns this production through content task.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

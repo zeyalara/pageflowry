@@ -12,6 +12,8 @@ class ContentBrief extends Model
 {
     protected $fillable = [
         'user_id',
+        'token',                    // UUID token untuk akses public (sesuai requirement)
+        'public_token',             // UUID token untuk akses public (legacy)
         // Informasi Dasar - Step 2
         'title',                    // fTitle - Judul Konten
         'description',               // fDesc - Deskripsi Tugas Konten
@@ -72,7 +74,41 @@ class ContentBrief extends Model
     }
 
     /**
-     * Token akses publik (tanpa login) untuk halaman brief creator — pakai APP_KEY.
+     * Get the productions for the content brief.
+     */
+    public function productions(): HasMany
+    {
+        return $this->hasMany(Production::class, 'content_task_id', 'id');
+    }
+
+    /**
+     * Generate UUID token untuk akses public
+     */
+    public function generatePublicToken(): string
+    {
+        $token = Str::uuid()->toString();
+        
+        // Save token to database
+        $this->public_token = $token;
+        $this->save();
+        
+        return $token;
+    }
+
+    /**
+     * Get atau generate public token
+     */
+    public function getPublicToken(): string
+    {
+        if (!$this->public_token) {
+            return $this->generatePublicToken();
+        }
+        
+        return $this->public_token;
+    }
+
+    /**
+     * Token akses publik (tanpa login) untuk halaman brief creator — pakai APP_KEY (legacy).
      */
     public function publicAccessToken(): string
     {
@@ -80,11 +116,13 @@ class ContentBrief extends Model
     }
 
     /**
-     * URL lengkap brief publik + token (untuk email).
+     * URL lengkap brief publik menggunakan UUID token (untuk email) - SESUAI REQUIREMENT.
      */
     public function publicViewUrl(): string
     {
-        return url('/content-briefs/'.$this->getKey().'/view?token='.urlencode($this->publicAccessToken()));
+        $baseUrl = config('app.url');
+        $token = $this->token; // Gunakan kolom 'token' sesuai requirement
+        return rtrim($baseUrl, '/') . '/brief/' . $token;
     }
 
     /**

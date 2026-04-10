@@ -333,8 +333,10 @@ class ContentBriefController extends Controller
                 'status' => 'In Production', // Default status
             ]);
 
-            // Generate share token for public access
-            $shareToken = $contentBrief->createShareToken(30); // 30 days expiration
+            // Generate UUID token for public access - SESUAI REQUIREMENT
+            $token = \Illuminate\Support\Str::uuid();
+            $contentBrief->token = $token;
+            $contentBrief->save();
 
             $emailSent = false;
             $emailStatus = '';
@@ -346,27 +348,24 @@ class ContentBriefController extends Controller
                 $emailSent = $notify['sent'];
                 $emailStatus = $notify['status'];
             } else {
-                $emailStatus = 'Email creator tidak diisi — notifikasi tidak dikirim.';
+                $emailStatus = 'Email creator tidak diisi - notifikasi tidak dikirim.';
                 Log::info('No creator email provided, skipping email notification');
             }
 
-            // Generate share links
-            $briefUrl = route('public.brief', $shareToken);
-            $productionUrl = route('public.production', $shareToken);
-            $allBriefsUrl = route('public.all-briefs', $shareToken);
+            // Generate share links using new token-based routes - SESUAI REQUIREMENT
+            $briefUrl = route('brief.public', $token);
+            $productionUrl = route('public.production', $token);
+            $allBriefsUrl = route('public.all-briefs', $token);
 
-            // Return success response with data
-            $successMessage = $emailSent
-                ? 'Brief disimpan. Email ke creator sudah dikirim otomatis.'
-                : 'Brief disimpan. Tugas ditandai dikerjakan admin (tanpa email creator).';
-                
+            $successMessage = "Brief \"{$contentBrief->title}\" berhasil dibuat!";
+            
             return response()->json([
                 'success' => true,
                 'message' => $successMessage,
                 'email_sent' => $emailSent,
                 'creator_email' => $creatorEmail,
                 'email_status' => $emailStatus,
-                'share_token' => $shareToken,
+                'share_token' => $token,
                 'share_links' => [
                     'brief' => $briefUrl,
                     'production' => $productionUrl,
@@ -488,13 +487,38 @@ class ContentBriefController extends Controller
     public function publicView(string $id, Request $request)
     {
         try {
-            // Get content brief with brand relationship
-            $contentBrief = ContentBrief::with('brand')->findOrFail($id);
+            // Get content brief with brand relationship using find() instead of findOrFail()
+            $contentBrief = ContentBrief::with('brand')->find($id);
+            
+            // Check if brief exists
+            if (!$contentBrief) {
+                Log::warning('Brief not found in public view', [
+                    'brief_id' => $id,
+                    'ip' => $request->ip()
+                ]);
+                abort(404, 'Brief tidak ditemukan dalam database.');
+            }
             
             $providedToken = $request->query('token');
+            
+            // Check if token is provided
+            if (!$providedToken) {
+                Log::warning('No token provided for public brief view', [
+                    'brief_id' => $id,
+                    'ip' => $request->ip()
+                ]);
+                abort(403, 'Token diperlukan untuk mengakses brief ini.');
+            }
 
+            // Validate token
             if (! ContentBrief::publicViewTokenMatches($contentBrief, $providedToken)) {
-                abort(403, 'Akses tidak sah. Token tidak valid.');
+                Log::warning('Invalid token provided for public brief view', [
+                    'brief_id' => $id,
+                    'provided_token' => $providedToken,
+                    'expected_token' => $contentBrief->publicAccessToken(),
+                    'ip' => $request->ip()
+                ]);
+                abort(403, 'Akses tidak sah. Token tidak valid atau telah kadaluarsa.');
             }
             
             // Return view for creator
@@ -503,9 +527,49 @@ class ContentBriefController extends Controller
         } catch (\Exception $e) {
             Log::error('Error accessing public brief view', [
                 'brief_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            abort(404, 'Brief tidak ditemukan.');
+            abort(500, 'Terjadi kesalahan saat memuat brief. Silakan coba lagi nanti.');
+        }
+    }
+
+    /**
+     * Show brief by public token (no authentication required)
+     */
+    public function showByToken($token)
+    {
+        try {
+            Log::info('Accessing brief by token', ['token' => $token]);
+            
+            // Find brief by token (UUID) - SESUAI REQUIREMENT
+            $brief = ContentBrief::where('token', $token)->first();
+
+            if (!$brief) {
+                Log::warning('Brief not found by token', ['token' => $token]);
+                abort(404, 'Brief tidak ditemukan atau link tidak valid.');
+            }
+
+            Log::info('Brief found', ['brief_id' => $brief->id, 'title' => $brief->title]);
+
+            // Load relasi user (admin pembuat brief) dan data terkait
+            $brief->load(['brand', 'user', 'productions' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }]);
+
+            Log::info('Brief loaded with relations', ['relations_loaded' => true]);
+
+            return view('public.brief', compact('brief'));
+
+        } catch (\Exception $e) {
+            Log::error('Error accessing brief by token', [
+                'token' => $token,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            abort(500, 'Terjadi kesalahan saat memuat brief. Silakan coba lagi nanti.');
         }
     }
 

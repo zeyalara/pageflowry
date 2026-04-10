@@ -81,15 +81,15 @@ class BrandController extends Controller
             'name' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
-            'target_market' => 'required|string',
-            'tone' => 'required|string',
+            'target_market' => 'nullable|string',
+            'description' => 'nullable|string',
+            'tone_voice' => 'required|string',
             'status' => 'required|in:Active,Non Active',
         ], [], [
             'name.required' => 'Nama brand harus diisi',
             'pic.required' => 'PIC harus diisi',
             'contact.required' => 'Kontak harus diisi',
-            'target_market.required' => 'Target market harus diisi',
-            'tone.required' => 'Tone harus diisi',
+            'tone_voice.required' => 'Tone of voice harus diisi',
             'status.required' => 'Status harus diisi',
         ]);
 
@@ -98,7 +98,8 @@ class BrandController extends Controller
             'pic' => $request->pic,
             'contact' => $request->contact,
             'target_market' => $request->target_market,
-            'tone' => $request->tone,
+            'description' => $request->description,
+            'tone' => $request->tone_voice, // Map tone_voice to tone field
             'status' => $request->status,
             'user_id' => Auth::id(),
         ]);
@@ -117,12 +118,21 @@ class BrandController extends Controller
             'name' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
-            'target_market' => 'required|string',
-            'tone' => 'required|string',
+            'target_market' => 'nullable|string',
+            'description' => 'nullable|string',
+            'tone_voice' => 'required|string',
             'status' => 'required|in:Active,Non Active',
         ]);
 
-        $brand->update($request->only(['name', 'pic', 'contact', 'target_market', 'tone', 'status']));
+        $brand->update([
+            'name' => $request->name,
+            'pic' => $request->pic,
+            'contact' => $request->contact,
+            'target_market' => $request->target_market,
+            'description' => $request->description,
+            'tone' => $request->tone_voice, // Map tone_voice to tone field
+            'status' => $request->status,
+        ]);
         
         return redirect()->route('brands.index')->with('success', 'Brand berhasil diperbarui!');
     }
