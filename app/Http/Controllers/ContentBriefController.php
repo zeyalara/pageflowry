@@ -552,6 +552,14 @@ class ContentBriefController extends Controller
 
             Log::info('Brief found', ['brief_id' => $brief->id, 'title' => $brief->title]);
 
+            // DEBUG: Cek apakah brief ditemukan dan relasinya
+            dd([
+                'brief' => $brief->toArray(),
+                'user' => $brief->user,
+                'brand' => $brief->brand,
+                'productions_count' => $brief->productions->count()
+            ]);
+
             // Load relasi user (admin pembuat brief) dan data terkait
             $brief->load(['brand', 'user', 'productions' => function($query) {
                 $query->orderBy('created_at', 'desc');

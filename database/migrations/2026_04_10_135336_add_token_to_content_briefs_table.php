@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('content_briefs', function (Blueprint $table) {
-            $table->string('token')->unique()->nullable()->after('public_token');
+            $table->string('share_token')->unique()->nullable()->after('status');
+            $table->timestamp('share_token_expires_at')->nullable()->after('share_token');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('content_briefs', function (Blueprint $table) {
-            $table->dropColumn('token');
+            $table->dropColumn(['share_token', 'share_token_expires_at']);
         });
     }
 };
