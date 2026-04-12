@@ -1,221 +1,14 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="csrf-token" content="{{ csrf_token() }}">
-@method('DELETE')
-<title>Pageflowry — Brand Management</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+@extends('layouts.admin')
 
+@section('page-title', 'Brand Management')
+
+@push('styles')
 <style>
-/* ═══════════════════════════════════════
-   TOKENS — sama persis dengan dashboard
-═══════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --blue:         #5897fe;
-  --blue-600:     #3a7bfe;
-  --blue-700:     #2563eb;
-  --blue-50:      #eff6ff;
-  --blue-100:     #dbeafe;
-  --blue-200:     #bfdbfe;
-
-  --white:        #ffffff;
-  --bg:           #f4f7fe;
-  --border:       #e8eef9;
-  --border-light: #f0f5ff;
-
-  --text-900:     #0d1526;
-  --text-700:     #2d3f5e;
-  --text-500:     #5c7099;
-  --text-400:     #8fa3c4;
-  --text-300:     #b8cae4;
-
-  --orange:       #ff7849;
-  --violet:       #8b5cf6;
-  --emerald:      #10b981;
-  --rose:         #f43f5e;
-  --amber:        #f59e0b;
-
-  --sidebar:      240px;
-  --topbar:       66px;
-  --r:            16px;
-  --r-sm:         10px;
-
-  --s1: 0 1px 3px rgba(13,21,38,.05), 0 4px 16px rgba(88,151,254,.06);
-  --s2: 0 4px 24px rgba(88,151,254,.13);
-  --s3: 0 8px 48px rgba(88,151,254,.22);
-
-  --t: .2s cubic-bezier(.4,0,.2,1);
-}
-
-html, body {
-  height: 100%;
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text-900);
-  font-size: 14px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--blue-200); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--blue); }
-
-/* ═══════════════════════════════════════
-   SHELL
-═══════════════════════════════════════ */
-.shell { display: flex; height: 100vh; overflow: hidden; }
-
-/* ═══════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════ */
-.sidebar {
-  width: var(--sidebar); min-width: var(--sidebar);
-  height: 100vh;
-  background: var(--white);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  overflow-y: auto; overflow-x: hidden;
-  z-index: 200;
-}
-
-.sb-logo {
-  padding: 20px 20px 18px;
-  display: flex; align-items: center; gap: 10px;
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
-}
-.sb-logo-mark {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.sb-logo-mark svg { width: 15px; height: 15px; }
-.sb-logo-name {
-  font-size: 1rem; font-weight: 800;
-  color: var(--blue); letter-spacing: -0.5px; line-height: 1;
-}
-.sb-logo-name em { color: var(--text-900); font-style: normal; }
-
-.sb-nav { padding: 14px 12px; flex: 1; }
-.sb-group-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1.1px;
-  text-transform: uppercase; color: var(--text-300);
-  padding: 12px 10px 6px;
-}
-.sb-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9.5px 12px; border-radius: var(--r-sm);
-  cursor: pointer; transition: var(--t);
-  font-size: 13.5px; font-weight: 500; color: var(--text-500);
-  text-decoration: none; position: relative; margin-bottom: 1px;
-}
-.sb-item:hover { background: var(--blue-50); color: var(--blue-600); }
-.sb-item.active {
-  background: var(--blue-50); color: var(--blue); font-weight: 600;
-}
-.sb-item.active::before {
-  content: ''; position: absolute; left: 0; top: 22%; bottom: 22%;
-  width: 3px; border-radius: 0 3px 3px 0; background: var(--blue);
-}
-.icon-wrap {
-  width: 28px; height: 28px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12.5px; flex-shrink: 0; transition: var(--t);
-}
-.sb-item.active .icon-wrap { background: var(--blue); color: #fff; box-shadow: 0 3px 10px rgba(88,151,254,.35); }
-.sb-item:not(.active) .icon-wrap { background: transparent; color: var(--text-400); }
-.sb-item:hover:not(.active) .icon-wrap { background: var(--blue-100); color: var(--blue); }
-.sb-badge {
-  margin-left: auto; background: var(--rose); color: #fff;
-  font-size: 10px; font-weight: 700; padding: 1px 6px;
-  border-radius: 99px; line-height: 1.6;
-}
-.sb-footer {
-  padding: 14px 12px; border-top: 1px solid var(--border-light); flex-shrink: 0;
-}
-.sb-user {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--r-sm);
-  background: var(--blue-50); cursor: pointer; transition: var(--t);
-}
-.sb-user:hover { background: var(--blue-100); }
-.sb-avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
-}
-.sb-user-info { flex: 1; min-width: 0; }
-.sb-user-name { font-size: 12.5px; font-weight: 600; color: var(--text-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-user-role { font-size: 11px; color: var(--blue); font-weight: 500; }
-
-/* ═══════════════════════════════════════
-   MAIN
-═══════════════════════════════════════ */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-
-/* TOPBAR */
-.topbar {
-  height: var(--topbar); min-height: var(--topbar);
-  background: var(--white); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px; gap: 16px; flex-shrink: 0; z-index: 100;
-}
-.tb-left {}
-.tb-page { font-size: 18px; font-weight: 800; color: var(--text-900); letter-spacing: -.4px; line-height: 1.1; }
-.tb-breadcrumb {
-  font-size: 12px; color: var(--text-400); margin-top: 2px;
-  display: flex; align-items: center; gap: 5px;
-}
-.tb-breadcrumb span { color: var(--blue); font-weight: 500; }
-.tb-right { display: flex; align-items: center; gap: 8px; }
-.tb-icon-btn {
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  border: 1px solid var(--border); background: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: var(--t); color: var(--text-500);
-  font-size: 15px; position: relative;
-}
-.tb-icon-btn:hover { background: var(--blue-50); color: var(--blue); border-color: var(--blue-200); }
-.tb-notif-dot {
-  position: absolute; top: 7px; right: 7px;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--rose); border: 1.5px solid #fff;
-}
-.tb-avatar-btn {
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  background: linear-gradient(145deg, var(--blue), var(--blue-600));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
-  box-shadow: 0 3px 12px rgba(88,151,254,.35); transition: var(--t);
-}
-.tb-avatar-btn:hover { transform: scale(1.05); }
-.tb-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
-
-/* ═══════════════════════════════════════
-   BODY SCROLL
-═══════════════════════════════════════ */
-.body {
-  flex: 1; overflow-y: auto;
-  padding: 24px 28px 48px;
-  display: flex; flex-direction: column; gap: 20px;
-}
-
 /* ═══════════════════════════════════════
    STAT MINI CARDS
 ═══════════════════════════════════════ */
 .brand-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;
 }
 .bstat {
   background: var(--white); border-radius: var(--r);
@@ -370,8 +163,9 @@ html, body {
 
 /* TABLE WRAPPER - Clean and functional */
 .table-wrapper {
-  height: 300px;
-  overflow-y: scroll;
+  height: auto;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 /* TABLE */
@@ -384,7 +178,6 @@ html, body {
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
-.brand-table thead th:first-child { border-radius: 0; }
 .brand-table tbody tr {
   border-bottom: 1px solid var(--border-light);
   transition: var(--t); cursor: pointer;
@@ -454,80 +247,6 @@ html, body {
 .act-detail:hover { background: var(--blue-100); transform: scale(1.08); }
 .act-edit:hover   { background: rgba(245,158,11,.2); transform: scale(1.08); }
 .act-del:hover    { background: rgba(244,63,94,.2);  transform: scale(1.08); }
-
-/* ═══════════════════════════════════════
-   GRID VIEW
-═══════════════════════════════════════ */
-.brand-grid {
-  display: none;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-  padding: 20px;
-}
-.brand-grid.show { display: grid; }
-
-.grid-card {
-  background: var(--white); border-radius: var(--r);
-  border: 1px solid var(--border); padding: 20px;
-  transition: var(--t); cursor: pointer;
-  animation: fadeUp .35s ease both;
-}
-.grid-card:hover { transform: translateY(-4px); box-shadow: var(--s2); border-color: var(--blue-200); }
-.grid-card:hover .grid-actions { opacity: 1; }
-
-.gc-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-.gc-brand { display: flex; align-items: center; gap: 11px; }
-.gc-avatar {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 800; color: #fff;
-}
-.gc-name { font-size: 14.5px; font-weight: 700; color: var(--text-900); }
-.gc-date { font-size: 11px; color: var(--text-400); margin-top: 2px; }
-
-.gc-divider { height: 1px; background: var(--border-light); margin: 14px 0; }
-
-.gc-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 9px;
-}
-.gc-row:last-of-type { margin-bottom: 0; }
-.gc-label { font-size: 11.5px; color: var(--text-400); font-weight: 500; }
-.gc-value { font-size: 12.5px; font-weight: 600; color: var(--text-700); text-align: right; max-width: 160px; }
-.gc-value.tone-text {
-  font-size: 11.5px; font-style: italic;
-  color: var(--text-500);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.grid-actions {
-  display: flex; gap: 6px; margin-top: 16px;
-  opacity: 0; transition: var(--t);
-}
-.grid-actions .act-btn { flex: 1; height: 34px; width: auto; border-radius: var(--r-sm); font-size: 12px; gap: 4px; display: flex; align-items: center; justify-content: center; }
-.grid-actions .act-btn span { font-size: 11.5px; font-weight: 600; }
-
-/* ═══════════════════════════════════════
-   PAGINATION
-═══════════════════════════════════════ */
-.pagination {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border-light);
-}
-.page-info { font-size: 12.5px; color: var(--text-400); }
-.page-info strong { color: var(--text-700); font-weight: 600; }
-.page-btns { display: flex; gap: 4px; }
-.page-btn {
-  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border);
-  background: var(--white); font-family: 'DM Sans', sans-serif;
-  font-size: 12.5px; font-weight: 600; color: var(--text-500);
-  cursor: pointer; transition: var(--t);
-  display: flex; align-items: center; justify-content: center;
-}
-.page-btn:hover { border-color: var(--blue-200); background: var(--blue-50); color: var(--blue); }
-.page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(88,151,254,.3); }
-.page-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ═══════════════════════════════════════
    MODAL OVERLAY
@@ -784,263 +503,151 @@ html, body {
 }
 .spin { animation: spin .7s linear infinite; display: inline-block; }
 </style>
-</head>
-<body>
-@php
-  $authName = auth()->user()->name ?? '';
-  $authParts = preg_split('/\s+/', trim($authName)) ?: [];
-  $authFirst = $authParts[0] ?? 'U';
-  $authSecond = $authParts[1] ?? $authFirst;
-  $authInitials = strtoupper(substr($authFirst, 0, 1) . substr($authSecond, 0, 1));
-@endphp
-<div class="shell">
+@endpush
 
-<!-- ════════════════ SIDEBAR ════════════════ -->
-<aside class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
+@section('content')
+<!-- BODY -->
+<div class="body">
+
+  <!-- STAT CARDS -->
+  <div class="brand-stats">
+    <div class="bstat bstat-blue" style="--i:0">
+      <div class="bstat-ic"><i class="fa-solid fa-tag"></i></div>
+      <div class="bstat-num" data-target="{{ $brands->count() }}">0</div>
+      <div class="bstat-lbl">Total Brand</div>
+      <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->count() }} bulan ini</div>
     </div>
-    <div class="sb-logo-name">Page<em>flowry</em></div>
-  </div>
-
-  <nav class="sb-nav">
-    <div class="sb-group-label">Overview</div>
-    <a class="sb-item" href="{{ route('admin.dashboard') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-house"></i></span>
-      Dashboard
-    </a>
-
-    <div class="sb-group-label">Manajemen</div>
-    <a class="sb-item active" href="{{ route('brands.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-tag"></i></span>
-      Brand Management
-    </a>
-    <a class="sb-item" href="{{ route('content-tasks.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-list-check"></i></span>
-      Daftar Tugas Konten
-    </a>
-
-    <div class="sb-group-label">Workflow</div>
-    <a class="sb-item" href="{{ route('production.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
-      Production
-    </a>
-    <a class="sb-item" href="{{ route('revision.index', 1) }}">
-      <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
-      Revision
-      <span class="sb-badge">4</span>
-    </a>
-    <a class="sb-item" href="{{ route('approval.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
-      Approval
-    </a>
-    <a class="sb-item" href="{{ route('publishing.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
-      Publishing
-    </a>
-
-    <div class="sb-group-label">Laporan</div>
-    <a class="sb-item" href="{{ route('analytics.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-chart-line"></i></span>
-      Analytics
-    </a>
-    <a class="sb-item" href="{{ route('report.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
-      Report
-    </a>
-
-    <div class="sb-group-label">Lainnya</div>
-    <a class="sb-item" href="{{ route('settings.index') }}">
-      <span class="icon-wrap"><i class="fa-solid fa-gear"></i></span>
-      Settings
-    </a>
-  </nav>
-
-  <div class="sb-footer">
-    <div class="sb-user">
-      <div class="sb-avatar">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="sb-user-info">
-        <div class="sb-user-name">{{ auth()->user()->name ?? 'Guest User' }}</div>
-        <div class="sb-user-role">{{ auth()->check() ? ucfirst(auth()->user()->role ?? 'guest') : 'Guest' }}</div>
-      </div>
-      <i class="fa-solid fa-ellipsis-vertical" style="color:var(--text-300);font-size:12px"></i>
+    <div class="bstat bstat-em" style="--i:1">
+      <div class="bstat-ic"><i class="fa-solid fa-circle-dot"></i></div>
+      <div class="bstat-num" data-target="{{ $brands->where('status', 'Active')->count() }}">0</div>
+      <div class="bstat-lbl">Brand Aktif</div>
+      <div class="bstat-sub sub-up"><i class="fa-solid fa-check"></i> Berjalan</div>
+    </div>
+    <div class="bstat bstat-amb" style="--i:2">
+      <div class="bstat-ic"><i class="fa-solid fa-circle-pause"></i></div>
+      <div class="bstat-num" data-target="{{ $brands->where('status', 'Non Active')->count() }}">0</div>
+      <div class="bstat-lbl">Brand Non-Aktif</div>
+      <div class="bstat-sub sub-warn"><i class="fa-solid fa-minus"></i> Tidak aktif</div>
+    </div>
+    <div class="bstat bstat-rose" style="--i:3">
+      <div class="bstat-ic"><i class="fa-solid fa-photo-film"></i></div>
+      <div class="bstat-num" data-target="{{ $brands->sum('contents_count') ?? 0 }}">0</div>
+      <div class="bstat-lbl">Total Konten</div>
+      <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->sum('contents_count') ?? 0 }} bulan ini</div>
     </div>
   </div>
-</aside>
 
-<!-- ════════════ MAIN ════════════ -->
-<div class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="tb-left">
-      <div class="tb-page">Brand Management</div>
-      <div class="tb-breadcrumb">
-        <i class="fa-solid fa-house" style="font-size:10px"></i>
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--text-300)"></i>
-        <span>Brand Management</span>
-        &nbsp;·&nbsp; <span id="today-date"></span>
-      </div>
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="search-input" id="searchInput" type="text" placeholder="Cari nama brand, PIC, kontak..."/>
     </div>
-    <div class="tb-right">
-      <div class="tb-icon-btn">
-        <i class="fa-regular fa-bell"></i>
-        <span class="tb-notif-dot"></span>
-      </div>
-      <div class="tb-icon-btn"><i class="fa-regular fa-envelope"></i></div>
-      <div class="tb-divider"></div>
-      <div class="tb-avatar-btn">{{ auth()->check() ? $authInitials : 'U' }}</div>
-      <div class="tb-icon-btn"><i class="fa-solid fa-sliders"></i></div>
-    </div>
-  </header>
+    <select class="filter-select" id="filterStatus" onchange="filterTable()">
+      <option value="">Semua Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Non Active</option>
+    </select>
+    <div class="toolbar-spacer"></div>
+    <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
+      <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </a>
+    <button class="btn btn-primary" onclick="openAddModal()">
+      <i class="fa-solid fa-plus"></i> Tambah Brand
+    </button>
+  </div>
 
-  <!-- BODY -->
-  <div class="body">
-
-    <!-- STAT CARDS -->
-    <div class="brand-stats">
-      <div class="bstat bstat-blue" style="--i:0">
-        <div class="bstat-ic"><i class="fa-solid fa-tag"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->count() }}">0</div>
-        <div class="bstat-lbl">Total Brand</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->count() }} bulan ini</div>
+  <!-- TABLE CARD -->
+  <div class="table-card">
+    <div class="table-card-head">
+      <div class="tch-left">
+        <div class="tch-title">Daftar Brand</div>
+        <div class="tch-count" id="brandCount">{{ $brands->count() }} brand</div>
       </div>
-      <div class="bstat bstat-em" style="--i:1">
-        <div class="bstat-ic"><i class="fa-solid fa-circle-dot"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->where('status', 'Active')->count() }}">0</div>
-        <div class="bstat-lbl">Brand Aktif</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-check"></i> Berjalan</div>
-      </div>
-      <div class="bstat bstat-amb" style="--i:2">
-        <div class="bstat-ic"><i class="fa-solid fa-circle-pause"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->where('status', 'Non Active')->count() }}">0</div>
-        <div class="bstat-lbl">Brand Non-Aktif</div>
-        <div class="bstat-sub sub-warn"><i class="fa-solid fa-minus"></i> Tidak aktif</div>
-      </div>
-      <div class="bstat bstat-rose" style="--i:3">
-        <div class="bstat-ic"><i class="fa-solid fa-photo-film"></i></div>
-        <div class="bstat-num" data-target="{{ $brands->sum('contents_count') ?? 0 }}">0</div>
-        <div class="bstat-lbl">Total Konten</div>
-        <div class="bstat-sub sub-up"><i class="fa-solid fa-arrow-trend-up"></i> +{{ $brands->where('created_at', '>=', now()->subMonth())->sum('contents_count') ?? 0 }} bulan ini</div>
-      </div>
-    </div>
-
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <div class="search-wrap">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input class="search-input" id="searchInput" type="text" placeholder="Cari nama brand, PIC, kontak..."/>
-      </div>
-      <select class="filter-select" id="filterStatus" onchange="filterTable()">
-        <option value="">Semua Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Non Active</option>
-      </select>
-      <div class="toolbar-spacer"></div>
-      <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
-        <i class="fa-solid fa-file-pdf"></i> Export PDF
-      </a>
-      <button class="btn btn-primary" onclick="openAddModal()">
-        <i class="fa-solid fa-plus"></i> Tambah Brand
-      </button>
-    </div>
-
-    <!-- TABLE CARD -->
-    <div class="table-card">
-      <div class="table-card-head">
-        <div class="tch-left">
-          <div class="tch-title">Daftar Brand</div>
-          <div class="tch-count" id="brandCount">{{ $brands->count() }} brand</div>
-        </div>
-        <div class="tch-right">
-          <div class="view-toggle">
-            <button class="vt-btn active" id="btnList" onclick="switchView('list')" title="List view">
-              <i class="fa-solid fa-list"></i>
-            </button>
-            <button class="vt-btn" id="btnGrid" onclick="switchView('grid')" title="Grid view">
-              <i class="fa-solid fa-grid-2"></i>
-            </button>
-          </div>
+      <div class="tch-right">
+        <div class="view-toggle">
+          <button class="vt-btn active" id="btnList" onclick="switchView('list')" title="List view">
+            <i class="fa-solid fa-list"></i>
+          </button>
+          <button class="vt-btn" id="btnGrid" onclick="switchView('grid')" title="Grid view">
+            <i class="fa-solid fa-grid-2"></i>
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- LIST VIEW -->
-      <div id="listView">
-        <div class="table-wrapper">
-          <table class="brand-table">
-            <thead>
-              <tr>
-                <th style="width:28%">Nama Brand</th>
-                <th style="width:18%">PIC</th>
-                <th style="width:18%">Kontak</th>
-                <th style="width:12%">Jumlah Konten</th>
-                <th style="width:12%">Status</th>
-                <th style="width:12%">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="brandTableBody">
-              @foreach($brands as $brand)
-              <tr onclick="openDetail({{ $brand->id }})">
-                <td>
-                  <div class="brand-cell">
-                    <div class="brand-avatar" style="background:#5897fe">{{ $brand->name ? strtoupper(substr($brand->name, 0, 2)) : '??' }}</div>
-                    <div>
-                      <div class="brand-name-text">{{ $brand->name ?: 'Unnamed Brand' }}</div>
-                      <div class="brand-created">Dibuat {{ $brand->created_at ? $brand->created_at->format('M Y') : 'Unknown' }}</div>
-                    </div>
+    <!-- LIST VIEW -->
+    <div id="listView">
+      <div class="table-wrapper">
+        <table class="brand-table">
+          <thead>
+            <tr>
+              <th style="width:28%">Nama Brand</th>
+              <th style="width:18%">PIC</th>
+              <th style="width:18%">Kontak</th>
+              <th style="width:12%">Jumlah Konten</th>
+              <th style="width:12%">Status</th>
+              <th style="width:12%">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="brandTableBody">
+            @foreach($brands as $brand)
+            <tr onclick="openDetail({{ $brand->id }})">
+              <td>
+                <div class="brand-cell">
+                  <div class="brand-avatar" style="background:#5897fe">{{ $brand->name ? strtoupper(substr($brand->name, 0, 2)) : '??' }}</div>
+                  <div>
+                    <div class="brand-name-text">{{ $brand->name ?: 'Unnamed Brand' }}</div>
+                    <div class="brand-created">Dibuat {{ $brand->created_at ? $brand->created_at->format('M Y') : 'Unknown' }}</div>
                   </div>
-                </td>
-                <td>
-                  <div class="pic-cell">
-                    <div class="pic-ava">{{ $brand->pic ? strtoupper(substr($brand->pic, 0, 2)) : '??' }}</div>
-                    <span class="pic-name">{{ $brand->pic ?: 'No PIC' }}</span>
-                  </div>
-                </td>
-                <td style="color:var(--text-500);font-size:12.5px">{{ $brand->contact ?: 'No Contact' }}</td>
-                <td>
-                  <span class="content-count"><i class="fa-solid fa-film"></i> {{ $brand->contents_count ?? 0 }} konten</span>
-                </td>
-                <td>
-                  <span class="status-pill {{ $brand->status === 'Active' ? 'sp-active' : 'sp-inactive' }}">
-                    <span class="status-dot"></span>{{ $brand->status ?: 'Unknown' }}
-                  </span>
-                </td>
-                <td onclick="event.stopPropagation()">
-                  <div class="row-actions">
-                    <button class="act-btn act-detail" onclick="openDetail({{ $brand->id }})" title="Detail"><i class="fa-solid fa-eye"></i></button>
-                    <button class="act-btn act-edit"   onclick="openEdit({{ $brand->id }})"   title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button class="act-btn act-del"    onclick="openDelete({{ $brand->id }})" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>
-                  </div>
-                </td>
-              </tr>
-              @endforeach
-              {{-- Show final count --}}
-              <tr style="background: #f8f9fa; font-weight: bold;">
-                <td colspan="6" style="text-align: center; padding: 5px; font-size: 12px;">
-                  Total brands displayed: {{ $brands->count() }} | Database count: {{ $brands->count() }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="empty-state" id="emptyState">
-          <div class="empty-ic"><i class="fa-solid fa-tag"></i></div>
-          <div class="empty-title">Tidak ada brand ditemukan</div>
-          <div class="empty-sub">Coba ubah kata kunci pencarian atau filter yang digunakan.</div>
-        </div>
+                </div>
+              </td>
+              <td>
+                <div class="pic-cell">
+                  <div class="pic-ava">{{ $brand->pic ? strtoupper(substr($brand->pic, 0, 2)) : '??' }}</div>
+                  <span class="pic-name">{{ $brand->pic ?: 'No PIC' }}</span>
+                </div>
+              </td>
+              <td style="color:var(--text-500);font-size:12.5px">{{ $brand->contact ?: 'No Contact' }}</td>
+              <td>
+                <span class="content-count"><i class="fa-solid fa-film"></i> {{ $brand->contents_count ?? 0 }} konten</span>
+              </td>
+              <td>
+                <span class="status-pill {{ $brand->status === 'Active' ? 'sp-active' : 'sp-inactive' }}">
+                  <span class="status-dot"></span>{{ $brand->status ?: 'Unknown' }}
+                </span>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <div class="row-actions">
+                  <button class="act-btn act-detail" onclick="openDetail({{ $brand->id }})" title="Detail"><i class="fa-solid fa-eye"></i></button>
+                  <button class="act-btn act-edit"   onclick="openEdit({{ $brand->id }})"   title="Edit"><i class="fa-solid fa-pen"></i></button>
+                  <button class="act-btn act-del"    onclick="openDelete({{ $brand->id }})" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+            @endforeach
+            {{-- Show final count --}}
+            <tr style="background: #f8f9fa; font-weight: bold;">
+              <td colspan="6" style="text-align: center; padding: 5px; font-size: 12px;">
+                Total brands displayed: {{ $brands->count() }} | Database count: {{ $brands->count() }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <!-- GRID VIEW -->
-      <div class="brand-grid" id="gridView"></div>
-
+      <div class="empty-state" id="emptyState">
+        <div class="empty-ic"><i class="fa-solid fa-tag"></i></div>
+        <div class="empty-title">Tidak ada brand ditemukan</div>
+        <div class="empty-sub">Coba ubah kata kunci pencarian atau filter yang digunakan.</div>
+      </div>
     </div>
 
-  </div><!-- /body -->
-</div><!-- /main -->
-</div><!-- /shell -->
+    <!-- GRID VIEW -->
+    <div class="brand-grid" id="gridView"></div>
+
+  </div>
+
+</div><!-- /body -->
 
 <!-- ════════════ MODAL: ADD / EDIT ════════════ -->
 <div class="overlay" id="formOverlay" onclick="closeOnOverlay(event,'formOverlay')">
@@ -1170,7 +777,9 @@ html, body {
 
 <!-- TOASTS -->
 <div class="toast-container" id="toastContainer"></div>
+@endsection
 
+@push('scripts')
 <script>
 /* ════════════════════════════════════════
    DATA FROM DATABASE
@@ -1264,11 +873,6 @@ window.addEventListener('DOMContentLoaded', () => {
     scrollHeight: tableWrapper ? tableWrapper.scrollHeight : 'not found',
     clientHeight: tableWrapper ? tableWrapper.clientHeight : 'not found'
   });
-  
-  // Today date
-  const d = new Date();
-  document.getElementById('today-date').textContent =
-    d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 });
 
 /* ══════════════════════════════════════════
@@ -1403,7 +1007,6 @@ function renderTable() {
     
     // Generate table HTML for all brands
     const tableHTML = filteredBrands.map((brand, index) => {
-      console.log(`Rendering brand ${index + 1}:`, brand);
       return `
         <tr onclick="openDetail(${brand.id})">
           <td>
@@ -1441,20 +1044,10 @@ function renderTable() {
       `;
     }).join('');
     
-    console.log('Generated table HTML with', filteredBrands.length, 'rows');
-    
     if (tbody) {
       tbody.innerHTML = tableHTML;
-      console.log('Table body updated successfully');
-    } else {
-      console.error('Table body element not found!');
     }
   }
-
-  console.log('=== TABLE RENDER COMPLETE ===');
-  console.log('✅ All database data displayed');
-  console.log('✅ Search connected to table');
-  console.log('✅ Real-time filtering active');
 }
 
 /* ══════════════════════════════════════════
@@ -1492,35 +1085,6 @@ function renderGrid(page) {
 }
 
 /* ══════════════════════════════════════════
-   PAGINATION
-══════════════════════════════════════════ */
-function renderPagination() {
-  const total = Math.ceil(filteredBrands.length / perPage);
-  const c = document.getElementById('pageBtns');
-  c.innerHTML = '';
-
-  const prev = document.createElement('button');
-  prev.className = 'page-btn'; prev.innerHTML = '<i class="fa-solid fa-chevron-left" style="font-size:10px"></i>';
-  prev.disabled = currentPage === 1;
-  prev.onclick = () => { currentPage--; renderTable(); };
-  c.appendChild(prev);
-
-  for (let i = 1; i <= total; i++) {
-    const b = document.createElement('button');
-    b.className = 'page-btn' + (i === currentPage ? ' active' : '');
-    b.textContent = i;
-    b.onclick = ((p) => () => { currentPage = p; renderTable(); })(i);
-    c.appendChild(b);
-  }
-
-  const next = document.createElement('button');
-  next.className = 'page-btn'; next.innerHTML = '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>';
-  next.disabled = currentPage === total || total === 0;
-  next.onclick = () => { currentPage++; renderTable(); };
-  c.appendChild(next);
-}
-
-/* ══════════════════════════════════════════
    VIEW TOGGLE
 ══════════════════════════════════════════ */
 function switchView(v) {
@@ -1530,6 +1094,7 @@ function switchView(v) {
   document.getElementById('listView').style.display  = v==='list' ? '' : 'none';
   const grid = document.getElementById('gridView');
   grid.classList.toggle('show', v==='grid');
+  if (v==='grid') renderGrid(filteredBrands);
 }
 
 /* ══════════════════════════════════════════
@@ -1618,151 +1183,71 @@ function selectStatus(val) {
 ══════════════════════════════════════════ */
 function submitForm(e) {
   e.preventDefault();
-  console.log('=== SUBMIT FORM CALLED ===');
-  
   const btn = document.getElementById('submitBtn');
-  if (!btn) {
-    console.error('Submit button not found!');
-    return;
-  }
-  
   btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menyimpan...';
   btn.disabled = true;
 
   try {
-    // Check if this is EDIT or ADD mode
     const editId = document.getElementById('editId').value;
     const isEditMode = editId && editId !== '' && editId !== '0';
     
-    console.log('Form mode:', isEditMode ? 'EDIT' : 'ADD');
-    console.log('Edit ID:', editId);
-    
-    // Get form values with safe access
-    const nameEl = document.getElementById('fName');
-    const picEl = document.getElementById('fPic');
-    const contactEl = document.getElementById('fContact');
-    const targetEl = document.getElementById('fTarget');
-    const statusEl = document.getElementById('fStatus');
-    
-    const name = nameEl ? nameEl.value.trim() : '';
-    const pic = picEl ? picEl.value.trim() : '';
-    const contact = contactEl ? contactEl.value.trim() : '';
-    const target = targetEl ? targetEl.value.trim() : '';
-    
-    // Get selected tone chips
+    const name = document.getElementById('fName').value.trim();
+    const pic = document.getElementById('fPic').value.trim();
+    const contact = document.getElementById('fContact').value.trim();
+    const target = document.getElementById('fTarget').value.trim();
     const toneChips = document.querySelectorAll('.tone-chip.selected');
     const tone = Array.from(toneChips).map(c => c.dataset.val || c.textContent).join(',');
+    const status = document.getElementById('fStatus').value;
     
-    const status = statusEl ? statusEl.value : 'Active';
-    
-    console.log('Form values:', { name, pic, contact, target, tone, status });
-
-    // Validate required fields
     if (!name || !pic || !contact || !target) {
-      console.log('Required fields missing:', { name: !!name, pic: !!pic, contact: !!contact, target: !!target });
       showToast('error', 'Nama Brand, PIC, Kontak, dan Target Market wajib diisi!');
       resetButton();
       return;
     }
     
-    // If no tone selected, use default
-    const finalTone = tone || 'Modern';
-    console.log('Using tone:', finalTone);
-
-    // Prepare data for database
     const brandData = {
       name: name,
       pic: pic,
       contact: contact,
       target_market: target,
-      tone: finalTone,
+      tone: tone || 'Modern',
       status: status
     };
 
-    console.log('Brand data for database:', brandData);
-
-    // Submit to database with correct method (EDIT vs ADD)
     if (isEditMode) {
-      console.log('=== EDIT MODE - Update existing brand ===');
       submitEditToDatabase(editId, brandData, btn);
     } else {
-      console.log('=== ADD MODE - Create new brand ===');
       submitAddToDatabase(brandData, btn);
     }
 
   } catch (error) {
-    console.error('Submit form error:', error);
     showToast('error', 'Terjadi kesalahan saat menyimpan brand: ' + error.message);
     resetButton();
   }
 }
 
 function submitEditToDatabase(editId, brandData, btn) {
-  console.log('=== EDIT BRAND - ID:', editId, '===');
-  
-  // Get CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]');
-  if (!csrfToken) {
-    console.error('CSRF Token not found!');
-    showToast('error', 'CSRF Token tidak ditemukan!');
-    resetButton();
-    return;
-  }
-
-  console.log('CSRF Token found:', csrfToken.getAttribute('content'));
-  console.log('Updating brand:', brandData);
-
-  // Close modal immediately
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   closeModal('formOverlay');
 
-  // Send UPDATE request to database
   fetch(`/brands/${editId}`, {
-    method: 'PUT', // Use PUT method for update
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+      'X-CSRF-TOKEN': csrfToken,
       'Accept': 'application/json'
     },
     body: JSON.stringify({
-      _method: 'PUT', // Laravel method spoofing
+      _method: 'PUT',
       ...brandData
     })
   })
-  .then(response => {
-    console.log('Database update response status:', response.status);
-    
-    if (response.status >= 200 && response.status < 300) {
-      return response.json();
-    } else {
-      return response.text().then(text => {
-        console.error('Database error response:', text);
-        try {
-          const jsonData = JSON.parse(text);
-          if (jsonData.success) {
-            console.log('Database actually succeeded despite status code!');
-            return jsonData;
-          }
-        } catch (e) {
-          console.log('Response is not JSON, treating as error');
-        }
-        throw new Error(`Database error: ${response.status}`);
-      });
-    }
-  })
+  .then(response => response.json())
   .then(data => {
-    console.log('Database update response data:', data);
-    
     if (data.success) {
-      console.log('Brand successfully updated in database!');
-      console.log('Updated brand:', data.brand);
-      
-      // UPDATE EXISTING BRAND IN LOCAL ARRAY (not add new)
-      const existingBrandIndex = brands.findIndex(b => b.id === parseInt(editId));
-      if (existingBrandIndex !== -1) {
-        console.log('Updating existing brand at index:', existingBrandIndex);
-        
-        // Update the existing brand data
-        brands[existingBrandIndex] = {
+      const idx = brands.findIndex(b => b.id === parseInt(editId));
+      if (idx !== -1) {
+        brands[idx] = {
           id: data.brand.id,
           name: data.brand.name,
           pic: data.brand.pic,
@@ -1771,129 +1256,38 @@ function submitEditToDatabase(editId, brandData, btn) {
           tone: data.brand.tone ? data.brand.tone.split(',') : [],
           status: data.brand.status,
           contents: data.brand.contents || 0,
-          created: brands[existingBrandIndex].created // Keep original creation date
+          created: brands[idx].created
         };
-        
-        console.log('Updated brand in local array:', brands[existingBrandIndex]);
-        
-        // Update filtered array as well
-        const filteredIndex = filteredBrands.findIndex(b => b.id === parseInt(editId));
-        if (filteredIndex !== -1) {
-          filteredBrands[filteredIndex] = brands[existingBrandIndex];
-          console.log('Updated brand in filtered array');
-        }
-      } else {
-        console.error('Brand not found in local array for update!');
       }
-      
-      // UPDATE ALL COMPONENTS AUTOMATICALLY
-      updateStats();
-      renderTable();
-      
-      // Show success message
+      filterTable();
       showToast('success', `Brand "${data.brand.name}" berhasil diperbarui!`);
-      
-      console.log('=== BRAND UPDATE COMPLETE ===');
-      console.log('✅ Data updated in database (not added)');
-      console.log('✅ No duplicate created');
-      console.log('✅ Existing brand replaced with new data');
-      
     } else {
-      console.error('Database returned error:', data);
       showToast('error', 'Gagal memperbarui brand: ' + (data.message || 'Unknown error'));
     }
-    
     resetButton();
   })
   .catch(error => {
-    console.error('Brand update error:', error);
-    console.log('Error occurred but trying to update local data anyway...');
-    
-    // Update local array even if error occurred
-    const existingBrandIndex = brands.findIndex(b => b.id === parseInt(editId));
-    if (existingBrandIndex !== -1) {
-      brands[existingBrandIndex] = {
-        ...brands[existingBrandIndex],
-        name: brandData.name,
-        pic: brandData.pic,
-        contact: brandData.contact,
-        target: brandData.target_market,
-        tone: brandData.tone.split(','),
-        status: brandData.status
-      };
-      
-      const filteredIndex = filteredBrands.findIndex(b => b.id === parseInt(editId));
-      if (filteredIndex !== -1) {
-        filteredBrands[filteredIndex] = brands[existingBrandIndex];
-      }
-      
-      updateStats();
-      renderTable();
-      showToast('success', `Brand "${brandData.name}" berhasil diperbarui!`);
-    }
-    
-    console.log('=== BRAND UPDATE (WITH ERROR) COMPLETE ===');
+    showToast('error', 'Kesalahan koneksi: ' + error.message);
     resetButton();
   });
 }
 
 function submitAddToDatabase(brandData, btn) {
-  console.log('=== ADD BRAND - NEW BRAND ===');
-  
-  // Get CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]');
-  if (!csrfToken) {
-    console.error('CSRF Token not found!');
-    showToast('error', 'CSRF Token tidak ditemukan!');
-    resetButton();
-    return;
-  }
-
-  console.log('CSRF Token found:', csrfToken.getAttribute('content'));
-  console.log('Creating new brand:', brandData);
-
-  // Close modal immediately
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   closeModal('formOverlay');
 
-  // Send CREATE request to database
   fetch('/brands', {
-    method: 'POST', // Use POST method for create
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+      'X-CSRF-TOKEN': csrfToken,
       'Accept': 'application/json'
     },
     body: JSON.stringify(brandData)
   })
-  .then(response => {
-    console.log('Database create response status:', response.status);
-    
-    if (response.status >= 200 && response.status < 300) {
-      return response.json();
-    } else {
-      return response.text().then(text => {
-        console.error('Database error response:', text);
-        try {
-          const jsonData = JSON.parse(text);
-          if (jsonData.success) {
-            console.log('Database actually succeeded despite status code!');
-            return jsonData;
-          }
-        } catch (e) {
-          console.log('Response is not JSON, treating as error');
-        }
-        throw new Error(`Database error: ${response.status}`);
-      });
-    }
-  })
+  .then(response => response.json())
   .then(data => {
-    console.log('Database create response data:', data);
-    
     if (data.success) {
-      console.log('Brand successfully created in database!');
-      console.log('New brand:', data.brand);
-      
-      // ADD NEW BRAND TO LOCAL ARRAY
       const newBrand = {
         id: data.brand.id,
         name: data.brand.name,
@@ -1902,108 +1296,21 @@ function submitAddToDatabase(brandData, btn) {
         target: data.brand.target_market,
         tone: data.brand.tone ? data.brand.tone.split(',') : [],
         status: data.brand.status,
-        contents: data.brand.contents || 0,
-        created: data.brand.created_at ? new Date(data.brand.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : 'Unknown'
+        contents: 0,
+        created: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
       };
-      
-      console.log('Adding new brand to local array:', newBrand);
-      
-      // Add to beginning of brands array
       brands.unshift(newBrand);
-      filteredBrands = [...brands];
-      
-      console.log('Brands array after adding:', brands);
-      
-      // UPDATE ALL COMPONENTS AUTOMATICALLY
-      updateStats();
-      renderTable();
-      
-      // Show success message
+      filterTable();
       showToast('success', `Brand "${data.brand.name}" berhasil ditambahkan!`);
-      
-      console.log('=== BRAND CREATE COMPLETE ===');
-      
     } else {
-      console.error('Database returned error:', data);
       showToast('error', 'Gagal menambah brand: ' + (data.message || 'Unknown error'));
     }
-    
     resetButton();
   })
   .catch(error => {
-    console.error('Brand create error:', error);
-    console.log('Error occurred but adding to local array anyway...');
-    
-    // Add to local array even if error occurred
-    const newBrand = {
-      id: Date.now(), // Temporary ID
-      name: brandData.name,
-      pic: brandData.pic,
-      contact: brandData.contact,
-      target: brandData.target_market,
-      tone: brandData.tone.split(','),
-      status: brandData.status,
-      contents: 0,
-      created: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
-    };
-    
-    brands.unshift(newBrand);
-    filteredBrands = [...brands];
-    updateStats();
-    renderTable();
-    
-    showToast('success', `Brand "${brandData.name}" berhasil ditambahkan!`);
-    console.log('=== BRAND CREATE (WITH ERROR) COMPLETE ===');
+    showToast('error', 'Kesalahan koneksi: ' + error.message);
     resetButton();
   });
-}
-
-function submitViaForm(brandData) {
-  console.log('=== SUBMITTING VIA FORM ===');
-  
-  try {
-    // Get the form element
-    const form = document.getElementById('brandForm');
-    if (!form) {
-      console.error('Form not found!');
-      showToast('error', 'Form tidak ditemukan!');
-      resetButton();
-      return;
-    }
-
-    // Clear existing hidden inputs
-    const existingInputs = form.querySelectorAll('input[type="hidden"]');
-    existingInputs.forEach(input => input.remove());
-
-    // Create hidden inputs for all data
-    Object.entries(brandData).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
-      console.log(`Added hidden input: ${key} = ${value}`);
-    });
-
-    // Set form action
-    form.action = '/brands';
-    form.method = 'POST';
-
-    // Submit the form
-    console.log('Submitting form to database...');
-    console.log('Brand berhasil disimpan, halaman akan refresh...');
-    
-    // Show success message before refresh
-    showToast('success', 'Brand berhasil disimpan ke database! Halaman akan refresh...');
-    
-    // Submit form (this will cause page refresh)
-    form.submit();
-    
-  } catch (error) {
-    console.error('Form submission error:', error);
-    showToast('error', 'Gagal menyimpan brand: ' + error.message);
-    resetButton();
-  }
 }
 
 function resetButton() {
@@ -2015,101 +1322,45 @@ function resetButton() {
 }
 
 /* ══════════════════════════════════════════
-   VALIDATE
-══════════════════════════════════════════ */
-function validateForm() {
-  let ok = true;
-  const fields = [
-    { id:'fName',    errId:'errName',    msg:'Nama brand wajib diisi.' },
-    { id:'fPic',     errId:'errPic',     msg:'PIC wajib diisi.' },
-    { id:'fContact', errId:'errContact', msg:'Kontak wajib diisi.' },
-    { id:'fTarget',  errId:'errTarget',  msg:'Target market wajib diisi.' },
-  ];
-  fields.forEach(f => {
-    const el = document.getElementById(f.id);
-    const err = document.getElementById(f.errId);
-    if (!el.value.trim()) {
-      el.classList.add('error'); err.classList.add('show'); ok = false;
-    } else {
-      el.classList.remove('error'); err.classList.remove('show');
-    }
-  });
-  const tones = document.querySelectorAll('.tone-chip.selected');
-  if (!tones.length) {
-    document.getElementById('errTone').classList.add('show'); ok = false;
-  } else {
-    document.getElementById('errTone').classList.remove('show');
-  }
-  return ok;
-}
-
-/* ══════════════════════════════════════════
    DETAIL
 ══════════════════════════════════════════ */
 function openDetail(id) {
   const b = brands.find(x => x.id === id);
   if (!b) return;
-  const c = brandColor(b.id);
 
-  document.getElementById('detailHero').innerHTML = `
-    <div class="detail-avatar" style="background:${c}">${brandInitials(b.name)}</div>
+  const hero = document.getElementById('detailHero');
+  hero.innerHTML = `
+    <div class="detail-avatar" style="background:${brandColor(b.id)}">${brandInitials(b.name)}</div>
     <div>
       <div class="detail-name">${b.name}</div>
       <div class="detail-meta">
-        <span><i class="fa-solid fa-film" style="color:var(--blue);margin-right:4px"></i>${b.contents} konten</span>
-        <span><i class="fa-regular fa-calendar" style="color:var(--blue);margin-right:4px"></i>Dibuat ${b.created}</span>
-        <span class="status-pill ${b.status==='Active'?'sp-active':'sp-inactive'}" style="padding:2px 9px">
-          <span class="status-dot"></span>${b.status}
-        </span>
+        <span><i class="fa-solid fa-calendar-day"></i> Dibuat ${b.created}</span>
+        <span class="status-pill ${b.status==='Active'?'sp-active':'sp-inactive'}"><span class="status-dot"></span>${b.status}</span>
       </div>
     </div>
   `;
 
-  const maxContent = Math.max(...brands.map(x=>x.contents), 1);
-  document.getElementById('detailBody').innerHTML = `
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `
     <div class="detail-grid">
-      <div class="detail-item">
-        <div class="detail-item-label">PIC</div>
-        <div class="detail-item-value">${b.pic}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-label">Kontak</div>
-        <div class="detail-item-value">${b.contact}</div>
-      </div>
-      <div class="detail-item full">
-        <div class="detail-item-label">Target Market</div>
-        <div class="detail-item-value" style="font-weight:400;color:var(--text-500)">${b.target}</div>
-      </div>
+      <div class="detail-item"><div class="detail-item-label">PIC</div><div class="detail-item-value">${b.pic}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Kontak</div><div class="detail-item-value">${b.contact}</div></div>
+      <div class="detail-item full"><div class="detail-item-label">Target Market</div><div class="detail-item-value">${b.target}</div></div>
       <div class="detail-item full">
         <div class="detail-item-label">Tone Komunikasi</div>
-        <div class="detail-tone-tags">
-          ${b.tone.map(t => `<span class="detail-tone-tag">${t}</span>`).join('')}
-        </div>
+        <div class="detail-tone-tags">${b.tone.map(t=>`<span class="detail-tone-tag">${t}</span>`).join('')}</div>
       </div>
       <div class="detail-item full">
-        <div class="detail-item-label">Distribusi Konten</div>
-        <div class="content-bar" style="margin-top:8px">
-          <div class="cb-row">
-            <span class="cb-label">Total Konten</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(b.contents/maxContent*100)}%;background:${c}"></div></div>
-            <span class="cb-num">${b.contents}</span>
-          </div>
-          <div class="cb-row">
-            <span class="cb-label">Published</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.published)/maxContent*100)}%;background:var(--emerald)"></div></div>
-            <span class="cb-num">${Math.max(0,b.published || 0)}</span>
-          </div>
-          <div class="cb-row">
-            <span class="cb-label">On Progress</span>
-            <div class="cb-track"><div class="cb-fill" style="width:${(Math.max(0,b.onProgress)/maxContent*100)}%;background:var(--amber)"></div></div>
-            <span class="cb-num">${Math.max(0,b.onProgress || 0)}</span>
-          </div>
+        <div class="detail-item-label">Statistik Konten</div>
+        <div class="content-bar">
+          <div class="cb-row"><div class="cb-label">Published</div><div class="cb-track"><div class="cb-fill" style="width:${b.contents?Math.round(b.published/b.contents*100):0}%;background:var(--emerald)"></div></div><div class="cb-num">${b.published}</div></div>
+          <div class="cb-row"><div class="cb-label">On Progress</div><div class="cb-track"><div class="cb-fill" style="width:${b.contents?Math.round(b.onProgress/b.contents*100):0}%;background:var(--blue)"></div></div><div class="cb-num">${b.onProgress}</div></div>
         </div>
       </div>
     </div>
   `;
 
-  document.getElementById('detailEditBtn').onclick = () => openEdit(id);
+  document.getElementById('detailEditBtn').onclick = () => openEdit(b.id);
   openModal('detailOverlay');
 }
 
@@ -2120,222 +1371,52 @@ function openDelete(id) {
   const b = brands.find(x => x.id === id);
   if (!b) return;
   deleteTargetId = id;
-  document.getElementById('deleteMsg').innerHTML =
-    `Kamu akan menghapus brand <strong>${b.name}</strong>. Brand yang sudah dihapus tidak dapat dipulihkan kembali.`;
-  document.getElementById('confirmDeleteBtn').onclick = () => confirmDelete();
+  document.getElementById('deleteMsg').innerHTML = `Apakah Anda yakin ingin menghapus brand <strong>${b.name}</strong>? Tindakan ini tidak dapat dibatalkan.`;
+  document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
   openModal('deleteOverlay');
 }
 
 function confirmDelete() {
-  const btn = document.getElementById('confirmDeleteBtn');
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i>';
-  btn.disabled  = true;
-
+  if (!deleteTargetId) return;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  
   fetch(`/brands/${deleteTargetId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    }
+    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      const b = brands.find(x => x.id === deleteTargetId);
-      brands = brands.filter(x => x.id !== deleteTargetId);
-      filteredBrands = filteredBrands.filter(x => x.id !== deleteTargetId);
-      renderTable();
-      updateStats();
+      brands = brands.filter(b => b.id !== deleteTargetId);
+      filterTable();
+      showToast('success', 'Brand berhasil dihapus');
       closeModal('deleteOverlay');
-      showToast('error', `Brand "${b?.name}" berhasil dihapus.`);
     } else {
-      showToast('error', 'Gagal menghapus brand!');
+      showToast('error', 'Gagal menghapus brand');
     }
   })
-  .catch(error => {
-    console.error('Error:', error);
-    showToast('error', 'Terjadi kesalahan saat menghapus brand!');
-  })
-  .finally(() => {
-    btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Hapus';
-    btn.disabled = false;
-    deleteTargetId = null;
-  });
+  .catch(() => showToast('error', 'Kesalahan koneksi'));
 }
 
 /* ══════════════════════════════════════════
-   UPDATE STATISTICS
+   STATS
 ══════════════════════════════════════════ */
 function updateStats() {
-  console.log('=== REAL-TIME STATISTICS UPDATE ===');
-  console.log('Calculating from database-synced brands array...');
-  
-  // Calculate from current brands array (synced with database)
-  const totalBrands = brands.length;
-  const activeBrands = brands.filter(b => b.status === 'Active').length;
-  const nonActiveBrands = brands.filter(b => b.status === 'Non Active').length;
-  const totalContents = brands.reduce((sum, b) => sum + (b.contents || 0), 0);
-  
-  console.log('Real-time calculations:', {
-    totalBrands,
-    activeBrands, 
-    nonActiveBrands,
-    totalContents,
-    dataSource: 'brands array (synced with database)'
-  });
-  
-  // Update Total Brand - bstat-blue
-  const totalBrandEl = document.querySelector('.bstat-blue .bstat-num');
-  console.log('Total Brand element:', totalBrandEl);
-  if (totalBrandEl) {
-    animateNumber(totalBrandEl, totalBrands);
-    console.log('✅ Total Brand updated:', totalBrands);
-  } else {
-    console.error('❌ Total Brand element not found');
-  }
-  
-  // Update Brand Aktif - bstat-em
-  const activeBrandEl = document.querySelector('.bstat-em .bstat-num');
-  console.log('Active Brand element:', activeBrandEl);
-  if (activeBrandEl) {
-    animateNumber(activeBrandEl, activeBrands);
-    console.log('✅ Brand Aktif updated:', activeBrands);
-  } else {
-    console.error('❌ Brand Aktif element not found');
-  }
-  
-  // Update Brand Non-Aktif - bstat-amb
-  const nonActiveBrandEl = document.querySelector('.bstat-amb .bstat-num');
-  console.log('Non-Active Brand element:', nonActiveBrandEl);
-  if (nonActiveBrandEl) {
-    animateNumber(nonActiveBrandEl, nonActiveBrands);
-    console.log('✅ Brand Non-Aktif updated:', nonActiveBrands);
-  } else {
-    console.error('❌ Brand Non-Aktif element not found');
-  }
-  
-  // Update Total Konten - bstat-rose (changed from empty data to total contents)
-  const totalContentEl = document.querySelector('.bstat-rose .bstat-num');
-  console.log('Total Content element:', totalContentEl);
-  if (totalContentEl) {
-    animateNumber(totalContentEl, totalContents);
-    console.log('✅ Total Konten updated:', totalContents);
-  } else {
-    console.error('❌ Total Konten element not found');
-  }
-  
-  // Update brand count in table header
-  const brandCountEl = document.getElementById('brandCount');
-  console.log('Brand count element:', brandCountEl);
-  if (brandCountEl) {
-    brandCountEl.textContent = totalBrands + ' brand';
-    console.log('✅ Header brand count updated:', totalBrands + ' brand');
-  } else {
-    console.error('❌ Brand count element not found');
-  }
-  
-  // Update summary info if exists
-  const summaryEl = document.querySelector('.summary-info');
-  if (summaryEl) {
-    summaryEl.innerHTML = `
-      Total Brand: <strong>${totalBrands}</strong> (bertambah +${totalBrands} pada bulan ini)<br>
-      Brand Aktif: <strong>${activeBrands}</strong> (sedang berjalan)<br>
-      Brand Non-Aktif: <strong>${nonActiveBrands}</strong> (tidak aktif)<br>
-      Total Konten: <strong>${totalContents}</strong> (bertambah +${totalContents} bulan ini)
-    `;
-    console.log('✅ Summary info updated');
-  } else {
-    console.log('ℹ️ Summary info element not found (optional)');
-  }
-  
-  // Update statistics labels if they exist
-  updateStatisticsLabels(totalBrands, activeBrands, nonActiveBrands, totalContents);
-  
-  console.log('=== REAL-TIME STATISTICS UPDATE COMPLETE ===');
-  console.log(`📊 Summary: ${totalBrands} Total | ${activeBrands} Aktif | ${nonActiveBrands} Non-Aktif | ${totalContents} Konten`);
-  console.log('✅ All data synchronized with database');
-  console.log('✅ No hardcoded values - all calculated dynamically');
-  console.log('✅ Live update without refresh');
-}
-
-function updateStatisticsLabels(totalBrands, activeBrands, nonActiveBrands, totalContents) {
-  // Update any additional statistics labels or descriptions
-  const statLabels = document.querySelectorAll('.stat-label, .stat-description');
-  statLabels.forEach((label, index) => {
-    if (label.textContent.includes('Total Brand')) {
-      // Could update additional info here if needed
-    }
-  });
-  
-  // Log current database state
-  console.log('📈 Database State Snapshot:', {
-    timestamp: new Date().toLocaleTimeString(),
-    totalRecords: totalBrands,
-    activeRecords: activeBrands,
-    inactiveRecords: nonActiveBrands,
-    totalContentRecords: totalContents,
-    dataFreshness: 'Real-time from database'
-  });
-}
-
-function animateNumber(element, target) {
-  const start = parseInt(element.textContent) || 0;
-  const increment = (target - start) / 20;
-  let current = start;
-  let step = 0;
-  
-  const timer = setInterval(() => {
-    step++;
-    current += increment;
-    
-    if (step >= 20) {
-      element.textContent = target;
-      clearInterval(timer);
-    } else {
-      element.textContent = Math.round(current);
-    }
-  }, 50);
+  // Stats update logic could be added here if needed to be dynamic without page reload
 }
 
 /* ══════════════════════════════════════════
    TOAST
 ══════════════════════════════════════════ */
 function showToast(type, msg) {
-  const icons = { success:'fa-circle-check', warn:'fa-triangle-exclamation', error:'fa-circle-exclamation' };
+  const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.innerHTML = `<div class="toast-ic"><i class="fa-solid ${icons[type]}"></i></div>${msg}`;
-  document.getElementById('toastContainer').appendChild(t);
-  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 400);
-  }, 3200);
+  const icon = type==='success'?'check-circle':(type==='error'?'circle-xmark':'triangle-exclamation');
+  t.innerHTML = `<div class="toast-ic"><i class="fa-solid fa-${icon}"></i></div><div class="toast-msg">${msg}</div>`;
+  c.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 100);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 4000);
 }
-
-/* ══════════════════════════════════════════
-   SIDEBAR NAV
-══════════════════════════════════════════ */
-document.querySelectorAll('.sb-item').forEach(el => {
-  el.addEventListener('click', function(e) {
-    // Only prevent default if it's a placeholder link (href="#")
-    if (this.getAttribute('href') === '#') {
-      e.preventDefault();
-    }
-    document.querySelectorAll('.sb-item').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
-
-/* live input clear error */
-['fName','fPic','fContact','fTarget'].forEach(id => {
-  document.getElementById(id).addEventListener('input', function() {
-    this.classList.remove('error');
-    const errId = 'err' + id.charAt(1).toUpperCase() + id.slice(2);
-    const err = document.getElementById(errId);
-    if (err) err.classList.remove('show');
-  });
-});
 </script>
-</body>
-</html>
+@endpush

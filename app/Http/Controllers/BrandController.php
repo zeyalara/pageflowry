@@ -43,7 +43,7 @@ class BrandController extends Controller
         $expectedCount = $brands->count();
         Log::info("BrandController: Expected to display " . $expectedCount . " brands in the view");
         
-        return view('brands.index', compact('brands'));
+        return view('admin.brand.index', compact('brands'));
     }
 
     /**
