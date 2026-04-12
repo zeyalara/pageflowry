@@ -56,81 +56,26 @@ class ProductionController extends Controller
      */
     public function index()
     {
-        // Connect "Daftar Tugas Konten" (ContentBrief) -> dropdown in Production (ContentTask).
-        // We only create missing ContentTask rows; we do NOT update existing ones so workflow statuses
-        // (under_review, need_revision, etc.) remain controlled by production/revision/approval actions.
-        $contentBriefs = ContentBrief::select(['id', 'title', 'description', 'brand_id', 'creator_id', 'user_id', 'production_deadline', 'status'])
+        // Get real productions data with brief and task relationships
+        $productions = Production::with(['brief', 'task', 'simpleTask', 'user'])
             ->where('user_id', Auth::id())
+            ->latest()
             ->get();
 
-        foreach ($contentBriefs as $brief) {
-            $existing = ContentTask::where('judul_konten', $brief->title)
-                ->where('brand_id', $brief->brand_id)
-                ->first();
-
-            if ($existing) {
-                continue;
-            }
-
-            $statusMap = [
-                'In Production' => 'in_production',
-                'Under Review' => 'under_review',
-                'Need Revision' => 'need_revision',
-                'Ready to Publish' => 'ready_to_publish',
-                'Published' => 'published',
-            ];
-
-            $mappedStatus = $statusMap[$brief->status] ?? 'draft';
-            $deadline = $brief->production_deadline ? Carbon::parse($brief->production_deadline)->startOfDay() : null;
-
-            ContentTask::create([
-                'user_id' => $brief->user_id ?? $brief->creator_id,
-                'judul_konten' => $brief->title,
-                'deskripsi' => $brief->description,
-                'brand_id' => $brief->brand_id,
-                'creator_id' => $brief->creator_id,
-                'status' => $mappedStatus,
-                'deadline' => $deadline,
-            ]);
-        }
-
-        // Base query: task yang tampil di tabel (status workflow produksi)
-        $workflowStatuses = ['in_production', 'under_review', 'need_revision', 'ready_to_publish', 'published'];
-
-        $baseQuery = ContentTask::with([
-                'brand',
-                'creator',
-                'productions' => function ($q) {
-                    $q->latest()->limit(1);
-                },
-            ])
-            ->whereIn('status', $workflowStatuses);
-        
-        // Scope to current user
-        $baseQuery->where('user_id', Auth::id());
-
-        // Data untuk tabel
-        $contentTasks = (clone $baseQuery)
+        // Get tasks for dropdown
+        $tasks = ContentTask::where('user_id', Auth::id())
             ->orderBy('id', 'asc')
             ->get();
 
-        // Get tasks for dropdown.
-        // User expects "Pilih Content Task" to show all content tasks from
-        // the "Daftar Tugas Konten" menu, regardless of status.
-        $tasks = ContentTask::where('user_id', Auth::id())->orderBy('id', 'asc')->get();
-        
-        // Debug: Check if tasks exist
-        // dd($tasks->toArray()); // Uncomment to debug
-
-        // Statistik di-card diambil dari data yang sama dengan tabel (supaya angka sinkron)
+        // Statistik
         $stats = [
-            'total_tasks'    => $contentTasks->count(),
-            'in_production'  => $contentTasks->where('status', 'in_production')->count(),
-            'under_review'   => $contentTasks->where('status', 'under_review')->count(),
-            'ready_to_publish' => $contentTasks->where('status', 'ready_to_publish')->count(),
+            'total_tasks'    => $productions->count(),
+            'in_production'  => $productions->where('status', 'pending')->count(),
+            'under_review'   => $productions->where('status', 'under_review')->count(),
+            'ready_to_publish' => $productions->where('status', 'approved')->count(),
         ];
 
-        return view('admin.production.index', compact('contentTasks', 'tasks', 'stats'));
+        return view('admin.production.index', compact('productions', 'tasks', 'stats'));
     }
 
     /**
@@ -144,14 +89,44 @@ class ProductionController extends Controller
             return redirect()->back()->with('error', 'File video tidak ditemukan');
         }
         
-        $filePath = public_path('storage/' . $production->file_video);
+        $filePath = storage_path('app/public/' . $production->file_video);
         
         if (!file_exists($filePath)) {
-            return redirect()->back()->with('error', 'File video tidak tersedia');
+            return redirect()->back()->with('error', 'File tidak tersedia di storage');
         }
         
         $filename = basename($production->file_video);
         return response()->download($filePath, $filename);
+    }
+
+    /**
+     * Approve production
+     */
+    public function approve($id)
+    {
+        $production = Production::whereHas('brief', function($q) {
+            $q->where('user_id', Auth::id());
+        })->findOrFail($id);
+        
+        $production->status = 'approved';
+        $production->save();
+        
+        return redirect()->back()->with('success', 'Production telah diapprove');
+    }
+
+    /**
+     * Set production to revision
+     */
+    public function revision($id)
+    {
+        $production = Production::whereHas('brief', function($q) {
+            $q->where('user_id', Auth::id());
+        })->findOrFail($id);
+        
+        $production->status = 'revision';
+        $production->save();
+        
+        return redirect()->back()->with('success', 'Production membutuhkan revisi');
     }
 
 
@@ -314,5 +289,41 @@ class ProductionController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Preview production file
+     */
+    public function preview($id)
+    {
+        $production = Production::whereHas('brief', function($q) {
+            $q->where('user_id', Auth::id());
+        })->findOrFail($id);
+        
+        if (!$production->file_video) {
+            return response()->json(['error' => 'File tidak ditemukan'], 404);
+        }
+        
+        $filePath = storage_path('app/public/' . $production->file_video);
+        
+        if (!file_exists($filePath)) {
+            return response()->json(['error' => 'File tidak tersedia'], 404);
+        }
+        
+        $ext = strtolower(pathinfo($production->file_video, PATHINFO_EXTENSION));
+        $isVideo = in_array($ext, ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp']);
+        $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+        
+        return response()->json([
+            'id' => $production->id,
+            'title' => optional($production->brief)->title ?? 'Production',
+            'file_path' => asset('storage/' . $production->file_video),
+            'file_name' => basename($production->file_video),
+            'is_video' => $isVideo,
+            'is_image' => $isImage,
+            'status' => $production->status,
+            'debug_ext' => $ext,
+            'debug_file' => $production->file_video,
+        ]);
     }
 }

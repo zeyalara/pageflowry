@@ -12,7 +12,8 @@ class ContentBrief extends Model
 {
     protected $fillable = [
         'user_id',
-        'token',                    // UUID token untuk akses public (sesuai requirement)
+        'share_token',              // Token untuk berbagi link
+        'share_token_expires_at',   // Expiration untuk token
         'public_token',             // UUID token untuk akses public (legacy)
         // Informasi Dasar - Step 2
         'title',                    // fTitle - Judul Konten
@@ -23,34 +24,32 @@ class ContentBrief extends Model
         'target_duration',          // fDuration - Durasi Target
         'production_deadline',       // fDeadProd - Deadline Produksi
         'publish_deadline',          // fDeadPub - Deadline Publish
-        
+
         // Strategi Konten - Step 3
         'objective',                // fObjective - Objective
         'target_audience',          // fAudience - Target Audience
         'key_message',              // fKeyMsg - Key Message
-        
+
         // Brief Kreatif - Step 4
         'hook',                     // fHook - Hook
         'storyline',                // fStory - Storyline
         'visual_direction',         // fVisual - Visual Direction
-        
+
         // Konten & Publishing - Step 5
         'caption',                  // fCaption - Caption
         'cta',                      // fCta - Call to Action
         'hashtags',                 // fHashtag - Hashtag
-        
+
         // Target KPI - Step 6
         'target_views',             // fViews - Target Views
         'target_engagement',        // fEngage - Target Engagement Rate
-        
+
         // Assign & Summary - Step 7
         'creator_email',            // fCreator - Email Content Creator
-        
+
         // System Fields
         'creator_id',               // User yang membuat
         'status',                   // Status
-        'share_token',              // Token untuk berbagi link
-        'share_token_expires_at',   // Expiration untuk token
     ];
 
     protected $casts = [
@@ -78,7 +77,24 @@ class ContentBrief extends Model
      */
     public function productions(): HasMany
     {
-        return $this->hasMany(Production::class, 'content_task_id', 'id');
+        return $this->hasMany(Production::class, 'brief_id', 'id');
+    }
+
+    /**
+     * Get the content tasks associated with this brief (by brand and user) - legacy.
+     */
+    public function contentTasks(): HasMany
+    {
+        return $this->hasMany(ContentTask::class, 'brand_id', 'brand_id')
+            ->where('user_id', $this->user_id);
+    }
+
+    /**
+     * Get the simple tasks directly associated with this brief.
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'brief_id', 'id');
     }
 
     /**
@@ -121,7 +137,7 @@ class ContentBrief extends Model
     public function publicViewUrl(): string
     {
         $baseUrl = config('app.url');
-        $token = $this->token; // Gunakan kolom 'token' sesuai requirement
+        $token = $this->share_token; // Gunakan kolom 'share_token' sesuai requirement
         return rtrim($baseUrl, '/') . '/brief/' . $token;
     }
 

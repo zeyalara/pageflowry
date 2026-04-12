@@ -47,7 +47,7 @@ class TestTokenAccess extends Command
         $this->info('Public URL: ' . $publicUrl);
         
         // Test if token is saved in database
-        $savedBrief = \App\Models\ContentBrief::where('public_token', $token)->first();
+        $savedBrief = \App\Models\ContentBrief::where('share_token', $token)->first();
         if ($savedBrief) {
             $this->info('SUCCESS: Token saved in database');
         } else {

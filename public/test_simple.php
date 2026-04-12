@@ -43,7 +43,7 @@
     <hr>
     <h2>Manual Test:</h2>
     <form method="get" action="/brief/test-token">
-        <input type="text" name="token" placeholder="Enter token" size="40">
+        <input type="text" name="share_token" placeholder="Enter share_token" size="40">
         <button type="submit">Test Route</button>
     </form>
     

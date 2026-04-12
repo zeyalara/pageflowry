@@ -130,26 +130,21 @@
   color: var(--blue);
   font-size: 14px;
 }
-
-/* Table card - Consistent with Brand Management */
-.table-card {
-  background: var(--white);
-  border-radius: var(--r);
-  border: 1px solid var(--border);
-  box-shadow: var(--s1);
-  overflow: hidden;
+.sec-head-compact {
+  margin-bottom: 0;
 }
 
-/* Table - Consistent with Brand Management */
-.table-wrapper {
-  height: 400px;
-  overflow-y: scroll;
+/* Table overflow fixes - Consistent with Brand Management */
+.tbl-card {
+  overflow-x: auto;
 }
-.content-table {
-  width: 100%;
+.tbl-card table {
+  width: 1170px;
+  table-layout: fixed;
+  min-width: 100%;
   border-collapse: collapse;
 }
-.content-table thead th {
+.tbl-card thead th {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -161,27 +156,34 @@
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.content-table tbody tr {
+.tbl-card tbody tr {
   border-bottom: 1px solid var(--border-light);
   transition: var(--t);
-  cursor: pointer;
 }
-.content-table tbody tr:last-child {
+.tbl-card tbody tr:last-child {
   border-bottom: none;
 }
-.content-table tbody tr:hover {
+.tbl-card tbody tr:hover {
   background: var(--blue-50);
 }
-.content-table tbody tr:hover .action-buttons {
-  opacity: 1;
-}
-.content-table tbody td {
+.tbl-card tbody td {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: var(--text-700);
   padding: 14px 16px;
   vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tbl-card .action-buttons {
+  min-width: 140px;
+  display: flex;
+  gap: 5px;
+  flex-wrap: nowrap;
 }
 
 /* Table cell styles - Consistent with Brand Management */
@@ -208,70 +210,40 @@
   font-size: 12.5px;
   color: var(--text-500);
 }
-.td-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-.status-published {
-  background: rgba(16,185,129,.10);
-  color: #065f46;
-}
-.status-draft {
-  background: rgba(148,163,184,.12);
-  color: var(--text-500);
-}
-.status-pending {
-  background: rgba(245,158,11,.10);
-  color: #92400e;
-}
 
 /* Action buttons - Consistent with Brand Management */
 .action-buttons {
   display: flex;
   align-items: center;
   gap: 5px;
-  opacity: 0;
-  transition: var(--t);
 }
 .btn-action {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-500);
   cursor: pointer;
   transition: var(--t);
-  background: var(--blue-50);
-  color: var(--blue);
+  font-size: 12px;
 }
 .btn-action:hover {
-  background: var(--blue-100);
-  transform: scale(1.08);
-}
-.btn-action.btn-download {
-  background: rgba(16,185,129,.10);
-  color: var(--emerald);
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+  transform: translateY(-1px);
 }
 .btn-action.btn-download:hover {
-  background: rgba(16,185,129,.2);
-}
-.btn-action.btn-upload {
-  background: rgba(245,158,11,.10);
-  color: var(--amber);
+  background: rgba(16,185,129,.90);
+  border-color: var(--emerald);
 }
 .btn-action.btn-upload:hover {
-  background: rgba(245,158,11,.2);
+  background: rgba(245,158,11,.90);
+  border-color: var(--amber);
 }
 
 /* Modal - Consistent with Brand Management */
@@ -423,24 +395,58 @@
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: var(--text-400);
+}
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 .empty-state i {
   font-size: 48px;
-  margin-bottom: 16px;
   opacity: 0.3;
+  color: var(--text-400);
 }
-.empty-state h3 {
+.empty-title {
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
   color: var(--text-500);
 }
-.empty-state p {
+.empty-desc {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: var(--text-400);
+}
+
+/* Pill styles */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.pill-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+/* Text muted */
+.text-muted {
+  color: var(--text-400);
+  font-size: 12px;
+}
+
+/* Table notes */
+.td-notes {
+  font-size: 12px;
+  color: var(--text-500);
 }
 
 /* Responsive - Consistent with Brand Management */
@@ -455,8 +461,9 @@
     align-items: flex-start;
     gap: 12px;
   }
-  .table-wrapper {
-    height: 300px;
+  .tbl-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .modal {
     width: 95%;
@@ -642,6 +649,15 @@
 }
 
 /* Status Badge Colors */
+.p-pending {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.p-pending .pill-dot {
+  background: #ef4444;
+}
+
 .p-in-production {
   background: rgba(251, 146, 60, 0.1);
   color: #fb923c;
@@ -683,26 +699,43 @@
   background: #ef4444;
 }
 
-/* Action Buttons */
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--white);
-  color: var(--text-500);
-  cursor: pointer;
-  transition: var(--t);
-  font-size: 12px;
+/* New status styles */
+.p-approved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
-.btn-action:hover {
-  background: var(--blue);
-  color: white;
-  border-color: var(--blue);
-  transform: translateY(-1px);
+.p-approved .pill-dot {
+  background: #22c55e;
+}
+
+.p-revision {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.p-revision .pill-dot {
+  background: #f59e0b;
+}
+
+.p-rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.p-rejected .pill-dot {
+  background: #ef4444;
+}
+
+/* Action button styles */
+.btn-action.btn-revision {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+.btn-action.btn-revision:hover {
+  background: #f59e0b;
+  color: #fff;
 }
 </style>
 @endpush
@@ -756,10 +789,10 @@
 </div>
 
 <div class="card tbl-card">
-  <div class="sec-head" style="margin-bottom:0">
+  <div class="sec-head sec-head-compact">
     <div class="sec-title">
-      <i class="fa-solid fa-list"></i>
-      Daftar Tugas Konten
+      <i class="fa-solid fa-film"></i>
+      Daftar Production
     </div>
     <button class="btn btn-primary" onclick="openUploadModal()">
       <i class="fa-solid fa-plus"></i> Upload Video Produksi
@@ -768,70 +801,66 @@
   <table>
     <thead>
       <tr>
-        <th style="width: 5%;">ID</th>
-        <th style="width: 25%;">Judul Konten</th>
-        <th style="width: 15%;">Brand</th>
-        <th style="width: 10%;">Versi Video</th>
-        <th style="width: 10%;">Durasi Final</th>
-        <th style="width: 20%;">Catatan Produksi</th>
-        <th style="width: 8%;">Status</th>
-        <th style="width: 7%;">Aksi</th>
+        <th style="width: 50px;">ID</th>
+        <th style="width: 180px;">Nama Brief</th>
+        <th style="width: 180px;">Nama Task</th>
+        <th style="width: 120px;">File</th>
+        <th style="width: 100px;">Status</th>
+        <th style="width: 120px;">Tanggal Upload</th>
+        <th style="width: 100px;">Aksi</th>
       </tr>
     </thead>
     <tbody>
-      @forelse($contentTasks as $index => $task)
-        @php 
-          $production = $task->productions->first();
+      @forelse($productions as $index => $production)
+        @php
           $statusMap = [
-            'task' => ['label' => 'Task', 'class' => 'p-task'],
-            'in_production' => ['label' => 'In Production', 'class' => 'p-in-production'],
-            'production' => ['label' => 'Production', 'class' => 'p-production'],
-            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
-            'need_revision' => ['label' => 'Need Revision', 'class' => 'p-need-revision'],
+            'production' => ['label' => 'Production', 'class' => 'p-in-production'],
+            'pending' => ['label' => 'Pending', 'class' => 'p-pending'],
+            'in_review' => ['label' => 'In Review', 'class' => 'p-under-review'],
+            'need_revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
             'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
             'published' => ['label' => 'Published', 'class' => 'p-published'],
-            'completed' => ['label' => 'Completed', 'class' => 'p-completed'],
+            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
+            'approved' => ['label' => 'Approved', 'class' => 'p-approved'],
+            'revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
+            'rejected' => ['label' => 'Rejected', 'class' => 'p-rejected'],
           ];
-          $s = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-prod'];
-          $rowNumber = $index + 1; // Nomor urut dari 1
+          $s = $statusMap[$production->status] ?? ['label' => ucfirst($production->status), 'class' => 'p-prod'];
+          $rowNumber = $index + 1;
         @endphp
         <tr>
-          <td style="white-space: nowrap; vertical-align: middle;">{{ $rowNumber }}</td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            <span class="td-name">{{ $task->judul_konten }}</span>
+          <td>{{ $rowNumber }}</td>
+          <td>
+            <span class="td-name">{{ optional($production->brief)->title ?? '-' }}</span>
           </td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            <span class="td-brand">{{ optional($task->brand)->name ?? '-' }}</span>
+          <td>
+            <span class="td-brand">{{ optional($production->simpleTask)->title ?? optional($production->task)->judul_konten ?? '-' }}</span>
           </td>
-          <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->versi_video : '-' }}</td>
-          <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->durasi_final : '-' }}</td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            @if($production && $production->catatan_produksi)
-              <span class="td-notes" title="{{ $production->catatan_produksi }}">
-                {{ Str::limit($production->catatan_produksi, 40) }}
-              </span>
+          <td>
+            @if($production->file_video)
+              <span class="td-file"><i class="fa-solid fa-video"></i> Video</span>
             @else
               <span class="text-muted">-</span>
             @endif
           </td>
-          <td style="white-space: nowrap; vertical-align: middle;">
+          <td>
             <span class="pill {{ $s['class'] }}">
               <span class="pill-dot"></span>
               {{ $s['label'] }}
             </span>
           </td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            <div class="action-buttons" style="display:flex;gap:6px;flex-wrap:nowrap;">
-              @if($production && $production->file_video)
-                <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Video">
+          <td>{{ $production->created_at->format('d M Y H:i') }}</td>
+          <td>
+            <div class="action-buttons">
+              @if($production->file_video)
+                <button class="btn-action" onclick="previewVideo({{ $production->id }})" title="Preview">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download Video">
+                <a href="{{ route('production.download', $production->id) }}" class="btn-action" title="Download">
                   <i class="fa-solid fa-download"></i>
-                </button>
-              @else
-                <button class="btn-action" onclick="showUploadForTask({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Upload Video">
-                  <i class="fa-solid fa-upload"></i>
+                </a>
+                <button type="button" class="btn-action btn-revision" onclick="openRevisionModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Revision">
+                  <i class="fa-solid fa-rotate-left"></i>
                 </button>
               @endif
             </div>
@@ -839,10 +868,12 @@
         </tr>
       @empty
         <tr>
-          <td colspan="8" style="text-align:center;padding:32px 0;color:var(--text-400);">
-            <i class="fa-solid fa-list" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
-            <div style="font-size:15px;font-weight:600;">Belum ada tugas konten</div>
-            <div style="font-size:12.5px;">Buat tugas konten pertama untuk memulai</div>
+          <td colspan="7" class="empty-state">
+            <div class="empty-state-content">
+              <i class="fa-solid fa-film"></i>
+              <div class="empty-title">Belum ada production</div>
+              <div class="empty-desc">Upload production dari halaman brief publik</div>
+            </div>
           </td>
         </tr>
       @endforelse
@@ -939,55 +970,65 @@
 <!-- Preview Video Modal -->
 <div class="overlay" id="previewOverlay" onclick="closeOnOverlay(event, 'previewOverlay')">
   <div class="modal" onclick="event.stopPropagation()" style="max-width: 800px;">
-    <div class="modal-header">
-      <div class="modal-title">Preview Video Produksi</div>
-      <button class="modal-close" onclick="closeModal('previewOverlay')">
-        <i class="fa-solid fa-times"></i>
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-eye"></i> Preview</div>
+        <div class="modal-title" id="previewModalTitle">Video Production</div>
+        <div class="modal-subtitle">Preview video yang diupload creator</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('previewOverlay')">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <div class="modal-body">
-      <div class="modal-divider"></div>
-      <div id="previewContent">
+    <div class="modal-body" style="padding: 0;">
+      <div id="previewContent" style="background: #000; min-height: 300px; max-height: 500px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <!-- Video preview content will be inserted here -->
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('previewOverlay')">Tutup</button>
-      <button id="previewDownloadBtn" class="btn btn-primary" style="display: none;">
-        <i class="fa-solid fa-download"></i> Download Video
-      </button>
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:10px"></i> Video akan diputar otomatis
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('previewOverlay')">Tutup</button>
+        <button id="previewDownloadBtn" class="btn btn-primary" style="display: none;">
+          <i class="fa-solid fa-download"></i> Download
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Download Confirmation Modal -->
-<div class="overlay" id="downloadOverlay" onclick="closeOnOverlay(event, 'downloadOverlay')">
+<!-- Revision Confirmation Modal -->
+<div class="overlay" id="revisionOverlay" onclick="closeOnOverlay(event, 'revisionOverlay')">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <div class="modal-title-wrap">
-        <div class="modal-eyebrow"><i class="fa-solid fa-download"></i> Download</div>
-        <div class="modal-title">Download Video</div>
-        <div class="modal-subtitle">Konfirmasi download video produksi</div>
+        <div class="modal-eyebrow"><i class="fa-solid fa-rotate-left"></i> Revision</div>
+        <div class="modal-title">Kirim ke Revisi</div>
+        <div class="modal-subtitle">Production membutuhkan perbaikan</div>
       </div>
-      <button class="modal-close" type="button" onclick="closeModal('downloadOverlay')">
+      <button class="modal-close" type="button" onclick="closeModal('revisionOverlay')">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <div class="modal-body">
-      <div class="modal-divider"></div>
-      <div id="downloadContent">
-        <!-- Content will be filled by JavaScript -->
+    <div class="modal-body" style="text-align:center; padding: 32px;">
+      <div style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;">
+        <i class="fa-solid fa-exclamation-circle"></i>
       </div>
+      <p style="font-size: 16px; color: var(--text-700); margin: 0 0 8px 0; font-weight: 500;" id="revisionProductionTitle">Production Title</p>
+      <p style="font-size: 14px; color: var(--text-500); margin: 0;">Apakah Anda yakin ingin mengirim production ini ke revisi?</p>
     </div>
     <div class="modal-footer">
-      <div class="mf-left">
-        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Video akan diunduh ke perangkat Anda
-      </div>
+      <div class="mf-left"></div>
       <div class="mf-right">
-        <button class="btn-ghost" type="button" onclick="closeModal('downloadOverlay')">Batal</button>
-        <button class="btn btn-primary" type="button" onclick="confirmDownload()">
-          <i class="fa-solid fa-download"></i> Download
-        </button>
+        <button class="btn-ghost" type="button" onclick="closeModal('revisionOverlay')">Batal</button>
+        <form method="POST" action="" id="revisionForm" style="display:inline;">
+          @csrf
+          <button class="btn btn-warning" type="submit" style="background: #f59e0b; border-color: #f59e0b; color: #fff;">
+            <i class="fa-solid fa-rotate-left"></i> Kirim ke Revisi
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -997,9 +1038,6 @@
 
 @push('scripts')
 <script>
-let currentDownloadUrl = null;
-const downloadBaseUrl = '{{ url('/admin/production/download') }}';
-
 function openUploadModal() {
   document.getElementById('uploadOverlay').classList.add('open');
 }
@@ -1145,69 +1183,96 @@ function submitUpload(event) {
   xhr.send(formData);
 }
 
-function previewVideo(productionId, taskTitle, videoFile) {
-  const previewContent = document.getElementById('previewContent');
-  const downloadBtn = document.getElementById('previewDownloadBtn');
+function openRevisionModal(productionId, productionTitle) {
+  const form = document.getElementById('revisionForm');
+  const titleEl = document.getElementById('revisionProductionTitle');
   
-  // Update modal title
-  const modalTitle = document.querySelector('#previewOverlay .modal-title');
-  if (modalTitle) {
-    modalTitle.textContent = `Preview Video - ${taskTitle}`;
+  // Set form action
+  form.action = `/admin/production/${productionId}/revision`;
+  
+  // Set title
+  if (titleEl) {
+    titleEl.textContent = productionTitle;
   }
   
-  // Create video element
-  const videoPath = `/storage/${videoFile}`;
-  previewContent.innerHTML = `
-    <div style="text-align: center;">
-      <video controls style="max-width: 100%; height: auto; border-radius: 8px;" preload="metadata" src="${videoPath}">
-        Browser Anda tidak mendukung video player.
-      </video>
-      <div style="margin-top: 16px; color: var(--text-400); font-size: 14px;">
-        <i class="fa-solid fa-info-circle"></i> Video: ${taskTitle}
-      </div>
-    </div>
-  `;
-  
-  // Setup download button
-  downloadBtn.style.display = 'inline-flex';
-  downloadBtn.onclick = function() {
-    window.location.href = `/production/${productionId}/download`;
-  };
-  
   // Open modal
+  document.getElementById('revisionOverlay').classList.add('open');
+}
+
+function previewVideo(productionId) {
+  const previewContent = document.getElementById('previewContent');
+  const downloadBtn = document.getElementById('previewDownloadBtn');
+  const modalTitle = document.getElementById('previewModalTitle');
+  
+  // Show loading
+  previewContent.innerHTML = '<div style="text-align:center;padding:40px;color:#fff;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
   document.getElementById('previewOverlay').classList.add('open');
-}
-
-function openDownloadModal(productionId, taskTitle, videoFile) {
-  currentDownloadUrl = downloadBaseUrl + '/' + productionId;
   
-  const content = `
-    <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
-      <div style="font-weight: 600; color: var(--text-900); margin-bottom: 4px;">${taskTitle}</div>
-      <div style="font-size: 12px; color: var(--text-500);">Production ID: #${productionId}</div>
-      <div style="font-size: 12px; color: var(--text-500); margin-top: 4px;">File: ${videoFile}</div>
-    </div>
-    <p style="font-size: 14px; color: var(--text-700); margin: 0;">
-      Apakah Anda yakin ingin mengunduh video ini?
-    </p>
-  `;
-  
-  document.getElementById('downloadContent').innerHTML = content;
-  document.getElementById('downloadOverlay').classList.add('open');
-}
-
-function confirmDownload() {
-  if (!currentDownloadUrl) return;
-  
-  const link = document.createElement('a');
-  link.href = currentDownloadUrl;
-  link.download = '';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  closeModal('downloadOverlay');
-  currentDownloadUrl = null;
+  // Fetch production data
+  fetch(`/admin/production/preview/${productionId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        previewContent.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;"><i class="fa-solid fa-exclamation-circle"></i> ${data.error}</div>`;
+        downloadBtn.style.display = 'none';
+        return;
+      }
+      
+      // Update modal title
+      if (modalTitle) {
+        modalTitle.textContent = data.title;
+      }
+      
+      // Create preview content based on file type
+      console.log('File path:', data.file_path, 'Is video:', data.is_video);
+      
+      let mediaHtml = '';
+      if (data.is_video) {
+        mediaHtml = `<video id="previewVideo" controls autoplay muted playsinline preload="metadata" style="max-width: 100%; max-height: 500px; width: 100%; height: auto; background: #000;" crossorigin="anonymous">
+          <source src="${data.file_path}" type="video/mp4">
+          Browser Anda tidak mendukung video player.
+        </video>`;
+      } else if (data.is_image) {
+        mediaHtml = `<img src="${data.file_path}" style="max-width: 100%; max-height: 500px; width: 100%; object-fit: contain;" alt="${data.file_name}" crossorigin="anonymous">`;
+      } else {
+        mediaHtml = `<div style="text-align:center;padding:40px;color:#fff;"><i class="fa-solid fa-file"></i> ${data.file_name}</div>`;
+      }
+      
+      previewContent.innerHTML = mediaHtml;
+      
+      // Explicitly play video after DOM insertion
+      if (data.is_video) {
+        const video = document.getElementById('previewVideo');
+        if (video) {
+          video.muted = true;
+          video.volume = 0;
+          
+          video.addEventListener('canplay', () => {
+            console.log('Video can play, attempting autoplay');
+            video.play().catch(e => console.log('Play failed:', e));
+          }, { once: true });
+          
+          video.addEventListener('loadedmetadata', () => {
+            console.log('Metadata loaded, duration:', video.duration);
+            video.play().catch(e => console.log('Metadata play failed:', e));
+          }, { once: true });
+          
+          video.addEventListener('error', (e) => {
+            console.error('Video error:', e, video.error);
+          });
+        }
+      }
+      
+      // Setup download button
+      downloadBtn.style.display = 'inline-flex';
+      downloadBtn.onclick = function() {
+        window.location.href = `/admin/production/download/${productionId}`;
+      };
+    })
+    .catch(err => {
+      previewContent.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;"><i class="fa-solid fa-exclamation-circle"></i> Gagal memuat preview</div>`;
+      downloadBtn.style.display = 'none';
+    });
 }
 
 </script>

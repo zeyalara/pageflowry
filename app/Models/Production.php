@@ -5,13 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\ContentBrief;
+use App\Models\Task;
 
 class Production extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'brief_id',
         'content_task_id',
+        'task_id',
         'judul_konten',
         'versi_video',
         'durasi_final',
@@ -26,23 +30,39 @@ class Production extends Model
     ];
 
     /**
+     * Get the content brief that owns the production.
+     */
+    public function brief(): BelongsTo
+    {
+        return $this->belongsTo(ContentBrief::class, 'brief_id');
+    }
+
+    /**
      * Get the content task that owns the production.
+     */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(ContentTask::class, 'content_task_id');
+    }
+
+    /**
+     * Alias for task() - backward compatibility.
      */
     public function contentTask(): BelongsTo
     {
-        return $this->belongsTo(ContentTask::class);
+        return $this->task();
     }
 
     /**
-     * Get the creator that owns the production.
+     * Get the new simple task that owns the production.
      */
-    public function creator(): BelongsTo
+    public function simpleTask(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Task::class, 'task_id');
     }
 
     /**
-     * Get the user (admin) who owns this production through content task.
+     * Get the user (admin) who owns this production.
      */
     public function user(): BelongsTo
     {

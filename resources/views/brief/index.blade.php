@@ -449,6 +449,16 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .df-val.italic{font-style:italic;color:var(--t5)}
 .df-tag{display:inline-flex;background:var(--blue-50);color:var(--blue);font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;margin-right:4px;margin-bottom:4px}
 
+/* Task Panel Styles */
+.tasks-panel{}
+.task-list{display:flex;flex-direction:column;gap:8px}
+.task-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--blue-50);border-radius:8px;border:1px solid var(--border)}
+.task-title{font-size:13px;color:var(--t7);font-weight:500}
+.task-delete{width:28px;height:28px;border-radius:6px;border:none;background:rgba(244,63,94,.1);color:var(--rose);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.task-delete:hover{background:var(--rose);color:#fff}
+.empty-tasks{text-align:center;padding:24px;color:var(--t4);font-size:13px}
+.empty-tasks i{display:block;font-size:24px;margin-bottom:8px;color:var(--t3)}
+
 /* ─────────────────────────────────────────
    DELETE MODAL
 ───────────────────────────────────────── */
@@ -1239,6 +1249,7 @@ let db = {!! $contentBriefs->map(function ($brief) {
     'views' => $brief->target_views !== null ? (int) $brief->target_views : 0,
     'engage' => $brief->target_engagement !== null ? (float) $brief->target_engagement : 0,
     'creator' => $brief->creator_email ?: null,
+    'tasks' => $brief->tasks->map(fn($t) => ['id' => $t->id, 'title' => $t->title])->toArray(),
   ];
 })->values()->toJson() !!};
 let nextId  = 1;
@@ -1571,8 +1582,22 @@ function openDetail(id) {
       <div class="wf-lbl">${s}</div>
     </div>`).join('');
 
+  // Build tasks list HTML
+  const tasksHtml = k.tasks && k.tasks.length > 0
+    ? `<div class="task-list">${k.tasks.map(t => `
+        <div class="task-item">
+          <span class="task-title">${t.title}</span>
+          <form method="POST" action="/admin/tasks/${t.id}" style="display:inline;" onsubmit="return confirm('Hapus task ini?')">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="task-delete"><i class="fa-solid fa-trash"></i></button>
+          </form>
+        </div>
+      `).join('')}</div>`
+    : `<div class="empty-tasks"><i class="fa-solid fa-clipboard-list"></i> Belum ada task</div>`;
+
   // Tabs & Panels
-  const tabs   = ['Brief Dasar','Strategi','Creative Direction','Copywriting & KPI'];
+  const tabs   = ['Brief Dasar','Strategi','Creative Direction','Copywriting & KPI','Tasks'];
   const panels = [
     // Panel 0: Brief Dasar
     `<div class="drow">
@@ -1597,6 +1622,22 @@ function openDetail(id) {
        <div class="df"><div class="df-lbl">Target Views</div><div class="df-val">${k.views.toLocaleString('id-ID')} views</div></div>
        <div class="df"><div class="df-lbl">Target Engagement</div><div class="df-val">${k.engage}%</div></div>
      </div>`,
+    // Panel 4: Tasks
+    `<div class="tasks-panel">
+      <h4 style="margin:0 0 12px 0;font-size:14px;color:var(--text-700)"><i class="fa-solid fa-list-check"></i> Daftar Task</h4>
+      ${tasksHtml}
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <form method="POST" action="{{ route('tasks.store') }}" style="display:flex;gap:8px;align-items:center;">
+          <input type="hidden" name="_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="brief_id" id="taskBriefId" value="${k.id}">
+          <input type="text" name="title" placeholder="Nama task baru..." required
+            style="flex:1;height:36px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <button type="submit" class="btn btn-primary" style="height:36px;padding:0 16px;font-size:12px;">
+            <i class="fa-solid fa-plus"></i> Tambah
+          </button>
+        </form>
+      </div>
+    </div>`,
   ];
 
   document.getElementById('detTabs').innerHTML = tabs.map((t, i) =>

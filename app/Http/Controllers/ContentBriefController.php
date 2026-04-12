@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ContentBrief;
 use App\Models\Brand;
+use App\Models\Task;
 use App\Notifications\DeadlineTaskNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,9 +28,9 @@ class ContentBriefController extends Controller
             ->orderBy('name', 'asc')
             ->get();
         
-        // Get ONLY content briefs for logged-in user with brand relationship
+        // Get ONLY content briefs for logged-in user with brand and tasks relationship
         $contentBriefs = ContentBrief::where('user_id', auth()->id())
-            ->with('brand')
+            ->with(['brand', 'tasks'])
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -335,7 +336,7 @@ class ContentBriefController extends Controller
 
             // Generate UUID token for public access - SESUAI REQUIREMENT
             $token = \Illuminate\Support\Str::uuid();
-            $contentBrief->token = $token;
+            $contentBrief->share_token = $token;
             $contentBrief->save();
 
             $emailSent = false;
@@ -499,7 +500,7 @@ class ContentBriefController extends Controller
                 abort(404, 'Brief tidak ditemukan dalam database.');
             }
             
-            $providedToken = $request->query('token');
+            $providedToken = $request->query('share_token');
             
             // Check if token is provided
             if (!$providedToken) {
@@ -540,25 +541,17 @@ class ContentBriefController extends Controller
     public function showByToken($token)
     {
         try {
-            Log::info('Accessing brief by token', ['token' => $token]);
+            Log::info('Accessing brief by share_token', ['share_token' => $token]);
             
-            // Find brief by token (UUID) - SESUAI REQUIREMENT
-            $brief = ContentBrief::where('token', $token)->first();
+            // Find brief by share_token (UUID) - SESUAI REQUIREMENT
+            $brief = ContentBrief::where('share_token', $token)->first();
 
             if (!$brief) {
-                Log::warning('Brief not found by token', ['token' => $token]);
+                Log::warning('Brief not found by share_token', ['share_token' => $token]);
                 abort(404, 'Brief tidak ditemukan atau link tidak valid.');
             }
 
             Log::info('Brief found', ['brief_id' => $brief->id, 'title' => $brief->title]);
-
-            // DEBUG: Cek apakah brief ditemukan dan relasinya
-            dd([
-                'brief' => $brief->toArray(),
-                'user' => $brief->user,
-                'brand' => $brief->brand,
-                'productions_count' => $brief->productions->count()
-            ]);
 
             // Load relasi user (admin pembuat brief) dan data terkait
             $brief->load(['brand', 'user', 'productions' => function($query) {
@@ -570,8 +563,8 @@ class ContentBriefController extends Controller
             return view('public.brief', compact('brief'));
 
         } catch (\Exception $e) {
-            Log::error('Error accessing brief by token', [
-                'token' => $token,
+            Log::error('Error accessing brief by share_token', [
+                'share_token' => $token,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -793,5 +786,41 @@ class ContentBriefController extends Controller
                 'message' => 'Error generating tokens: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Store a new task for a brief.
+     */
+    public function storeTask(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'brief_id' => 'required|exists:content_briefs,id',
+        ]);
+
+        $brief = ContentBrief::where('id', $validated['brief_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $task = Task::create([
+            'brief_id' => $validated['brief_id'],
+            'title' => $validated['title'],
+        ]);
+
+        return redirect()->back()->with('success', 'Task berhasil ditambahkan.');
+    }
+
+    /**
+     * Delete a task.
+     */
+    public function destroyTask($id)
+    {
+        $task = Task::whereHas('brief', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->findOrFail($id);
+
+        $task->delete();
+
+        return redirect()->back()->with('success', 'Task berhasil dihapus.');
     }
 }

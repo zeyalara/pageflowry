@@ -88,14 +88,15 @@ Route::middleware(['auth'])->group(function () {
 // Debug route for testing
 Route::get('/debug-token/{token}', function($token) {
     return response()->json([
-        'token' => $token,
+        'share_token' => $token,
         'message' => 'Debug route working',
         'timestamp' => now()->toDateTimeString()
     ]);
 });
 
 // Public route for token-based access (no authentication required) - MUST BE BEFORE AUTH ROUTES
-Route::get('/brief/{token}', [ContentBriefController::class, 'showByToken'])->name('brief.public');
+Route::get('/brief/{token}', [PublicBriefController::class, 'showBrief'])->name('brief.public');
+Route::post('/production/{token}', [PublicBriefController::class, 'storeProduction'])->name('production.store.public');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('brief.index');
@@ -118,6 +119,22 @@ Route::get('/email-log', function() {
 Route::get('/admin/production', [ProductionController::class, 'index'])->middleware('auth')->name('production.index');
 Route::post('/admin/production/store', [ProductionController::class, 'store'])->middleware('auth')->name('production.store');
 Route::get('/admin/production/download/{id}', [ProductionController::class, 'download'])->middleware('auth')->name('production.download');
+Route::get('/admin/production/preview/{id}', [ProductionController::class, 'preview'])->middleware('auth')->name('production.preview');
+Route::post('/admin/production/{id}/approve', [ProductionController::class, 'approve'])->middleware('auth')->name('production.approve');
+Route::post('/admin/production/{id}/revision', [ProductionController::class, 'revision'])->middleware('auth')->name('production.revision');
+
+// Serve production files directly (Windows symlink workaround)
+Route::get('/storage/productions/{filename}', function($filename) {
+    $path = storage_path('app/public/productions/' . $filename);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+})->where('filename', '.*');
+
+// Task Routes
+Route::post('/admin/tasks', [ContentBriefController::class, 'storeTask'])->middleware('auth')->name('tasks.store');
+Route::delete('/admin/tasks/{id}', [ContentBriefController::class, 'destroyTask'])->middleware('auth')->name('tasks.destroy');
 
 // Content Tasks Routes
 Route::get('/admin/content-tasks', [ContentBriefController::class, 'index'])->middleware('auth')->name('content-tasks.index');
@@ -184,5 +201,5 @@ Route::get('/create-dummy-data', function() {
 });
 
 // Public routes for token-based access (no authentication required)
-Route::get('/production/{token}', [PublicBriefController::class, 'showProduction'])->name('public.production');
+Route::get('/production/{token}/view', [PublicBriefController::class, 'showProduction'])->name('public.production');
 Route::get('/all-briefs/{token}', [PublicBriefController::class, 'showAllBriefs'])->name('public.all-briefs');
