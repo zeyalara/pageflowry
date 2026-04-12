@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Columns already exist in the original table creation
-        // This migration is no longer needed
+        Schema::table('brands', function (Blueprint $table) {
+            $table->text('description')->nullable()->after('target_market');
+        });
     }
 
     /**
@@ -20,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No columns to remove since they weren't added here
+        Schema::table('brands', function (Blueprint $table) {
+            $table->dropColumn('description');
+        });
     }
 };

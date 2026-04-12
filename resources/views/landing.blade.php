@@ -636,8 +636,8 @@
     <p class="sec-desc">PAGEFLOWRY merupakan sistem yang dikembangkan sebagai bagian dari <strong>Tugas Akhir Praktik Kerja Lapangan (PKL)</strong> sebagai implementasi pembelajaran berbasis industri dalam pengembangan aplikasi manajemen workflow konten.</p>
     <p class="sec-desc">Proyek ini dilaksanakan selama kegiatan PKL di <strong>PT Iccomits</strong>.</p>
     <div class="dev-row">
-      <div class="dcard"><div class="dav">A</div><h4>Alya Mutia Zahra</h4><p>Dashboard · Analytics · Report · Settings</p></div>
-      <div class="dcard"><div class="dav">R</div><h4>Reysa Anggraeni</h4><p>Brand · Brief · Production · Revision · Approval</p></div>
+      <div class="dcard"><div class="dav">A</div><h4>Alya Mutia Zahra</h4><p>Dashboard · Brand · Bief · Settings</p></div>
+      <div class="dcard"><div class="dav">R</div><h4>Reysa Anggraeni</h4><p> Production · Revision · Approval · Analytics · Report </p></div>
     </div>
     <div class="school-chip">🏫 SMK Negeri 13 Bandung</div>
   </div>

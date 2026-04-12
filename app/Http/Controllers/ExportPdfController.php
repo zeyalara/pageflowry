@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\ContentBrief;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\PDF;
 use Illuminate\Support\Facades\Auth;
 
 class ExportPdfController extends Controller
 {
+    private $pdf;
+
+    public function __construct(PDF $pdf)
+    {
+        $this->pdf = $pdf;
+    }
+
     /**
      * PDF: semua brand milik user login (sama cakupan dengan halaman Brand).
      */
@@ -25,7 +32,7 @@ class ExportPdfController extends Controller
 
         $user = Auth::user();
 
-        $pdf = Pdf::loadView('exports.brands-pdf', [
+        $pdf = $this->pdf->loadView('exports.brands-pdf', [
             'brands' => $brands,
             'user' => $user,
             'exportedAt' => now(),
@@ -49,7 +56,7 @@ class ExportPdfController extends Controller
 
         $user = Auth::user();
 
-        $pdf = Pdf::loadView('exports.content-tasks-pdf', [
+        $pdf = $this->pdf->loadView('exports.content-tasks-pdf', [
             'contentBriefs' => $contentBriefs,
             'user' => $user,
             'exportedAt' => now(),

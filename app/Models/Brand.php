@@ -13,6 +13,7 @@ class Brand extends Model
         'pic',
         'contact',
         'target_market',
+        'description',
         'tone',
         'status',
         'user_id',

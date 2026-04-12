@@ -13,6 +13,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ExportPdfController;
+use App\Http\Controllers\PublicBriefController;
 
 Route::get('/', function () {
     // Always show landing page first
@@ -75,24 +76,40 @@ Route::post('/test-brand', [App\Http\Controllers\TestController::class, 'testBra
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+    Route::get('/brands/{brand}', [BrandController::class, 'show'])->name('brands.show');
+    Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::get('/brands/export-pdf', [ExportPdfController::class, 'brands'])->name('brands.export-pdf');
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 });
 
+// Debug route for testing
+Route::get('/debug-token/{token}', function($token) {
+    return response()->json([
+        'share_token' => $token,
+        'message' => 'Debug route working',
+        'timestamp' => now()->toDateTimeString()
+    ]);
+});
+
+// Public route for token-based access (no authentication required) - MUST BE BEFORE AUTH ROUTES
+Route::get('/brief/{token}', [PublicBriefController::class, 'showBrief'])->name('brief.public');
+Route::post('/production/{token}', [PublicBriefController::class, 'storeProduction'])->name('production.store.public');
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('content-briefs.index');
-    Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('content-briefs.store');
-    Route::post('/content-briefs/search', [ContentBriefController::class, 'search'])->name('content-briefs.search');
-    Route::get('/content-briefs/{id}', [ContentBriefController::class, 'show'])->name('content-briefs.show');
-    Route::get('/content-briefs/{id}/edit', [ContentBriefController::class, 'edit'])->name('content-briefs.edit');
-    Route::put('/content-briefs/{id}', [ContentBriefController::class, 'update'])->name('content-briefs.update');
-    Route::delete('/content-briefs/{id}', [ContentBriefController::class, 'destroy'])->name('content-briefs.destroy');
+    Route::get('/content-briefs', [ContentBriefController::class, 'index'])->name('brief.index');
+    Route::post('/content-briefs', [ContentBriefController::class, 'store'])->name('brief.store');
+    Route::post('/content-briefs/search', [ContentBriefController::class, 'search'])->name('brief.search');
+    Route::get('/content-briefs/{id}', [ContentBriefController::class, 'show'])->name('brief.show');
+    Route::get('/content-briefs/{id}/edit', [ContentBriefController::class, 'edit'])->name('brief.edit');
+    Route::put('/content-briefs/{id}', [ContentBriefController::class, 'update'])->name('brief.update');
+    Route::delete('/content-briefs/{id}', [ContentBriefController::class, 'destroy'])->name('brief.destroy');
 });
 
 // Public route for creators to view brief without login
-Route::get('/content-briefs/{id}/view', [ContentBriefController::class, 'publicView'])->name('content-briefs.public-view');
+Route::get('/content-briefs/{id}/view', [ContentBriefController::class, 'publicView'])->name('brief.public-view');
 
 // Email log viewer for testing
 Route::get('/email-log', function() {
@@ -102,6 +119,22 @@ Route::get('/email-log', function() {
 Route::get('/admin/production', [ProductionController::class, 'index'])->middleware('auth')->name('production.index');
 Route::post('/admin/production/store', [ProductionController::class, 'store'])->middleware('auth')->name('production.store');
 Route::get('/admin/production/download/{id}', [ProductionController::class, 'download'])->middleware('auth')->name('production.download');
+Route::get('/admin/production/preview/{id}', [ProductionController::class, 'preview'])->middleware('auth')->name('production.preview');
+Route::post('/admin/production/{id}/approve', [ProductionController::class, 'approve'])->middleware('auth')->name('production.approve');
+Route::post('/admin/production/{id}/revision', [ProductionController::class, 'revision'])->middleware('auth')->name('production.revision');
+
+// Serve production files directly (Windows symlink workaround)
+Route::get('/storage/productions/{filename}', function($filename) {
+    $path = storage_path('app/public/productions/' . $filename);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+})->where('filename', '.*');
+
+// Task Routes
+Route::post('/admin/tasks', [ContentBriefController::class, 'storeTask'])->middleware('auth')->name('tasks.store');
+Route::delete('/admin/tasks/{id}', [ContentBriefController::class, 'destroyTask'])->middleware('auth')->name('tasks.destroy');
 
 // Content Tasks Routes
 Route::get('/admin/content-tasks', [ContentBriefController::class, 'index'])->middleware('auth')->name('content-tasks.index');
@@ -166,3 +199,7 @@ Route::get('/create-dummy-data', function() {
     return "Dummy content tasks created";
 
 });
+
+// Public routes for token-based access (no authentication required)
+Route::get('/production/{token}/view', [PublicBriefController::class, 'showProduction'])->name('public.production');
+Route::get('/all-briefs/{token}', [PublicBriefController::class, 'showAllBriefs'])->name('public.all-briefs');

@@ -21,24 +21,24 @@ return new class extends Migration
         DB::statement("
             UPDATE brands b
             JOIN (
-                SELECT brand_id, MAX(user_id) AS user_id
+                SELECT brand_id, MAX(creator_id) AS creator_id
                 FROM content_briefs
-                WHERE user_id IS NOT NULL
+                WHERE creator_id IS NOT NULL
                 GROUP BY brand_id
             ) cb ON cb.brand_id = b.id
-            SET b.user_id = cb.user_id
+            SET b.user_id = cb.creator_id
             WHERE b.user_id IS NULL
         ");
 
         DB::statement("
             UPDATE brands b
             JOIN (
-                SELECT brand_id, MAX(user_id) AS user_id
+                SELECT brand_id, MAX(creator_id) AS creator_id
                 FROM content_tasks
-                WHERE user_id IS NOT NULL
+                WHERE creator_id IS NOT NULL
                 GROUP BY brand_id
             ) ct ON ct.brand_id = b.id
-            SET b.user_id = ct.user_id
+            SET b.user_id = ct.creator_id
             WHERE b.user_id IS NULL
         ");
     }

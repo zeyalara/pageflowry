@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ContentBrief;
 use App\Models\Brand;
+use App\Models\Task;
+use App\Notifications\DeadlineTaskNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -16,15 +19,18 @@ class ContentBriefController extends Controller
      */
     public function index()
     {
+        // Check and send deadline notifications (disabled until notifications table is created)
+        // $this->checkDeadlineNotifications();
+        
         // Get only ACTIVE brands for dropdown and filter
         $brands = Brand::where('user_id', auth()->id())
             ->where('status', 'Active')
             ->orderBy('name', 'asc')
             ->get();
         
-        // Get ONLY content briefs for logged-in user with brand relationship
+        // Get ONLY content briefs for logged-in user with brand and tasks relationship
         $contentBriefs = ContentBrief::where('user_id', auth()->id())
-            ->with('brand')
+            ->with(['brand', 'tasks'])
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -38,6 +44,55 @@ class ContentBriefController extends Controller
         ];
         
         return view('brief.index', compact('brands', 'contentBriefs', 'stats'));
+    }
+
+    /**
+     * Check and send deadline notifications
+     */
+    private function checkDeadlineNotifications()
+    {
+        $today = Carbon::today();
+        $twoDaysFromNow = (clone $today)->addDays(2)->endOfDay();
+
+        // Get tasks with deadlines in the next 2 days or overdue
+        $tasks = ContentBrief::whereNotNull('production_deadline')
+            ->where(function ($query) use ($today, $twoDaysFromNow) {
+                $query->where('production_deadline', '<=', $twoDaysFromNow);
+            })
+            ->with('brand', 'user')
+            ->get();
+
+        foreach ($tasks as $task) {
+            $daysLeft = $today->diffInDays($task->production_deadline, false);
+            
+            if ($task->production_deadline->isPast()) {
+                // Overdue deadline
+                $task->user->notify(new DeadlineTaskNotification($task, 'overdue', null));
+                
+                // Notify all admin users
+                $this->notifyAdmins(new DeadlineTaskNotification($task, 'overdue', null));
+            } elseif ($daysLeft <= 2) {
+                // Approaching deadline (2 days or less)
+                $task->user->notify(new DeadlineTaskNotification($task, 'approaching', $daysLeft));
+                
+                // Notify all admin users
+                $this->notifyAdmins(new DeadlineTaskNotification($task, 'approaching', $daysLeft));
+            }
+        }
+    }
+
+    /**
+     * Notify all admin users
+     */
+    private function notifyAdmins($notification)
+    {
+        $adminUsers = \App\Models\User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->get();
+
+        foreach ($adminUsers as $admin) {
+            $admin->notify($notification);
+        }
     }
 
     /**
@@ -279,6 +334,11 @@ class ContentBriefController extends Controller
                 'status' => 'In Production', // Default status
             ]);
 
+            // Generate UUID token for public access - SESUAI REQUIREMENT
+            $token = \Illuminate\Support\Str::uuid();
+            $contentBrief->share_token = $token;
+            $contentBrief->save();
+
             $emailSent = false;
             $emailStatus = '';
             $creatorEmail = '';
@@ -289,21 +349,29 @@ class ContentBriefController extends Controller
                 $emailSent = $notify['sent'];
                 $emailStatus = $notify['status'];
             } else {
-                $emailStatus = 'Email creator tidak diisi — notifikasi tidak dikirim.';
+                $emailStatus = 'Email creator tidak diisi - notifikasi tidak dikirim.';
                 Log::info('No creator email provided, skipping email notification');
             }
 
-            // Return success response with data
-            $successMessage = $emailSent
-                ? 'Brief disimpan. Email ke creator sudah dikirim otomatis.'
-                : 'Brief disimpan. Tugas ditandai dikerjakan admin (tanpa email creator).';
-                
+            // Generate share links using new token-based routes - SESUAI REQUIREMENT
+            $briefUrl = route('brief.public', $token);
+            $productionUrl = route('public.production', $token);
+            $allBriefsUrl = route('public.all-briefs', $token);
+
+            $successMessage = "Brief \"{$contentBrief->title}\" berhasil dibuat!";
+            
             return response()->json([
                 'success' => true,
                 'message' => $successMessage,
                 'email_sent' => $emailSent,
                 'creator_email' => $creatorEmail,
                 'email_status' => $emailStatus,
+                'share_token' => $token,
+                'share_links' => [
+                    'brief' => $briefUrl,
+                    'production' => $productionUrl,
+                    'all_briefs' => $allBriefsUrl,
+                ],
                 'mail_config_hint' => config('mail.default') === 'log'
                     ? 'Untuk email masuk inbox: set MAIL_MAILER=smtp dan konfigurasi MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS di file .env lalu php artisan config:clear.'
                     : null,
@@ -420,13 +488,38 @@ class ContentBriefController extends Controller
     public function publicView(string $id, Request $request)
     {
         try {
-            // Get content brief with brand relationship
-            $contentBrief = ContentBrief::with('brand')->findOrFail($id);
+            // Get content brief with brand relationship using find() instead of findOrFail()
+            $contentBrief = ContentBrief::with('brand')->find($id);
             
-            $providedToken = $request->query('token');
+            // Check if brief exists
+            if (!$contentBrief) {
+                Log::warning('Brief not found in public view', [
+                    'brief_id' => $id,
+                    'ip' => $request->ip()
+                ]);
+                abort(404, 'Brief tidak ditemukan dalam database.');
+            }
+            
+            $providedToken = $request->query('share_token');
+            
+            // Check if token is provided
+            if (!$providedToken) {
+                Log::warning('No token provided for public brief view', [
+                    'brief_id' => $id,
+                    'ip' => $request->ip()
+                ]);
+                abort(403, 'Token diperlukan untuk mengakses brief ini.');
+            }
 
+            // Validate token
             if (! ContentBrief::publicViewTokenMatches($contentBrief, $providedToken)) {
-                abort(403, 'Akses tidak sah. Token tidak valid.');
+                Log::warning('Invalid token provided for public brief view', [
+                    'brief_id' => $id,
+                    'provided_token' => $providedToken,
+                    'expected_token' => $contentBrief->publicAccessToken(),
+                    'ip' => $request->ip()
+                ]);
+                abort(403, 'Akses tidak sah. Token tidak valid atau telah kadaluarsa.');
             }
             
             // Return view for creator
@@ -435,9 +528,49 @@ class ContentBriefController extends Controller
         } catch (\Exception $e) {
             Log::error('Error accessing public brief view', [
                 'brief_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            abort(404, 'Brief tidak ditemukan.');
+            abort(500, 'Terjadi kesalahan saat memuat brief. Silakan coba lagi nanti.');
+        }
+    }
+
+    /**
+     * Show brief by public token (no authentication required)
+     */
+    public function showByToken($token)
+    {
+        try {
+            Log::info('Accessing brief by share_token', ['share_token' => $token]);
+            
+            // Find brief by share_token (UUID) - SESUAI REQUIREMENT
+            $brief = ContentBrief::where('share_token', $token)->first();
+
+            if (!$brief) {
+                Log::warning('Brief not found by share_token', ['share_token' => $token]);
+                abort(404, 'Brief tidak ditemukan atau link tidak valid.');
+            }
+
+            Log::info('Brief found', ['brief_id' => $brief->id, 'title' => $brief->title]);
+
+            // Load relasi user (admin pembuat brief) dan data terkait
+            $brief->load(['brand', 'user', 'productions' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }]);
+
+            Log::info('Brief loaded with relations', ['relations_loaded' => true]);
+
+            return view('public.brief', compact('brief'));
+
+        } catch (\Exception $e) {
+            Log::error('Error accessing brief by share_token', [
+                'share_token' => $token,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            abort(500, 'Terjadi kesalahan saat memuat brief. Silakan coba lagi nanti.');
         }
     }
 
@@ -626,5 +759,68 @@ class ContentBriefController extends Controller
                 'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Generate share tokens for existing briefs (for migration purposes)
+     */
+    public function generateTokensForExistingBriefs()
+    {
+        try {
+            $briefs = ContentBrief::whereNull('share_token')->get();
+            $generatedCount = 0;
+            
+            foreach ($briefs as $brief) {
+                $brief->createShareToken(30); // 30 days expiration
+                $generatedCount++;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Generated tokens for {$generatedCount} existing briefs",
+                'count' => $generatedCount
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating tokens: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new task for a brief.
+     */
+    public function storeTask(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'brief_id' => 'required|exists:content_briefs,id',
+        ]);
+
+        $brief = ContentBrief::where('id', $validated['brief_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $task = Task::create([
+            'brief_id' => $validated['brief_id'],
+            'title' => $validated['title'],
+        ]);
+
+        return redirect()->back()->with('success', 'Task berhasil ditambahkan.');
+    }
+
+    /**
+     * Delete a task.
+     */
+    public function destroyTask($id)
+    {
+        $task = Task::whereHas('brief', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->findOrFail($id);
+
+        $task->delete();
+
+        return redirect()->back()->with('success', 'Task berhasil dihapus.');
     }
 }
