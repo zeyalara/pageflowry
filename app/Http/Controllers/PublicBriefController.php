@@ -17,7 +17,9 @@ class PublicBriefController extends Controller
      */
     public function showBrief($token, Request $request)
     {
-        $brief = ContentBrief::with(['tasks', 'brand', 'user', 'productions'])
+        $brief = ContentBrief::with(['tasks' => function($q) {
+                $q->whereNull('deleted_at');
+            }, 'brand', 'user', 'productions'])
             ->where('share_token', $token)
             ->first();
 
@@ -40,7 +42,9 @@ class PublicBriefController extends Controller
      */
     public function storeProduction($token, Request $request)
     {
-        $brief = ContentBrief::with('tasks')->where('share_token', $token)->first();
+        $brief = ContentBrief::with(['tasks' => function($q) {
+                $q->whereNull('deleted_at');
+            }])->where('share_token', $token)->first();
 
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');

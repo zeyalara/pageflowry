@@ -100,33 +100,71 @@ class ProductionController extends Controller
     }
 
     /**
-     * Approve production
+     * Approve production - Send to Revision page for review
      */
     public function approve($id)
     {
         $production = Production::whereHas('brief', function($q) {
             $q->where('user_id', Auth::id());
-        })->findOrFail($id);
+        })->with(['brief', 'task'])->findOrFail($id);
         
-        $production->status = 'approved';
-        $production->save();
-        
-        return redirect()->back()->with('success', 'Production telah diapprove');
+        DB::beginTransaction();
+        try {
+            // Update production status
+            $production->status = 'approved';
+            $production->save();
+            
+            // Update related ContentTask to under_review (masuk ke Revision page)
+            if ($production->brief) {
+                ContentTask::where('user_id', Auth::id())
+                    ->where('judul_konten', $production->brief->title)
+                    ->update(['status' => 'under_review']);
+                
+                // Update brief status
+                $production->brief->status = 'Under Review';
+                $production->brief->save();
+            }
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Production telah diapprove dan masuk ke Revision');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Set production to revision
+     * Set production to revision - Kirim ke revisi
      */
     public function revision($id)
     {
         $production = Production::whereHas('brief', function($q) {
             $q->where('user_id', Auth::id());
-        })->findOrFail($id);
+        })->with(['brief'])->findOrFail($id);
         
-        $production->status = 'revision';
-        $production->save();
-        
-        return redirect()->back()->with('success', 'Production membutuhkan revisi');
+        DB::beginTransaction();
+        try {
+            // Update production status
+            $production->status = 'revision';
+            $production->save();
+            
+            // Update related ContentTask to need_revision
+            if ($production->brief) {
+                ContentTask::where('user_id', Auth::id())
+                    ->where('judul_konten', $production->brief->title)
+                    ->update(['status' => 'need_revision']);
+                
+                // Update brief status
+                $production->brief->status = 'Need Revision';
+                $production->brief->save();
+            }
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Production membutuhkan revisi');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
     }
 
 

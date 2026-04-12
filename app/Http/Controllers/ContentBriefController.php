@@ -30,7 +30,9 @@ class ContentBriefController extends Controller
         
         // Get ONLY content briefs for logged-in user with brand and tasks relationship
         $contentBriefs = ContentBrief::where('user_id', auth()->id())
-            ->with(['brand', 'tasks'])
+            ->with(['brand', 'tasks' => function($q) {
+                $q->whereNull('deleted_at');
+            }])
             ->orderBy('created_at', 'desc')
             ->get();
         
