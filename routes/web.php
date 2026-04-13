@@ -15,6 +15,41 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ExportPdfController;
 use App\Http\Controllers\PublicBriefController;
 
+// Email debug route for hosting diagnostics
+Route::get('/debug-email', function() {
+    $to = request()->query('to', 'alyamutiazahra.0804@gmail.com');
+    try {
+        \Illuminate\Support\Facades\Mail::raw('Test email from PAGEFLOWRY hosting!', function($message) use ($to) {
+            $message->to($to)
+                    ->subject('Diagnostic: Test Email Hosting');
+        });
+        return response()->json([
+            'success' => true,
+            'message' => "Email berhasil dikirim ke $to! Silakan cek inbox/spam.",
+            'config' => [
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'encryption' => config('mail.mailers.smtp.encryption'),
+                'from' => config('mail.from.address'),
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'config' => [
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'encryption' => config('mail.mailers.smtp.encryption'),
+                'from' => config('mail.from.address'),
+            ]
+        ], 500);
+    }
+});
+
 Route::get('/', function () {
     // Always show landing page first
     return view('landing');
