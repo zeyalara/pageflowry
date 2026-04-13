@@ -95,7 +95,7 @@ Route::get('/debug-token/{token}', function($token) {
 });
 
 // Public route for token-based access (no authentication required) - MUST BE BEFORE AUTH ROUTES
-Route::get('/brief/{token}', [PublicBriefController::class, 'showBrief'])->name('brief.public');
+Route::get('/brief/{token}', [PublicBriefController::class, 'showByToken'])->name('brief.public');
 Route::post('/production/{token}', [PublicBriefController::class, 'storeProduction'])->name('production.store.public');
 
 Route::middleware(['auth'])->group(function () {
@@ -125,7 +125,11 @@ Route::post('/admin/production/{id}/revision', [ProductionController::class, 're
 
 // Serve production files directly (Windows symlink workaround)
 Route::get('/storage/productions/{filename}', function($filename) {
-    $path = storage_path('app/public/productions/' . $filename);
+    $path = public_path('storage/productions/' . $filename);
+    if (!file_exists($path)) {
+        $path = storage_path('app/public/productions/' . $filename);
+    }
+    
     if (!file_exists($path)) {
         abort(404);
     }

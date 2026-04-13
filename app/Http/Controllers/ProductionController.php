@@ -57,15 +57,26 @@ class ProductionController extends Controller
     public function index()
     {
         // Get real productions data with brief and task relationships
-        $productions = Production::with(['brief', 'task', 'simpleTask', 'user'])
+        $productions = Production::with(['brief.brand', 'task', 'simpleTask', 'user'])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
 
-        // Get tasks for dropdown
-        $tasks = ContentTask::where('user_id', Auth::id())
-            ->orderBy('id', 'asc')
-            ->get();
+        // Get tasks for dropdown (only for active brands AND status is 'In Production' or 'Need Revision')
+        // Taking from ContentBrief (Daftar Tugas Konten)
+        $tasks = ContentBrief::where('user_id', Auth::id())
+            ->whereHas('brand', function($query) {
+                $query->where('status', 'Active');
+            })
+            ->whereIn('status', ['In Production', 'Need Revision'])
+            ->orderBy('title', 'asc')
+            ->get()
+            ->map(function($task) {
+                return (object)[
+                    'id' => $task->id,
+                    'judul_konten' => $task->title
+                ];
+            });
 
         // Statistik
         $stats = [
@@ -89,7 +100,11 @@ class ProductionController extends Controller
             return redirect()->back()->with('error', 'File video tidak ditemukan');
         }
         
-        $filePath = storage_path('app/public/' . $production->file_video);
+        $filePath = public_path('storage/' . $production->file_video);
+        
+        if (!file_exists($filePath)) {
+            $filePath = storage_path('app/public/' . $production->file_video);
+        }
         
         if (!file_exists($filePath)) {
             return redirect()->back()->with('error', 'File tidak tersedia di storage');
@@ -104,14 +119,48 @@ class ProductionController extends Controller
      */
     public function approve($id)
     {
-        $production = Production::whereHas('brief', function($q) {
-            $q->where('user_id', Auth::id());
-        })->findOrFail($id);
+        $production = Production::where('user_id', Auth::id())->findOrFail($id);
         
-        $production->status = 'approved';
-        $production->save();
-        
-        return redirect()->back()->with('success', 'Production telah diapprove');
+        DB::beginTransaction();
+        try {
+            $production->status = 'approved';
+            $production->save();
+            
+            // Sync status to ContentBrief if brief_id exists
+            if ($production->brief_id) {
+                $brief = ContentBrief::findOrFail($production->brief_id);
+                $brief->update(['status' => 'Under Review']);
+
+                // Ensure a ContentTask exists for the Approval menu
+                $task = ContentTask::where('user_id', Auth::id())
+                    ->where('judul_konten', $brief->title)
+                    ->where('brand_id', $brief->brand_id)
+                    ->first();
+
+                if (!$task) {
+                    $task = ContentTask::create([
+                        'user_id' => Auth::id(),
+                        'brand_id' => $brief->brand_id,
+                        'judul_konten' => $brief->title,
+                        'status' => 'under_review',
+                        'creator_id' => Auth::id(), // Default to current user
+                    ]);
+                } else {
+                    $task->update(['status' => 'under_review']);
+                }
+
+                // Link production to content_task if not already linked
+                if (!$production->content_task_id) {
+                    $production->update(['content_task_id' => $task->id]);
+                }
+            }
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Production telah dikirim ke menu Approval untuk direview');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses approval: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -119,14 +168,48 @@ class ProductionController extends Controller
      */
     public function revision($id)
     {
-        $production = Production::whereHas('brief', function($q) {
-            $q->where('user_id', Auth::id());
-        })->findOrFail($id);
+        $production = Production::where('user_id', Auth::id())->findOrFail($id);
         
-        $production->status = 'revision';
-        $production->save();
-        
-        return redirect()->back()->with('success', 'Production membutuhkan revisi');
+        DB::beginTransaction();
+        try {
+            $production->status = 'revision';
+            $production->save();
+            
+            // Sync status to ContentBrief if brief_id exists
+            if ($production->brief_id) {
+                $brief = ContentBrief::findOrFail($production->brief_id);
+                $brief->update(['status' => 'Need Revision']);
+
+                // Ensure a ContentTask exists for the Revision menu
+                $task = ContentTask::where('user_id', Auth::id())
+                    ->where('judul_konten', $brief->title)
+                    ->where('brand_id', $brief->brand_id)
+                    ->first();
+
+                if (!$task) {
+                    $task = ContentTask::create([
+                        'user_id' => Auth::id(),
+                        'brand_id' => $brief->brand_id,
+                        'judul_konten' => $brief->title,
+                        'status' => 'need_revision',
+                        'creator_id' => Auth::id(),
+                    ]);
+                } else {
+                    $task->update(['status' => 'need_revision']);
+                }
+
+                // Link production to content_task if not already linked
+                if (!$production->content_task_id) {
+                    $production->update(['content_task_id' => $task->id]);
+                }
+            }
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Production telah dikirim ke menu Revision untuk diperbaiki');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses revisi: ' . $e->getMessage());
+        }
     }
 
 
@@ -146,7 +229,7 @@ class ProductionController extends Controller
         // Handle AJAX validation
         if ($request->ajax()) {
             $validator = Validator::make($request->all(), [
-                'content_task_id' => 'required|exists:content_tasks,id',
+                'content_task_id' => 'required|exists:content_briefs,id',
                 'version' => 'required|string|max:10',
                 'final_duration' => 'required|string|max:20',
                 'video_file' => $this->videoFileRules(),
@@ -161,7 +244,7 @@ class ProductionController extends Controller
             }
         } else {
             $request->validate([
-                'content_task_id' => 'required|exists:content_tasks,id',
+                'content_task_id' => 'required|exists:content_briefs,id',
                 'version' => 'required|string|max:10',
                 'final_duration' => 'required|string|max:20',
                 'video_file' => $this->videoFileRules(),
@@ -200,30 +283,23 @@ class ProductionController extends Controller
                 $path = 'productions/' . $filename;
             }
 
-            // `productions.judul_konten` adalah field wajib (NOT NULL)
-            // Ambil dari ContentTask yang dipilih.
-            $contentTask = ContentTask::where('user_id', Auth::id())->findOrFail($request->content_task_id);
+            // Ambil data dari ContentBrief (Daftar Tugas Konten)
+            $contentBrief = ContentBrief::where('user_id', Auth::id())->findOrFail($request->content_task_id);
 
             // Create production record
             Production::create([
-                'content_task_id' => $request->content_task_id,
-                'judul_konten' => $contentTask->judul_konten,
+                'brief_id' => $request->content_task_id, // Gunakan brief_id karena ini merujuk ke ContentBrief
+                'content_task_id' => null, // Explicitly set to null to avoid FK constraint on content_tasks
+                'judul_konten' => $contentBrief->title,
                 'versi_video' => $request->version,
                 'durasi_final' => $request->final_duration,
                 'file_video' => $path,
                 'catatan_produksi' => $request->production_notes,
+                'user_id' => Auth::id(), // Pastikan user_id disimpan
             ]);
 
-            // Update content task status to under_review
-            ContentTask::where('user_id', Auth::id())
-                ->where('id', $request->content_task_id)
-                ->update(['status' => 'under_review']);
-
-            // Keep status in "Daftar Tugas Konten" (content_briefs) in sync.
-            ContentBrief::where('user_id', Auth::id())
-                ->where('title', $contentTask->judul_konten)
-                ->where('brand_id', $contentTask->brand_id)
-                ->update(['status' => 'Under Review']);
+            // Update status di content_briefs menjadi 'Under Review'
+            $contentBrief->update(['status' => 'Under Review']);
 
             DB::commit();
 
@@ -304,7 +380,11 @@ class ProductionController extends Controller
             return response()->json(['error' => 'File tidak ditemukan'], 404);
         }
         
-        $filePath = storage_path('app/public/' . $production->file_video);
+        $filePath = public_path('storage/' . $production->file_video);
+        
+        if (!file_exists($filePath)) {
+            $filePath = storage_path('app/public/' . $production->file_video);
+        }
         
         if (!file_exists($filePath)) {
             return response()->json(['error' => 'File tidak tersedia'], 404);

@@ -1010,6 +1010,18 @@ tbody tr:hover td { background: var(--blue-50); }
     $revisionBadge = $uid
         ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'need_revision')->count()
         : 0;
+    
+    $approvalBadge = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'under_review')->count()
+        : 0;
+    
+    $publishingBadge = $uid
+        ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'ready_to_publish')->count()
+        : 0;
+
+    $productionBadge = $uid
+        ? \App\Models\Production::where('user_id', $uid)->where('status', 'pending')->count()
+        : 0;
 
     $notifRevision = $uid
         ? \App\Models\ContentTask::where('user_id', $uid)->where('status', 'need_revision')->count()
@@ -1085,7 +1097,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
     $msgTotal = $msgNeedRevision->count() + $msgUnderReview->count() + $msgReadyPublish->count() + $deadlineSoonCount + $deadlineOverdueCount;
 
-    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $deadlineSoonCount + $deadlineOverdueCount + ($deadlineSoonCount + $deadlineOverdueCount);
+    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $productionBadge + $deadlineSoonCount + $deadlineOverdueCount + ($deadlineSoonCount + $deadlineOverdueCount);
 
     $initials = 'U';
     if ($authUser) {
@@ -1137,6 +1149,9 @@ tbody tr:hover td { background: var(--blue-50); }
     <a class="sb-item {{ request()->routeIs('production.index') ? 'active' : '' }}" href="{{ route('production.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-film"></i></span>
       Production
+      @if($productionBadge > 0)
+        <span class="sb-badge">{{ $productionBadge }}</span>
+      @endif
     </a>
     <a class="sb-item {{ request()->routeIs('revision.index') ? 'active' : '' }}" href="{{ route('revision.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></span>
@@ -1148,10 +1163,16 @@ tbody tr:hover td { background: var(--blue-50); }
     <a class="sb-item {{ request()->routeIs('approval.index') ? 'active' : '' }}" href="{{ route('approval.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-circle-check"></i></span>
       Approval
+      @if($approvalBadge > 0)
+        <span class="sb-badge">{{ $approvalBadge }}</span>
+      @endif
     </a>
     <a class="sb-item {{ request()->routeIs('publishing.index') ? 'active' : '' }}" href="{{ route('publishing.index') }}">
       <span class="icon-wrap"><i class="fa-solid fa-paper-plane"></i></span>
       Publishing
+      @if($publishingBadge > 0)
+        <span class="sb-badge">{{ $publishingBadge }}</span>
+      @endif
     </a>
 
     <div class="sb-group-label">Laporan</div>
@@ -1254,6 +1275,17 @@ tbody tr:hover td { background: var(--blue-50); }
                   <span class="header-dd-badge" style="background:rgba(245,158,11,.18);color:#92400e;">{{ $badge }}</span>
                 </a>
               @endforeach
+            @endif
+
+            @if($productionBadge > 0)
+              <a href="{{ route('production.index') }}" class="dropdown-item header-dd-item" role="menuitem">
+                <span class="header-dd-ic" style="background:rgba(88,151,254,.10);color:var(--blue-600);"><i class="fa-solid fa-film"></i></span>
+                <span class="header-dd-body">
+                  <span class="header-dd-title">{{ $productionBadge }} produksi baru</span>
+                  <span class="header-dd-sub">Tinjau hasil upload creator</span>
+                </span>
+                <span class="header-dd-badge" style="background:rgba(88,151,254,.14);color:var(--blue-600);">New</span>
+              </a>
             @endif
 
             @if($notifRevision > 0)

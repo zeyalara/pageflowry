@@ -127,7 +127,7 @@
 .table-card {
   background: var(--white); border-radius: var(--r);
   border: 1px solid var(--border); box-shadow: var(--s1);
-  overflow: hidden;
+  overflow: visible;
   animation: fadeUp .45s .15s ease both;
   display: flex;
   flex-direction: column;
@@ -162,13 +162,12 @@
 .vt-btn:hover:not(.active) { color: var(--blue); }
 
 /* TABLE WRAPPER - Clean and functional */
-.table-wrapper {
-  min-height: 400px;
-  max-height: 600px;
-  overflow-y: auto;
-  border-radius: 0 0 var(--r) var(--r);
-  background: var(--white);
-  position: relative;
+.table-wrapper { 
+  overflow-x: auto; 
+  border-radius: 0 0 var(--r) var(--r); 
+  background: var(--white); 
+  position: relative; 
+  border: 1px solid var(--border); 
 }
 
 /* Ensure the table takes full width and has a proper layout */
@@ -176,7 +175,7 @@
   width: 100%; 
   border-collapse: separate; 
   border-spacing: 0;
-  table-layout: fixed; /* Added for better control */
+  table-layout: auto; /* CHANGED FROM FIXED */
 }
 
 .brand-table thead th {
@@ -255,8 +254,9 @@
 
 /* row actions */
 .row-actions {
-  display: flex; align-items: center; gap: 5px;
-  opacity: 0; transition: var(--t);
+  display: flex; align-items: center; gap: 8px;
+  opacity: 1 !important; /* ALWAYS VISIBLE */
+  visibility: visible !important;
 }
 .act-btn {
   width: 32px; height: 32px; border-radius: 8px; border: none;
@@ -806,40 +806,21 @@ const BRAND_COLORS = [
   '#ec4899','#14b8a6','#6366f1','#84cc16',
 ];
 
-let brands = @json($brands);
-// Process brands data to ensure consistent structure
-brands = brands.map(brand => {
-  try {
-    return {
-      id: brand.id,
-      name: brand.name || '',
-      pic: brand.pic || '',
-      contact: brand.contact || '',
-      target: brand.target_market || '',
-      tone: brand.tone ? (Array.isArray(brand.tone) ? brand.tone : String(brand.tone).split(',')) : [],
-      status: brand.status || 'Active',
-      contents: brand.contents_count || 0,
-      published: brand.published_count || 0,
-      onProgress: brand.in_progress_count || 0,
-      created: brand.created_at ? new Date(brand.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : 'Unknown'
-    };
-  } catch (error) {
-    console.error('Error processing brand:', brand, error);
-    return {
-      id: brand.id || 0,
-      name: 'Error Brand',
-      pic: 'Error',
-      contact: 'Error',
-      target: '',
-      tone: [],
-      status: 'Active',
-      contents: 0,
-      published: 0,
-      onProgress: 0,
-      created: 'Unknown'
-    };
-  }
-});
+let brands = {!! $brands->map(function($brand) {
+  return [
+    'id' => $brand->id,
+    'name' => $brand->name ?: 'Unnamed Brand',
+    'pic' => $brand->pic ?: 'No PIC',
+    'contact' => $brand->contact ?: '-',
+    'target' => $brand->target_market ?: '-',
+    'tone' => $brand->tone ? (is_array($brand->tone) ? $brand->tone : explode(',', $brand->tone)) : [],
+    'status' => $brand->status ?: 'Active',
+    'contents' => $brand->contents_count ?: 0,
+    'published' => $brand->published_count ?: 0,
+    'onProgress' => $brand->in_progress_count ?: 0,
+    'created' => $brand->created_at ? $brand->created_at->format('M Y') : 'Unknown'
+  ];
+})->toJson() !!};
 
 let filteredBrands = [...brands];
 let currentView = 'list';
@@ -1141,19 +1122,40 @@ function selectStatus(val) {
 function submitForm(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menyimpan...';
-  btn.disabled = true;
-
   const editId = document.getElementById('editId').value;
   const isEdit = !!editId;
   
+  const name = document.getElementById('fName').value.trim();
+  const pic = document.getElementById('fPic').value.trim();
+  const contact = document.getElementById('fContact').value.trim();
+  const target = document.getElementById('fTarget').value.trim();
+  const toneChips = document.querySelectorAll('.tone-chip.selected');
+  const tone = Array.from(toneChips).map(c => c.dataset.val).join(',');
+  const status = document.getElementById('fStatus').value;
+
+  // Frontend Validation
+  let hasError = false;
+  if (!name) { document.getElementById('errName').classList.add('show'); hasError = true; }
+  if (!pic) { document.getElementById('errPic').classList.add('show'); hasError = true; }
+  if (!contact) { document.getElementById('errContact').classList.add('show'); hasError = true; }
+  if (!target) { document.getElementById('errTarget').classList.add('show'); hasError = true; }
+  if (!tone) { document.getElementById('errTone').classList.add('show'); hasError = true; }
+
+  if (hasError) {
+    showToast('error', 'Mohon lengkapi semua field yang wajib diisi.');
+    return;
+  }
+
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menyimpan...';
+  btn.disabled = true;
+
   const data = {
-    name: document.getElementById('fName').value.trim(),
-    pic: document.getElementById('fPic').value.trim(),
-    contact: document.getElementById('fContact').value.trim(),
-    target_market: document.getElementById('fTarget').value.trim(),
-    tone: Array.from(document.querySelectorAll('.tone-chip.selected')).map(c => c.dataset.val).join(','),
-    status: document.getElementById('fStatus').value
+    name: name,
+    pic: pic,
+    contact: contact,
+    target_market: target,
+    tone_voice: tone, // Correct field name for Laravel controller
+    status: status
   };
 
   const url = isEdit ? `/brands/${editId}` : '/brands';
@@ -1165,17 +1167,41 @@ function submitForm(e) {
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
     body: JSON.stringify(data)
   })
-  .then(r => r.json())
+  .then(async r => {
+    const res = await r.json();
+    if (!r.ok) {
+      if (r.status === 422 && res.errors) {
+        const firstError = Object.values(res.errors)[0][0];
+        throw new Error(firstError);
+      }
+      throw new Error(res.message || 'Gagal menyimpan brand');
+    }
+    return res;
+  })
   .then(res => {
     if (res.success) {
       if (isEdit) {
         const idx = brands.findIndex(b => b.id == editId);
-        brands[idx] = { ...brands[idx], ...data, tone: data.tone.split(',') };
+        if (idx !== -1) {
+          brands[idx] = { 
+            ...brands[idx], 
+            name: data.name,
+            pic: data.pic,
+            contact: data.contact,
+            target: data.target_market,
+            tone: data.tone_voice.split(','),
+            status: data.status
+          };
+        }
       } else {
         const newBrand = {
-          ...res.brand,
+          id: res.brand.id,
+          name: res.brand.name,
+          pic: res.brand.pic,
+          contact: res.brand.contact,
           target: res.brand.target_market,
-          tone: res.brand.tone.split(','),
+          tone: res.brand.tone ? (Array.isArray(res.brand.tone) ? res.brand.tone : res.brand.tone.split(',')) : [],
+          status: res.brand.status,
           contents: 0,
           published: 0,
           onProgress: 0,
@@ -1183,17 +1209,19 @@ function submitForm(e) {
         };
         brands.unshift(newBrand);
       }
-      filterTable();
+      
+      filterTable(); // Updates table, grid, and stats
       showToast('success', res.message);
       closeModal('formOverlay');
     } else {
       showToast('error', res.message || 'Gagal menyimpan brand');
     }
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brand';
-    btn.disabled = false;
   })
-  .catch(() => {
-    showToast('error', 'Kesalahan koneksi');
+  .catch(error => {
+    console.error('Save error:', error);
+    showToast('error', error.message || 'Terjadi kesalahan koneksi');
+  })
+  .finally(() => {
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Brand';
     btn.disabled = false;
   });
@@ -1256,22 +1284,39 @@ function openDelete(id) {
 
 function confirmDelete() {
   const csrf = document.querySelector('meta[name="csrf-token"]').content;
+  const btn = document.getElementById('confirmDeleteBtn');
+  const oldText = btn.innerHTML;
+  
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Menghapus...';
+  btn.disabled = true;
+
   fetch(`/brands/${deleteTargetId}`, {
     method: 'DELETE',
     headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }
   })
-  .then(r => r.json())
+  .then(async r => {
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.message || 'Gagal menghapus brand');
+    return res;
+  })
   .then(res => {
     if (res.success) {
       brands = brands.filter(b => b.id != deleteTargetId);
-      filterTable();
+      filterTable(); // Updates table, grid, and stats
       showToast('success', res.message);
       closeModal('deleteOverlay');
     } else {
-      showToast('error', res.message);
+      showToast('error', res.message || 'Gagal menghapus brand');
     }
   })
-  .catch(() => showToast('error', 'Kesalahan koneksi'));
+  .catch(error => {
+    console.error('Delete error:', error);
+    showToast('error', error.message || 'Terjadi kesalahan koneksi');
+  })
+  .finally(() => {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  });
 }
 
 /* ══════════════════════════════════════════

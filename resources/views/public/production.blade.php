@@ -416,7 +416,7 @@
                                     <div class="detail-content">
                                         <div class="detail-label">Tanggal Upload</div>
                                         <div class="detail-value">
-                                            {{ $production->created_at->format('d M Y H:i') }}
+                                            {{ $production->created_at->format('d M Y') }}
                                         </div>
                                     </div>
                                 </div>
@@ -454,7 +454,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>© {{ date('Y') }} PageFlowry - Sistem Manajemen Konten</p>
-            <p><a href="{{ route('public.brief', $brief->share_token) }}">Kembali ke Brief</a> · <a href="{{ route('public.all-briefs', $brief->share_token) }}">Lihat Semua Brief</a></p>
+            <p><a href="{{ route('brief.public', $brief->token) }}">Kembali ke Brief</a> · <a href="{{ route('public.all-briefs', $brief->token) }}">Lihat Semua Brief</a></p>
         </div>
     </div>
 </body>

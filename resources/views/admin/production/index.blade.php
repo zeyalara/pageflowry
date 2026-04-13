@@ -139,8 +139,8 @@
   overflow-x: auto;
 }
 .tbl-card table {
-  width: 1170px;
-  table-layout: fixed;
+  width: 100%;
+  table-layout: auto;
   min-width: 100%;
   border-collapse: collapse;
 }
@@ -175,12 +175,10 @@
   color: var(--text-700);
   padding: 14px 16px;
   vertical-align: middle;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .tbl-card .action-buttons {
-  min-width: 140px;
   display: flex;
   gap: 5px;
   flex-wrap: nowrap;
@@ -747,9 +745,6 @@
     <div class="page-header-title">Production</div>
     <div class="page-subtitle">Kelola produksi konten dan upload video final</div>
   </div>
-  <button class="btn btn-primary" onclick="openUploadModal()">
-    <i class="fa-solid fa-plus"></i> Upload Video Produksi
-  </button>
 </div>
 
 @if(session('success'))
@@ -789,7 +784,7 @@
 </div>
 
 <div class="card tbl-card">
-  <div class="sec-head sec-head-compact">
+  <div class="sec-head" style="padding: 20px 16px; border-bottom: 1px solid var(--border-light); margin-bottom: 0;">
     <div class="sec-title">
       <i class="fa-solid fa-film"></i>
       Daftar Production
@@ -802,12 +797,12 @@
     <thead>
       <tr>
         <th style="width: 50px;">ID</th>
-        <th style="width: 180px;">Nama Brief</th>
-        <th style="width: 180px;">Nama Task</th>
-        <th style="width: 120px;">File</th>
-        <th style="width: 100px;">Status</th>
-        <th style="width: 120px;">Tanggal Upload</th>
-        <th style="width: 100px;">Aksi</th>
+        <th>Nama Brief</th>
+        <th>Nama Task</th>
+        <th style="width: 100px;">File</th>
+        <th style="width: 120px;">Status</th>
+        <th style="width: 160px;">Tanggal Upload</th>
+        <th style="width: 140px; text-align: right;">Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -832,9 +827,12 @@
           <td>{{ $rowNumber }}</td>
           <td>
             <span class="td-name">{{ optional($production->brief)->title ?? '-' }}</span>
+            @if(optional($production->brief)->brand)
+              <div class="text-muted" style="font-size: 11px;">{{ $production->brief->brand->name }}</div>
+            @endif
           </td>
           <td>
-            <span class="td-brand">{{ optional($production->simpleTask)->title ?? optional($production->task)->judul_konten ?? '-' }}</span>
+            <span class="td-brand">{{ optional($production->simpleTask)->title ?? optional($production->task)->judul_konten ?? optional($production->brief)->title ?? '-' }}</span>
           </td>
           <td>
             @if($production->file_video)
@@ -849,19 +847,30 @@
               {{ $s['label'] }}
             </span>
           </td>
-          <td>{{ $production->created_at->format('d M Y H:i') }}</td>
-          <td>
-            <div class="action-buttons">
+          <td>{{ $production->created_at->format('d M Y') }}</td>
+          <td style="text-align: right;">
+            <div class="action-buttons" style="justify-content: flex-end;">
               @if($production->file_video)
-                <button class="btn-action" onclick="previewVideo({{ $production->id }})" title="Preview">
+                <button class="btn-action btn-preview" onclick="previewVideo({{ $production->id }})" title="Preview">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <a href="{{ route('production.download', $production->id) }}" class="btn-action" title="Download">
+                <a href="{{ route('production.download', $production->id) }}" class="btn-action btn-download" title="Download">
                   <i class="fa-solid fa-download"></i>
                 </a>
-                <button type="button" class="btn-action btn-revision" onclick="openRevisionModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Revision">
-                  <i class="fa-solid fa-rotate-left"></i>
-                </button>
+                
+                {{-- Action: Approve (Only if not already approved) --}}
+                @if($production->status !== 'approved')
+                  <button type="button" class="btn-action btn-approve" onclick="openApproveModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Approve" style="color: var(--emerald);">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                @endif
+
+                {{-- Action: Revision (Only if not already revision) --}}
+                @if($production->status !== 'revision')
+                  <button type="button" class="btn-action btn-revision" onclick="openRevisionModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Revision" style="color: var(--amber);">
+                    <i class="fa-solid fa-rotate-left"></i>
+                  </button>
+                @endif
               @endif
             </div>
           </td>
@@ -1034,6 +1043,42 @@
   </div>
 </div>
 
+<!-- Approve Confirmation Modal -->
+<div class="overlay" id="approveOverlay" onclick="closeOnOverlay(event, 'approveOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-check"></i> Approval</div>
+        <div class="modal-title">Approve Production</div>
+        <div class="modal-subtitle">Setujui hasil produksi video ini</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('approveOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="text-align:center; padding: 32px;">
+      <div style="font-size: 48px; color: #10b981; margin-bottom: 16px;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <p style="font-size: 16px; color: var(--text-700); margin: 0 0 8px 0; font-weight: 500;" id="approveProductionTitle">Production Title</p>
+      <p style="font-size: 14px; color: var(--text-500); margin: 0;">Apakah Anda yakin ingin menyetujui production ini?</p>
+      <p style="font-size: 12px; color: var(--text-400); margin-top: 8px;">Status brief akan berubah menjadi "Ready to Publish"</p>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left"></div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('approveOverlay')">Batal</button>
+        <form method="POST" action="" id="approveForm" style="display:inline;">
+          @csrf
+          <button class="btn btn-primary" type="submit" style="background: #10b981; border-color: #10b981; color: #fff;">
+            <i class="fa-solid fa-check"></i> Setujui Production
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1197,6 +1242,22 @@ function openRevisionModal(productionId, productionTitle) {
   
   // Open modal
   document.getElementById('revisionOverlay').classList.add('open');
+}
+
+function openApproveModal(productionId, productionTitle) {
+  const form = document.getElementById('approveForm');
+  const titleEl = document.getElementById('approveProductionTitle');
+  
+  // Set form action
+  form.action = `/admin/production/${productionId}/approve`;
+  
+  // Set title
+  if (titleEl) {
+    titleEl.textContent = productionTitle;
+  }
+  
+  // Open modal
+  document.getElementById('approveOverlay').classList.add('open');
 }
 
 function previewVideo(productionId) {

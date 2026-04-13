@@ -13,26 +13,32 @@ use Illuminate\Support\Facades\Log;
 class PublicBriefController extends Controller
 {
     /**
-     * Show brief details via share token with tab navigation
+     * Show brief details via share token (no login required)
+     * SESUAI REQUIREMENT: BISA DIAKSES TANPA LOGIN, SELALU MENAMPILKAN DATA ADMIN PEMBUAT
      */
-    public function showBrief($token, Request $request)
+    public function showByToken($token)
     {
-        $brief = ContentBrief::with(['tasks', 'brand', 'user', 'productions'])
-            ->where('share_token', $token)
+        // 1. Cari brief berdasarkan token
+        $brief = ContentBrief::with(['user', 'tasks', 'brand'])
+            ->where('token', $token)
             ->first();
 
+        // 2. Jika tidak ada: abort(404)
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');
         }
 
-        // Get active tab (default: brief)
-        $activeTab = $request->query('tab', 'brief');
+        // 3. Ambil admin pembuat (relasi user dari brief)
+        $admin = $brief->user;
 
-        // Get success/error message if exists
-        $success = $request->session()->get('success');
-        $error = $request->session()->get('error');
+        // 4. Ambil production (relasi productions dari brief)
+        $productions = $brief->productions()->orderBy('created_at', 'desc')->get();
 
-        return view('public.brief', compact('brief', 'activeTab', 'success', 'error'));
+        // Default tab untuk view
+        $activeTab = request()->query('tab', 'brief');
+
+        // 5. Return ke view dengan data lengkap
+        return view('public.brief', compact('brief', 'admin', 'productions', 'activeTab'));
     }
 
     /**
@@ -40,7 +46,7 @@ class PublicBriefController extends Controller
      */
     public function storeProduction($token, Request $request)
     {
-        $brief = ContentBrief::with('tasks')->where('share_token', $token)->first();
+        $brief = ContentBrief::with('tasks')->where('token', $token)->first();
 
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');
@@ -48,43 +54,86 @@ class PublicBriefController extends Controller
 
         // Validate request
         $validated = $request->validate([
-            'task_id' => 'required|exists:tasks,id',
-            'video_file' => 'required|file|mimes:mp4,jpg,png|max:500000', // 500MB max
-            'caption' => 'nullable|string|max:2000',
+            'task_id' => 'required|string', // Format: task_{id} atau brief_{id}
+            'video_file' => 'required|file|mimes:mp4,mov,avi,mkv,m4v,wmv,flv,mpeg,mpg,mpe,3gp,3g2,ogv,ts,m2ts,asf,f4v|max:500000', // 500MB max
+            'caption' => 'required|string|max:2000',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Validate that the task belongs to this brief
-        $taskExists = $brief->tasks->where('id', $validated['task_id'])->first();
-        if (!$taskExists) {
+        // Parse task_id
+        $taskId = null;
+        $contentBriefId = $brief->id;
+
+        if (str_starts_with($validated['task_id'], 'task_')) {
+            $taskId = str_replace('task_', '', $validated['task_id']);
+            // Validate that the task belongs to this brief
+            $taskExists = $brief->tasks->where('id', $taskId)->first();
+            if (!$taskExists) {
+                return redirect()->route('brief.public', ['token' => $token, 'tab' => 'upload'])
+                    ->with('error', 'Task tidak valid untuk brief ini.');
+            }
+        } elseif (str_starts_with($validated['task_id'], 'brief_')) {
+            $parsedBriefId = str_replace('brief_', '', $validated['task_id']);
+            if ($parsedBriefId != $brief->id) {
+                return redirect()->route('brief.public', ['token' => $token, 'tab' => 'upload'])
+                    ->with('error', 'Brief tidak valid.');
+            }
+            $taskId = null; // No specific task, it's for the whole brief
+        } else {
             return redirect()->route('brief.public', ['token' => $token, 'tab' => 'upload'])
-                ->with('error', 'Task tidak valid untuk brief ini.');
+                ->with('error', 'Pilihan task tidak valid.');
         }
 
         try {
             // Handle file upload
             $file = $request->file('video_file');
             $fileName = time() . '_' . $brief->id . '_' . $file->getClientOriginalName();
+            
+            // Simpan ke storage/app/public/productions (agar bisa diakses via storage link)
             $filePath = $file->storeAs('productions', $fileName, 'public');
 
             // Create production record
             $production = Production::create([
                 'brief_id' => $brief->id,
-                'task_id' => $validated['task_id'],
+                'task_id' => $taskId,
                 'content_task_id' => null, // Not used anymore
                 'judul_konten' => $brief->title,
                 'versi_video' => 'v1.0',
                 'durasi_final' => $this->getVideoDuration($file),
-                'catatan_produksi' => $validated['caption'] ? "Caption: " . $validated['caption'] . "\n\nNotes: " . ($validated['notes'] ?? '-') : ($validated['notes'] ?? '-'),
+                'catatan_produksi' => $validated['caption'] . ($validated['notes'] ? "\n\nNotes: " . $validated['notes'] : ''),
                 'file_video' => $filePath,
                 'status' => 'pending',
                 'user_id' => $brief->user_id,
             ]);
 
-            Log::info('Production uploaded by creator', [
+            // Update status brief
+            $brief->update(['status' => 'Under Review']);
+
+            // Sync ke ContentTask agar muncul di notifikasi Approval & Badge Admin
+            $contentTask = ContentTask::where('user_id', $brief->user_id)
+                ->where('judul_konten', $brief->title)
+                ->where('brand_id', $brief->brand_id)
+                ->first();
+
+            if (!$contentTask) {
+                $contentTask = ContentTask::create([
+                    'user_id' => $brief->user_id,
+                    'brand_id' => $brief->brand_id,
+                    'judul_konten' => $brief->title,
+                    'status' => 'under_review',
+                    'creator_id' => $brief->user_id, // Default ke admin pembuat
+                ]);
+            } else {
+                $contentTask->update(['status' => 'under_review']);
+            }
+
+            // Hubungkan production ke content_task
+            $production->update(['content_task_id' => $contentTask->id]);
+
+            Log::info('Production uploaded by creator and synced to ContentTask', [
                 'brief_id' => $brief->id,
                 'production_id' => $production->id,
-                'file' => $filePath,
+                'content_task_id' => $contentTask->id,
             ]);
 
             return redirect()->route('brief.public', ['token' => $token, 'tab' => 'upload'])
@@ -113,17 +162,17 @@ class PublicBriefController extends Controller
     }
 
     /**
-     * Show production page via UUID token
+     * Show production page via token
      */
     public function showProduction($token)
     {
-        $brief = ContentBrief::where('share_token', $token)->first();
+        $brief = ContentBrief::where('token', $token)->first();
 
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');
         }
 
-        $productions = Production::where('content_task_id', $brief->id)
+        $productions = Production::where('brief_id', $brief->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -131,11 +180,11 @@ class PublicBriefController extends Controller
     }
 
     /**
-     * Show all briefs for admin (via UUID token)
+     * Show all briefs for admin (via token)
      */
     public function showAllBriefs($token)
     {
-        $brief = ContentBrief::where('share_token', $token)->first();
+        $brief = ContentBrief::where('token', $token)->first();
 
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');
@@ -146,7 +195,7 @@ class PublicBriefController extends Controller
         $adminId = $brief->user_id;
 
         $allBriefs = ContentBrief::where('user_id', $adminId)
-            ->with('brand')
+            ->with(['brand', 'productions'])
             ->orderBy('created_at', 'desc')
             ->get();
 

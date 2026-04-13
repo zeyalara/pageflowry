@@ -656,7 +656,7 @@
                 <span>{{ optional($brief->brand)->name ?? 'Tidak ada brand' }}</span>
                 <span class="separator">·</span>
                 <i class="fas fa-user"></i>
-                <span>{{ optional($brief->user)->name ?? 'Admin' }}</span>
+                <span>{{ optional($admin)->name ?? 'Admin' }}</span>
             </div>
         </div>
 
@@ -715,6 +715,10 @@
                         <div class="info-value">
                             <i class="fab {{ $brief->platform === 'Instagram' ? 'fa-instagram' : ($brief->platform === 'TikTok' ? 'fa-tiktok' : 'fa-youtube') }}"></i> {{ $brief->platform }}
                         </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Deskripsi:</div>
+                        <div class="info-value">{{ $brief->description ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Format:</div>
@@ -845,19 +849,23 @@
                         <p>Kirim video hasil produksi Anda untuk direview oleh admin</p>
                     </div>
 
-                    <form id="uploadForm" action="{{ route('production.store.public', $brief->share_token) }}" method="POST" enctype="multipart/form-data">
+                    <form id="uploadForm" action="{{ route('production.store.public', $brief->token) }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <!-- Content Task Dropdown -->
                         <div class="form-group">
                             <label class="form-label">Pilih Content Task <span class="required">*</span></label>
                             <select name="task_id" class="form-control" required>
-                                <option value="">-- Pilih Task --</option>
-                                @forelse($brief->tasks as $task)
-                                    <option value="{{ $task->id }}">{{ $task->title ?? 'Task #' . $task->id }}</option>
-                                @empty
-                                    <option value="" disabled>Belum ada task tersedia</option>
-                                @endforelse
+                                @if($brief->tasks->count() > 0)
+                                    <option value="">-- Pilih Task --</option>
+                                    @foreach($brief->tasks as $task)
+                                        <option value="task_{{ $task->id }}">{{ $task->title ?? 'Task #' . $task->id }}</option>
+                                    @endforeach
+                                @endif
+                                {{-- Selalu sertakan brief utama sebagai pilihan --}}
+                                <option value="brief_{{ $brief->id }}" {{ $brief->tasks->count() == 0 ? 'selected' : '' }}>
+                                    [Brief] {{ $brief->title }}
+                                </option>
                             </select>
                             @error('task_id')
                                 <small style="color: var(--red);">{{ $message }}</small>
@@ -907,13 +915,13 @@
                 </div>
 
                 <!-- Existing Productions -->
-                @if($brief->productions && $brief->productions->count() > 0)
+                @if(isset($productions) && $productions->count() > 0)
                     <div class="productions-list">
                         <div class="productions-title">
                             <i class="fas fa-history" style="color: var(--primary);"></i>
                             Production Terkirim
                         </div>
-                        @foreach($brief->productions as $production)
+                        @foreach($productions as $production)
                             <div class="production-item">
                                 <div class="production-header">
                                     <div class="production-title">{{ $production->judul_konten ?? 'Production #' . $production->id }}</div>
@@ -937,7 +945,6 @@
         <!-- Footer -->
         <div class="footer">
             <p>© {{ date('Y') }} PageFlowry - Sistem Manajemen Konten</p>
-            <p><a href="{{ route('public.all-briefs', $brief->share_token) }}">Lihat Semua Brief</a></p>
         </div>
     </div>
 

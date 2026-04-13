@@ -379,7 +379,7 @@
             @if($allBriefs->count() > 0)
                 <div class="briefs-grid">
                     @foreach($allBriefs as $brief)
-                        <a href="{{ route('public.brief', $brief->share_token) }}" class="brief-card" style="text-decoration: none; color: inherit;">
+                        <a href="{{ route('brief.public', $brief->token) }}" class="brief-card" style="text-decoration: none; color: inherit;">
                             <div class="brief-header">
                                 <div class="brief-title">{{ $brief->title }}</div>
                                 <div class="brief-status {{ $brief->status }}">
@@ -456,7 +456,6 @@
         <!-- Footer -->
         <div class="footer">
             <p>© {{ date('Y') }} PageFlowry - Sistem Manajemen Konten</p>
-            <p><a href="{{ route('public.production', $allBriefs->first()->share_token ?? '') }}">Lihat Production</a></p>
         </div>
     </div>
 </body>

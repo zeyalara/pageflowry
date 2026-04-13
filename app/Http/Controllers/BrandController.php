@@ -93,7 +93,7 @@ class BrandController extends Controller
             'status.required' => 'Status harus diisi',
         ]);
 
-        Brand::create([
+        $brand = Brand::create([
             'name' => $request->name,
             'pic' => $request->pic,
             'contact' => $request->contact,
@@ -103,6 +103,14 @@ class BrandController extends Controller
             'status' => $request->status,
             'user_id' => Auth::id(),
         ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Brand berhasil ditambahkan!',
+                'brand' => $brand
+            ]);
+        }
 
         return redirect()->route('brands.index')->with('success', 'Brand berhasil ditambahkan!');
     }
@@ -133,6 +141,14 @@ class BrandController extends Controller
             'tone' => $request->tone_voice, // Map tone_voice to tone field
             'status' => $request->status,
         ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Brand berhasil diperbarui!',
+                'brand' => $brand
+            ]);
+        }
         
         return redirect()->route('brands.index')->with('success', 'Brand berhasil diperbarui!');
     }
@@ -144,6 +160,13 @@ class BrandController extends Controller
     {
         $brand = Brand::where('user_id', Auth::id())->findOrFail($id);
         $brand->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Brand berhasil dihapus!'
+            ]);
+        }
         
         return redirect()->route('brands.index')->with('success', 'Brand berhasil dihapus!');
     }

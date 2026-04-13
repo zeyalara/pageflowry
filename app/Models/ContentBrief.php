@@ -12,7 +12,7 @@ class ContentBrief extends Model
 {
     protected $fillable = [
         'user_id',
-        'share_token',              // Token untuk berbagi link
+        'token',                    // Token untuk berbagi link (public)
         'share_token_expires_at',   // Expiration untuk token
         'public_token',             // UUID token untuk akses public (legacy)
         // Informasi Dasar - Step 2
@@ -56,6 +56,32 @@ class ContentBrief extends Model
         'production_deadline' => 'date',
         'publish_deadline' => 'date',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($brief) {
+            // Generate unique token if not set - SESUAI REQUIREMENT
+            if (empty($brief->token)) {
+                do {
+                    $token = Str::random(40);
+                } while (static::where('token', $token)->exists());
+                $brief->token = $token;
+            }
+            
+            // Set user_id to currently authenticated user if not set
+            if (empty($brief->user_id) && auth()->check()) {
+                $brief->user_id = auth()->id();
+            }
+            
+            // Sync creator_id with user_id for consistency
+            if (empty($brief->creator_id) && !empty($brief->user_id)) {
+                $brief->creator_id = $brief->user_id;
+            }
+        });
+    }
 
     public function brand(): BelongsTo
     {
@@ -132,12 +158,12 @@ class ContentBrief extends Model
     }
 
     /**
-     * URL lengkap brief publik menggunakan UUID token (untuk email) - SESUAI REQUIREMENT.
+     * URL lengkap brief publik menggunakan random token (untuk email) - SESUAI REQUIREMENT.
      */
     public function publicViewUrl(): string
     {
         $baseUrl = config('app.url');
-        $token = $this->share_token; // Gunakan kolom 'share_token' sesuai requirement
+        $token = $this->token; // Gunakan kolom 'token' sesuai requirement
         return rtrim($baseUrl, '/') . '/brief/' . $token;
     }
 
@@ -162,13 +188,13 @@ class ContentBrief extends Model
     }
 
     /**
-     * Generate unique share token for the brief
+     * Generate unique share token for the brief (40 chars random string)
      */
     public static function generateShareToken(): string
     {
         do {
-            $token = Str::random(32); // Generate 32 character random string
-        } while (self::where('share_token', $token)->exists());
+            $token = Str::random(40); // Generate 40 character random string
+        } while (self::where('token', $token)->exists());
         
         return $token;
     }

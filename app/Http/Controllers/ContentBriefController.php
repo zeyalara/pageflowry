@@ -334,10 +334,8 @@ class ContentBriefController extends Controller
                 'status' => 'In Production', // Default status
             ]);
 
-            // Generate UUID token for public access - SESUAI REQUIREMENT
-            $token = \Illuminate\Support\Str::uuid();
-            $contentBrief->share_token = $token;
-            $contentBrief->save();
+            // Token generated automatically in ContentBrief::booted()
+            $token = $contentBrief->token;
 
             $emailSent = false;
             $emailStatus = '';
@@ -537,41 +535,11 @@ class ContentBriefController extends Controller
 
     /**
      * Show brief by public token (no authentication required)
+     * Redirect to PublicBriefController
      */
     public function showByToken($token)
     {
-        try {
-            Log::info('Accessing brief by share_token', ['share_token' => $token]);
-            
-            // Find brief by share_token (UUID) - SESUAI REQUIREMENT
-            $brief = ContentBrief::where('share_token', $token)->first();
-
-            if (!$brief) {
-                Log::warning('Brief not found by share_token', ['share_token' => $token]);
-                abort(404, 'Brief tidak ditemukan atau link tidak valid.');
-            }
-
-            Log::info('Brief found', ['brief_id' => $brief->id, 'title' => $brief->title]);
-
-            // Load relasi user (admin pembuat brief) dan data terkait
-            $brief->load(['brand', 'user', 'productions' => function($query) {
-                $query->orderBy('created_at', 'desc');
-            }]);
-
-            Log::info('Brief loaded with relations', ['relations_loaded' => true]);
-
-            return view('public.brief', compact('brief'));
-
-        } catch (\Exception $e) {
-            Log::error('Error accessing brief by share_token', [
-                'share_token' => $token,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            abort(500, 'Terjadi kesalahan saat memuat brief. Silakan coba lagi nanti.');
-        }
+        return redirect()->route('brief.public', ['token' => $token]);
     }
 
     /**

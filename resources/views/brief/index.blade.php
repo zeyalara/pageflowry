@@ -12,103 +12,294 @@
 .pg-sub{font-size:13px;color:var(--text-400)}
 
 /* ─────────────────────────────────────────
-   STAT CARDS
+   MODERN STAT CARDS (Glassmorphism)
 ───────────────────────────────────────── */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.sc{
-  background:var(--white);border-radius:var(--r);border:1px solid var(--border);
-  box-shadow:var(--s1);padding:18px 16px;cursor:default;transition:var(--t);
-  animation:fadeUp .4s ease both;animation-delay:calc(var(--i,0)*55ms);
-  position:relative;overflow:hidden;
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
 }
-.sc:hover{transform:translateY(-3px);box-shadow:var(--s2);border-color:var(--blue-200)}
-.sc::after{content:'';position:absolute;bottom:-14px;right:-14px;width:60px;height:60px;border-radius:50%;opacity:.07;transition:var(--t)}
-.sc:hover::after{opacity:.16}
-.sc-b {border-top:2.5px solid var(--blue)}.sc-b::after{background:var(--blue)}
-.sc-o {border-top:2.5px solid var(--orange)}.sc-o::after{background:var(--orange)}
-.sc-v {border-top:2.5px solid var(--violet)}.sc-v::after{background:var(--violet)}
-.sc-r {border-top:2.5px solid var(--rose)}.sc-r::after{background:var(--rose)}
-.sc-g {border-top:2.5px solid var(--emerald)}.sc-g::after{background:var(--emerald)}
-.sc-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:12px}
-.sc-b .sc-ic{background:rgba(88,151,254,.1);color:var(--blue)}
-.sc-o .sc-ic{background:rgba(255,120,73,.1);color:var(--orange)}
-.sc-v .sc-ic{background:rgba(139,92,246,.1);color:var(--violet)}
-.sc-r .sc-ic{background:rgba(244,63,94,.1);color:var(--rose)}
-.sc-g .sc-ic{background:rgba(16,185,129,.1);color:var(--emerald)}
-.sc-num{font-size:26px;font-weight:800;color:var(--text-900);line-height:1;margin-bottom:4px;letter-spacing:-.4px}
-.sc-label{font-size:12px;font-weight:500;color:var(--text-400)}
-.sc-sub{font-size:11px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:3px}
-.s-up{color:var(--emerald)}.s-w{color:var(--amber)}.s-dn{color:var(--rose)}
+.sc {
+  position: relative;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: default;
+  overflow: hidden;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  animation: fadeUp 0.6s ease both;
+  animation-delay: calc(var(--i, 0) * 0.1s);
+}
+.sc:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+.sc::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.sc:hover::after {
+  opacity: 1;
+}
 
-/* ─────────────────────────────────────────
-   TOOLBAR
-───────────────────────────────────────── */
-.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;animation:fadeUp .4s .1s ease both}
-.srch-wrap{flex:1;max-width:320px;position:relative}
-.srch-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-400);font-size:13px;pointer-events:none}
-.srch{
-  width:100%;height:40px;padding:0 14px 0 38px;
-  border:1.5px solid var(--border);border-radius:var(--r-sm);
-  background:var(--white);font-family:'DM Sans',sans-serif;
-  font-size:13.5px;color:var(--text-900);transition:var(--t);outline:none;
-}
-.srch::placeholder{color:var(--text-300)}
-.srch:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(88,151,254,.12)}
-.fsel{
-  height:40px;padding:0 32px 0 14px;border:1.5px solid var(--border);
-  border-radius:var(--r-sm);background:var(--white);
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
-  color:var(--text-500);cursor:pointer;outline:none;transition:var(--t);
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238fa3c4'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;
-}
-.fsel:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(88,151,254,.12)}
-.sp{flex:1}
-.btn{
-  display:inline-flex;align-items:center;gap:7px;padding:0 18px;height:40px;
-  border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;
-  font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);
-  border:none;outline:none;white-space:nowrap;
-}
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-600));color:#fff;box-shadow:0 3px 12px rgba(88,151,254,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,151,254,.4)}
-.btn-primary:active{transform:scale(.97)}
-.btn-ghost{background:var(--white);color:var(--text-500);border:1.5px solid var(--border)}
-.btn-ghost:hover{background:var(--blue-50);color:var(--blue);border-color:var(--blue-200)}
-.btn-danger{background:rgba(244,63,94,.08);color:var(--rose);border:1.5px solid rgba(244,63,94,.18)}
-.btn-danger:hover{background:rgba(244,63,94,.14)}
-.btn-sm{height:34px;padding:0 14px;font-size:12.5px}
-
-/* ─────────────────────────────────────────
-   TABLE CARD
-───────────────────────────────────────── */
-.tcard{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--s1);overflow:hidden;animation:fadeUp .45s .15s ease both;display:flex;flex-direction:column;min-height:600px}
-.tcard-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--border-light)}
-.tch-l{display:flex;align-items:center;gap:10px}
-.tch-title{font-size:14px;font-weight:700;color:var(--text-700)}
-.tch-cnt{font-size:11.5px;font-weight:700;background:var(--blue-50);color:var(--blue);padding:2px 9px;border-radius:99px}
-.tcard-body{
-  flex:1;
-  overflow-y:auto;
-  min-height:0;
-  max-height: calc(100vh - 300px);
-  overscroll-behavior: contain;
-}
-.ktable{width:100%;border-collapse:collapse}
-.ktable thead th{
-  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;
-  color:var(--text-300);padding:12px 16px;text-align:left;
-  background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;
-  position: sticky;
-  top: 0;
+.sc-icon-box {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+  transition: all 0.4s ease;
+  position: relative;
   z-index: 2;
 }
-.ktable tbody tr{border-bottom:1px solid var(--border-light);transition:var(--t);cursor:pointer}
-.ktable tbody tr:last-child{border-bottom:none}
-.ktable tbody tr:hover{background:var(--blue-50)}
-.ktable tbody tr:hover .row-acts{opacity:1}
-.ktable tbody td{padding:13px 16px;font-size:13px;color:var(--text-700);vertical-align:middle}
+.sc:hover .sc-icon-box {
+  transform: rotate(10deg) scale(1.1);
+}
+
+.sc-num {
+  font-size: 36px;
+  font-weight: 850;
+  color: var(--text-900);
+  line-height: 1;
+  margin-bottom: 6px;
+  letter-spacing: -1.5px;
+  position: relative;
+  z-index: 2;
+}
+.sc-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-600);
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 2;
+}
+.sc-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-400);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  z-index: 2;
+}
+.sc-sub i { font-size: 10px; }
+
+/* Color Themes */
+.sc-b { --accent: #3b82f6; --bg-soft: rgba(59, 130, 246, 0.1); }
+.sc-o { --accent: #f59e0b; --bg-soft: rgba(245, 158, 11, 0.1); }
+.sc-v { --accent: #8b5cf6; --bg-soft: rgba(139, 92, 246, 0.1); }
+.sc-r { --accent: #f43f5e; --bg-soft: rgba(244, 63, 94, 0.1); }
+.sc-g { --accent: #10b981; --bg-soft: rgba(16, 185, 129, 0.1); }
+
+.sc .sc-icon-box {
+  background: var(--bg-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+}
+.sc:hover .sc-icon-box {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 16px -4px var(--bg-soft);
+}
+
+/* Abstract Shape Decorations */
+.sc-shape {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  width: 100px;
+  height: 100px;
+  background: var(--accent);
+  filter: blur(40px);
+  opacity: 0.1;
+  border-radius: 50%;
+  transition: all 0.5s ease;
+}
+.sc:hover .sc-shape {
+  transform: scale(1.5);
+  opacity: 0.2;
+}
+
+/* ═══════════════════════════════════════
+   TOOLBAR (search + filter + add)
+═══════════════════════════════════════ */
+.toolbar {
+  display: flex; align-items: center; gap: 12px;
+  animation: fadeUp .45s .1s ease both;
+}
+.search-wrap {
+  flex: 1; max-width: 380px;
+  position: relative;
+}
+.search-wrap i {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: var(--text-400); font-size: 13.5px; pointer-events: none;
+}
+.search-input {
+  width: 100%; height: 40px;
+  padding: 0 14px 0 38px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; color: var(--text-900);
+  transition: var(--t); outline: none;
+}
+.search-input::placeholder { color: var(--text-300); }
+.search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,151,254,.12); }
+
+.filter-select {
+  height: 40px; padding: 0 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--text-500);
+  cursor: pointer; outline: none; transition: var(--t);
+  appearance: none; padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238fa3c4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.filter-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,151,254,.12); }
+
+.toolbar-spacer { flex: 1; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 0 18px; height: 40px; border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 600;
+  cursor: pointer; transition: var(--t); border: none; outline: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue), var(--blue-600));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(88,151,254,.35);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(88,151,254,.4); }
+.btn-primary:active { transform: scale(.97); }
+
+.btn-ghost {
+  background: var(--white); color: var(--text-500);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { background: var(--blue-50); color: var(--blue); border-color: var(--blue-200); }
+
+.btn-danger {
+  background: rgba(244,63,94,.08); color: var(--rose);
+  border: 1.5px solid rgba(244,63,94,.18);
+}
+.btn-danger:hover { background: rgba(244,63,94,.15); }
+
+/* ═══════════════════════════════════════
+   TABLE CARD
+═══════════════════════════════════════ */
+.table-card {
+  background: var(--white); border-radius: var(--r);
+  border: 1px solid var(--border); box-shadow: var(--s1);
+  overflow: visible;
+  animation: fadeUp .45s .15s ease both;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.tch-left { display: flex; align-items: center; gap: 10px; }
+.tch-title { font-size: 14px; font-weight: 700; color: var(--text-700); letter-spacing: -.1px; }
+.tch-count {
+  font-size: 11.5px; font-weight: 700;
+  background: var(--blue-50); color: var(--blue);
+  padding: 2px 9px; border-radius: 99px;
+}
+.tch-right { display: flex; align-items: center; gap: 8px; }
+
+/* TABLE WRAPPER - Clean and functional */
+.table-wrapper { 
+  overflow-x: auto; 
+  border-radius: 0 0 var(--r) var(--r); 
+  background: var(--white); 
+  position: relative; 
+  border: 1px solid var(--border); 
+}
+
+/* Ensure the table takes full width and has a proper layout */
+.ktable { 
+  width: 100%; 
+  border-collapse: separate; 
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.ktable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding: 14px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-300);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border);
+  text-align: left;
+}
+
+.ktable tbody tr {
+  background: var(--white);
+  transition: var(--t);
+  cursor: pointer;
+}
+.ktable tbody tr:hover { background: var(--blue-50); }
+
+.ktable tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+  font-size: 13px;
+  color: var(--text-700);
+}
+
+/* Status Pill with Dot (Matching Brand Management) */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 11.5px; font-weight: 700;
+  white-space: nowrap; user-select: none;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+.sp-prod     { background: rgba(255,120,73,.1); color: #c2440f; } .sp-prod .status-dot { background: #c2440f; }
+.sp-review   { background: rgba(139,92,246,.1); color: #5b21b6; } .sp-review .status-dot { background: #5b21b6; }
+.sp-revision { background: rgba(244,63,94,.1);  color: #9f1239; } .sp-revision .status-dot { background: #9f1239; }
+.sp-ready    { background: rgba(245,158,11,.1); color: #92400e; } .sp-ready .status-dot { background: #92400e; }
+.sp-pub      { background: rgba(16,185,129,.1); color: #065f46; } .sp-pub .status-dot { background: #065f46; }
 
 .task-title{font-size:13.5px;font-weight:700;color:var(--text-900);margin-bottom:1px}
 .task-desc{font-size:11px;color:var(--text-400)}
@@ -168,21 +359,25 @@
 .wstep{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
 .wstep:not(:last-child)::after{
   content:'';position:absolute;top:17px;
-  left:calc(50% + 18px);right:calc(-50% + 18px);
+  left:calc(50% + 20px);right:calc(-50% + 20px);
   height:2px;background:var(--border);z-index:0;transition:background .3s;
 }
 .wstep.done:not(:last-child)::after{background:var(--emerald)}
 .wdot{
-  width:34px;height:34px;border-radius:50%;
-  border:2.5px solid var(--border);background:var(--white);
+  width:36px;height:36px;border-radius:12px;
+  border:2px solid var(--border);background:var(--white);
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--text-400);
-  transition:var(--t);z-index:1;position:relative;
+  font-size:13px;font-weight:800;color:var(--text-400);
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:1;position:relative;
 }
-.wstep.active .wdot{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(88,151,254,.14)}
+.wstep.active .wdot{
+  border-color:var(--blue);background:var(--blue);color:#fff;
+  transform: scale(1.1);
+  box-shadow:0 4px 12px rgba(88,151,254,.3);
+}
 .wstep.done .wdot{border-color:var(--emerald);background:var(--emerald);color:#fff}
-.wlbl{font-size:9.5px;font-weight:600;color:var(--text-300);margin-top:6px;text-align:center;line-height:1.3}
-.wstep.active .wlbl{color:var(--blue)}
+.wlbl{font-size:10px;font-weight:700;color:var(--text-300);margin-top:8px;text-align:center;line-height:1.2;transition:var(--t)}
+.wstep.active .wlbl{color:var(--blue);transform:translateY(2px)}
 .wstep.done .wlbl{color:var(--emerald)}
 
 .mhd{padding:20px 28px 0;display:flex;align-items:flex-start;justify-content:space-between}
@@ -231,18 +426,71 @@
 .unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--text-400);pointer-events:none}
 .char-cnt{font-size:11px;color:var(--text-300);text-align:right;margin-top:3px}
 .char-cnt.over{color:var(--rose)}
-.info-box{background:var(--blue-50);border:1px solid var(--blue-200);border-radius:var(--r-sm);padding:14px 16px}
-.info-box-ttl{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.info-box-txt{font-size:12px;color:var(--text-500);line-height:1.6}
+
+/* Info Box */
+.info-box{
+  background:rgba(88,151,254,.05);
+  border:1px solid rgba(88,151,254,.15);
+  border-radius:12px;
+  padding:14px 16px;
+}
+.info-box-ttl{
+  font-size:12px;
+  font-weight:700;
+  color:var(--blue);
+  margin-bottom:6px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.info-box-txt{
+  font-size:12px;
+  color:var(--text-500);
+  line-height:1.6;
+}
+
 .assign-box{border:1.5px dashed var(--border);border-radius:var(--r-sm);padding:20px;background:var(--bg);transition:var(--t)}
 .assign-box:focus-within{border-color:var(--blue);background:var(--blue-50)}
 .assign-hint{font-size:11.5px;color:var(--text-400);margin-top:10px;display:flex;align-items:flex-start;gap:6px;line-height:1.45}
 .assign-hint i{color:var(--blue);flex-shrink:0;margin-top:2px}
-.summary-card{background:var(--bg);border-radius:var(--r-sm);padding:16px;border:1px solid var(--border)}
-.summary-ttl{font-size:12.5px;font-weight:700;color:var(--text-700);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.sumrow{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--text-400);padding:5px 0;border-bottom:1px solid var(--border-light)}
-.sumrow:last-child{border-bottom:none}
-.sumrow b{color:var(--text-700);font-weight:600;text-align:right;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary-card{
+  background:linear-gradient(to bottom right, var(--bg), var(--white));
+  border-radius:16px;
+  padding:20px;
+  border:1px solid var(--border);
+  box-shadow: var(--s1);
+}
+.summary-ttl{
+  font-size:13px;
+  font-weight:800;
+  color:var(--text-900);
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-bottom:12px;
+  border-bottom: 1px solid var(--border-light);
+}
+.sumrow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:13px;
+  color:var(--text-500);
+  padding:8px 0;
+}
+.sumrow:not(:last-child){
+  border-bottom:1px dashed var(--border-light);
+}
+.sumrow b{
+  color:var(--blue);
+  font-weight:700;
+  text-align:right;
+  max-width:60%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 .mfoot{padding:0 28px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--border-light);padding-top:16px;margin-top:4px}
 .mfoot-info{font-size:12px;color:var(--text-400)}.mfoot-info b{color:var(--text-700)}
 .mfoot-btns{display:flex;gap:9px}
@@ -318,6 +566,7 @@
     <div class="pg-heading">Daftar Tugas Konten</div>
     <div class="pg-sub">Kelola seluruh brief dan tugas konten untuk semua brand</div>
   </div>
+  <div class="toolbar-spacer"></div>
   <button class="btn btn-primary" onclick="openCreate()">
     <i class="fa-solid fa-plus"></i> Buat Tugas Konten
   </button>
@@ -326,44 +575,49 @@
 <!-- STAT CARDS -->
 <div class="stats-row">
   <div class="sc sc-b" style="--i:0">
-    <div class="sc-ic"><i class="fa-solid fa-layer-group"></i></div>
+    <div class="sc-shape"></div>
+    <div class="sc-icon-box"><i class="fa-solid fa-layer-group"></i></div>
     <div class="sc-num" id="sc-total">0</div>
     <div class="sc-label">Total Tugas</div>
-    <div class="sc-sub s-up"><i class="fa-solid fa-check-circle"></i> Semua tugas</div>
+    <div class="sc-sub"><i class="fa-solid fa-circle-check"></i> Semua tugas</div>
   </div>
   <div class="sc sc-o" style="--i:1">
-    <div class="sc-ic"><i class="fa-solid fa-spinner"></i></div>
+    <div class="sc-shape"></div>
+    <div class="sc-icon-box"><i class="fa-solid fa-spinner"></i></div>
     <div class="sc-num" id="sc-prod">0</div>
     <div class="sc-label">In Production</div>
-    <div class="sc-sub s-w"><i class="fa-solid fa-circle"></i> Sedang berjalan</div>
+    <div class="sc-sub"><i class="fa-solid fa-clock"></i> Sedang berjalan</div>
   </div>
   <div class="sc sc-v" style="--i:2">
-    <div class="sc-ic"><i class="fa-solid fa-magnifying-glass"></i></div>
+    <div class="sc-shape"></div>
+    <div class="sc-icon-box"><i class="fa-solid fa-magnifying-glass"></i></div>
     <div class="sc-num" id="sc-review">0</div>
     <div class="sc-label">Under Review</div>
-    <div class="sc-sub s-up"><i class="fa-solid fa-check-circle"></i> Sedang direview</div>
+    <div class="sc-sub"><i class="fa-solid fa-eye"></i> Sedang direview</div>
   </div>
   <div class="sc sc-r" style="--i:3">
-    <div class="sc-ic"><i class="fa-solid fa-exclamation-triangle"></i></div>
+    <div class="sc-shape"></div>
+    <div class="sc-icon-box"><i class="fa-solid fa-exclamation-triangle"></i></div>
     <div class="sc-num" id="sc-revision">0</div>
     <div class="sc-label">Need Revision</div>
-    <div class="sc-sub s-dn"><i class="fa-solid fa-times-circle"></i> Perlu revisi</div>
+    <div class="sc-sub"><i class="fa-solid fa-rotate-left"></i> Perlu revisi</div>
   </div>
   <div class="sc sc-g" style="--i:4">
-    <div class="sc-ic"><i class="fa-solid fa-check-double"></i></div>
+    <div class="sc-shape"></div>
+    <div class="sc-icon-box"><i class="fa-solid fa-check-double"></i></div>
     <div class="sc-num" id="sc-pub">0</div>
     <div class="sc-label">Published</div>
-    <div class="sc-sub s-up"><i class="fa-solid fa-check-circle"></i> Sudah publish</div>
+    <div class="sc-sub"><i class="fa-solid fa-paper-plane"></i> Sudah publish</div>
   </div>
 </div>
 
 <!-- TOOLBAR -->
 <div class="toolbar">
-  <div class="srch-wrap">
+  <div class="search-wrap">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input class="srch" id="srchInput" type="text" placeholder="Cari judul atau brand..." oninput="applyFilter()"/>
+    <input class="search-input" id="srchInput" type="text" placeholder="Cari judul atau brand..." oninput="applyFilter()"/>
   </div>
-  <select class="fsel" id="fltStatus" onchange="applyFilter()">
+  <select class="filter-select" id="fltStatus" onchange="applyFilter()">
     <option value="">Semua Status</option>
     <option value="In Production">In Production</option>
     <option value="Under Review">Under Review</option>
@@ -371,13 +625,13 @@
     <option value="Ready to Publish">Ready to Publish</option>
     <option value="Published">Published</option>
   </select>
-  <select class="fsel" id="fltPlatform" onchange="applyFilter()">
+  <select class="filter-select" id="fltPlatform" onchange="applyFilter()">
     <option value="">Semua Platform</option>
     <option value="Instagram">Instagram</option>
     <option value="TikTok">TikTok</option>
     <option value="YouTube">YouTube</option>
   </select>
-  <select class="fsel" id="fltBrand" onchange="applyFilter()">
+  <select class="filter-select" id="fltBrand" onchange="applyFilter()">
     <option value="">Semua Brand</option>
     @if(isset($brands) && $brands->count() > 0)
       @foreach($brands as $brand)
@@ -385,30 +639,30 @@
       @endforeach
     @endif
   </select>
-  <div class="sp"></div>
-  <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost btn-sm" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:6px;">
+  <div class="toolbar-spacer"></div>
+  <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;">
     <i class="fa-solid fa-file-pdf"></i> Export PDF
   </a>
 </div>
 
 <!-- TABLE CARD -->
-<div class="tcard">
-  <div class="tcard-head">
-    <div class="tch-l">
+<div class="table-card">
+  <div class="table-card-head">
+    <div class="tch-left">
       <span class="tch-title">Daftar Tugas Konten</span>
-      <span class="tch-cnt" id="tblCount">{{ $contentBriefs->count() }} tugas</span>
+      <span class="tch-count" id="tblCount">{{ $contentBriefs->count() }} tugas</span>
     </div>
   </div>
-  <div class="tcard-body">
+  <div class="table-wrapper">
     <table class="ktable">
       <thead>
         <tr>
-          <th>Judul Konten</th>
-          <th>Brand</th>
-          <th>Platform</th>
-          <th>Deadline Produksi</th>
-          <th>Status</th>
-          <th>Aksi</th>
+          <th style="width:25%">Judul Konten</th>
+          <th style="width:15%">Brand</th>
+          <th style="width:15%">Platform</th>
+          <th style="width:15%">Deadline</th>
+          <th style="width:15%">Status</th>
+          <th style="width:15%; text-align:right">Aksi</th>
         </tr>
       </thead>
       <tbody id="tblBody">
@@ -437,12 +691,15 @@
               <td>
                 @php
                   $s = $brief->status;
-                  $c = $s === 'In Production' ? 'p-prod' : ($s === 'Under Review' ? 'p-review' : ($s === 'Need Revision' ? 'p-revision' : ($s === 'Published' ? 'p-pub' : 'p-ready')));
+                  $sp = $s === 'In Production' ? 'sp-prod' : ($s === 'Under Review' ? 'sp-review' : ($s === 'Need Revision' ? 'sp-revision' : ($s === 'Published' ? 'sp-pub' : 'sp-ready')));
                 @endphp
-                <span class="status {{ $c }}">{{ $s }}</span>
+                <span class="status-pill {{ $sp }}">
+                  <span class="status-dot"></span>
+                  {{ $s }}
+                </span>
               </td>
-              <td onclick="event.stopPropagation()">
-                <div class="actions">
+              <td onclick="event.stopPropagation()" style="text-align:right">
+                <div class="actions" style="justify-content:flex-end">
                   <button class="btn-action" onclick="openDetail({{ $brief->id }})" title="Detail"><i class="fa-solid fa-eye"></i></button>
                   <button class="btn-action" onclick="openEdit({{ $brief->id }})" title="Edit"><i class="fa-solid fa-edit"></i></button>
                   <button class="btn-action btn-delete" onclick="openDel({{ $brief->id }})" title="Delete"><i class="fa-solid fa-trash"></i></button>
@@ -478,72 +735,253 @@
   </div>
   <div class="mbody">
     <div class="mdiv"></div>
+    
+    <!-- STEP 1: DESKRIPSI -->
     <div class="spanel show" id="sp1">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Deskripsi Tugas</div><div class="shd-sub">Gambaran umum tugas konten</div></div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Deskripsi Tugas</div>
+          <div class="shd-sub">Berikan gambaran umum mengenai konten yang ingin dibuat agar tim produksi memahami konteksnya.</div>
+        </div>
+      </div>
       <div class="fg">
         <label class="flbl">Deskripsi Tugas Konten <span class="req">*</span></label>
-        <textarea class="ftxt" id="fDesc" rows="7" placeholder="Contoh: Membuat konten video edukasi..."></textarea>
+        <textarea class="ftxt" id="fDesc" rows="7" placeholder="Jelaskan apa tujuan utama konten ini, misalnya: 'Membuat video edukasi singkat mengenai fitur terbaru aplikasi untuk meningkatkan pemahaman pengguna...'"></textarea>
         <div class="char-cnt" id="ccDesc">0 / 500 karakter</div>
-        <div class="ferr" id="eDesc">Deskripsi tugas wajib diisi.</div>
+        <div class="ferr" id="eDesc">Deskripsi tugas wajib diisi untuk memberikan gambaran awal.</div>
+      </div>
+      <div class="info-box" style="margin-top: 8px;">
+        <div class="info-box-ttl"><i class="fa-solid fa-circle-info"></i> Tips</div>
+        <div class="info-box-txt">Deskripsi yang jelas membantu Creator memahami visi Anda dengan lebih baik sejak awal.</div>
       </div>
     </div>
-    <!-- STEP 2-7 are similar, will follow logic below -->
+
+    <!-- STEP 2: INFORMASI DASAR -->
     <div class="spanel" id="sp2">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Informasi Dasar</div><div class="shd-sub">Detail teknis konten</div></div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Informasi Dasar</div>
+          <div class="shd-sub">Detail teknis dan jadwal produksi konten.</div>
+        </div>
+      </div>
       <div class="fg">
         <label class="flbl">Judul Konten <span class="req">*</span></label>
-        <div class="ico-wrap"><i class="fa-solid fa-heading"></i><input class="finp" id="fTitle" type="text" placeholder="Judul..."/></div>
-        <div class="ferr" id="eTitle">Judul konten wajib diisi.</div>
+        <div class="ico-wrap">
+          <i class="fa-solid fa-heading"></i>
+          <input class="finp" id="fTitle" type="text" placeholder="Contoh: Tutorial Penggunaan Fitur Chat"/>
+        </div>
+        <div class="ferr" id="eTitle">Judul konten diperlukan untuk identifikasi tugas.</div>
       </div>
       <div class="fg3">
         <div class="fg">
           <label class="flbl">Brand <span class="req">*</span></label>
           <select class="fsel-f" id="fBrand">
             <option value="">Pilih brand...</option>
-            @foreach($brands as $brand) <option value="{{ $brand->id }}" data-name="{{ $brand->name }}">{{ $brand->name }}</option> @endforeach
+            @foreach($brands as $brand) 
+              <option value="{{ $brand->id }}" data-name="{{ $brand->name }}">{{ $brand->name }}</option> 
+            @endforeach
           </select>
-          <div class="ferr" id="eBrand">Brand wajib dipilih.</div>
+          <div class="ferr" id="eBrand">Pilih salah satu brand.</div>
         </div>
-        <div class="fg"><label class="flbl">Platform <span class="req">*</span></label><select class="fsel-f" id="fPlatform" onchange="updateFormatOptions()"><option value="">Pilih...</option><option>Instagram</option><option>TikTok</option><option>YouTube</option></select><div class="ferr" id="ePlatform">Platform wajib dipilih.</div></div>
-        <div class="fg"><label class="flbl">Format <span class="req">*</span></label><select class="fsel-f" id="fFormat"><option value="">Pilih...</option></select><div class="ferr" id="eFormat">Format wajib dipilih.</div></div>
-        <div class="fg"><label class="flbl">Durasi <span class="req">*</span></label><input class="finp" id="fDuration" type="text" placeholder="30s"/><div class="ferr" id="eDuration">Durasi wajib diisi.</div></div>
-        <div class="fg"><label class="flbl">Deadline Prod <span class="req">*</span></label><input class="finp" id="fDeadProd" type="date"/><div class="ferr" id="eDeadProd">Wajib diisi.</div></div>
-        <div class="fg"><label class="flbl">Deadline Pub <span class="req">*</span></label><input class="finp" id="fDeadPub" type="date"/><div class="ferr" id="eDeadPub">Wajib diisi.</div></div>
+        <div class="fg">
+          <label class="flbl">Platform <span class="req">*</span></label>
+          <select class="fsel-f" id="fPlatform" onchange="updateFormatOptions()">
+            <option value="">Pilih...</option>
+            <option>Instagram</option>
+            <option>TikTok</option>
+            <option>YouTube</option>
+          </select>
+          <div class="ferr" id="ePlatform">Tentukan platform tujuan.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Format <span class="req">*</span></label>
+          <select class="fsel-f" id="fFormat">
+            <option value="">Pilih...</option>
+          </select>
+          <div class="ferr" id="eFormat">Pilih format konten.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Durasi <span class="req">*</span></label>
+          <div class="ico-wrap">
+            <i class="fa-solid fa-stopwatch"></i>
+            <input class="finp" id="fDuration" type="text" placeholder="Misal: 30s atau 1m"/>
+          </div>
+          <div class="ferr" id="eDuration">Durasi target wajib diisi.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Deadline Prod <span class="req">*</span></label>
+          <input class="finp" id="fDeadProd" type="date"/>
+          <div class="ferr" id="eDeadProd">Batas waktu produksi.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Deadline Pub <span class="req">*</span></label>
+          <input class="finp" id="fDeadPub" type="date"/>
+          <div class="ferr" id="eDeadPub">Batas waktu tayang.</div>
+        </div>
       </div>
     </div>
+
+    <!-- STEP 3: STRATEGI -->
     <div class="spanel" id="sp3">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Strategi Konten</div><div class="shd-sub">Tujuan dan audiens</div></div></div>
-      <div class="fg"><label class="flbl">Objective <span class="req">*</span></label><select class="fsel-f" id="fObjective"><option value="">Pilih...</option><option>Brand Awareness</option><option>Product Education</option><option>Sales Conversion</option></select><div class="ferr" id="eObjective">Wajib dipilih.</div></div>
-      <div class="fg"><label class="flbl">Target Audience <span class="req">*</span></label><textarea class="ftxt" id="fAudience" rows="3"></textarea><div class="ferr" id="eAudience">Wajib diisi.</div></div>
-      <div class="fg"><label class="flbl">Key Message <span class="req">*</span></label><textarea class="ftxt" id="fKeyMsg" rows="3"></textarea><div class="ferr" id="eKeyMsg">Wajib diisi.</div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Strategi Konten</div>
+          <div class="shd-sub">Tentukan tujuan dan kepada siapa konten ini ditujukan.</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Objective <span class="req">*</span></label>
+        <select class="fsel-f" id="fObjective">
+          <option value="">Pilih tujuan utama...</option>
+          <option>Peningkatan Awareness</option>
+          <option>Penyampaian Informasi</option>
+          <option>Peningkatan Engagement</option>
+          <option>Pembangunan Kepercayaan</option>
+          <option>Mendorong Konversi</option>
+          <option>Menjaga Loyalitas Audiens</option>
+        </select>
+        <div class="ferr" id="eObjective">Tujuan konten wajib dipilih.</div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Target Audience <span class="req">*</span></label>
+        <textarea class="ftxt" id="fAudience" rows="3" placeholder="Siapa yang ingin Anda jangkau? Contoh: 'Gen Z, usia 18-25, tertarik dengan teknologi...'"></textarea>
+        <div class="ferr" id="eAudience">Jelaskan target audiens Anda.</div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Key Message <span class="req">*</span></label>
+        <textarea class="ftxt" id="fKeyMsg" rows="3" placeholder="Pesan utama yang harus diingat penonton. Contoh: 'Aplikasi ini adalah solusi termudah untuk manajemen keuangan harian.'"></textarea>
+        <div class="ferr" id="eKeyMsg">Pesan utama tidak boleh kosong.</div>
+      </div>
     </div>
+
+    <!-- STEP 4: KREATIF -->
     <div class="spanel" id="sp4">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Creative Direction</div><div class="shd-sub">Panduan kreatif</div></div></div>
-      <div class="fg"><label class="flbl">Hook <span class="req">*</span></label><input class="finp" id="fHook" type="text"/><div class="ferr" id="eHook">Wajib diisi.</div></div>
-      <div class="fg"><label class="flbl">Storyline <span class="req">*</span></label><textarea class="ftxt" id="fStory" rows="4"></textarea><div class="ferr" id="eStory">Wajib diisi.</div></div>
-      <div class="fg"><label class="flbl">Visual Direction <span class="req">*</span></label><textarea class="ftxt" id="fVisual" rows="3"></textarea><div class="ferr" id="eVisual">Wajib diisi.</div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Creative Direction</div>
+          <div class="shd-sub">Panduan visual dan alur cerita konten.</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Hook <span class="req">*</span></label>
+        <div class="ico-wrap">
+          <i class="fa-solid fa-magnet"></i>
+          <input class="finp" id="fHook" type="text" placeholder="Kalimat pembuka yang menarik perhatian dalam 3 detik pertama..."/>
+        </div>
+        <div class="ferr" id="eHook">Hook sangat penting untuk retensi penonton.</div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Storyline <span class="req">*</span></label>
+        <textarea class="ftxt" id="fStory" rows="4" placeholder="Garis besar alur cerita dari awal sampai akhir..."></textarea>
+        <div class="ferr" id="eStory">Alur cerita diperlukan sebagai panduan Creator.</div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Visual Direction <span class="req">*</span></label>
+        <textarea class="ftxt" id="fVisual" rows="3" placeholder="Gaya visual, warna dominan, atau referensi pengambilan gambar..."></textarea>
+        <div class="ferr" id="eVisual">Panduan visual membantu hasil akhir sesuai ekspektasi.</div>
+      </div>
     </div>
+
+    <!-- STEP 5: COPYWRITING -->
     <div class="spanel" id="sp5">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Copywriting</div><div class="shd-sub">Caption dan CTA</div></div></div>
-      <div class="fg"><label class="flbl">Caption <span class="req">*</span></label><textarea class="ftxt" id="fCaption" rows="5"></textarea><div class="char-cnt" id="ccCaption">0 / 2200</div><div class="ferr" id="eCaption">Wajib diisi.</div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Copywriting</div>
+          <div class="shd-sub">Teks pelengkap konten untuk meningkatkan interaksi.</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Caption <span class="req">*</span></label>
+        <textarea class="ftxt" id="fCaption" rows="5" placeholder="Tuliskan caption yang akan diposting bersama konten ini..."></textarea>
+        <div class="char-cnt" id="ccCaption">0 / 2200</div>
+        <div class="ferr" id="eCaption">Caption wajib diisi.</div>
+      </div>
       <div class="fg2">
-        <div class="fg"><label class="flbl">CTA <span class="req">*</span></label><input class="finp" id="fCta" type="text"/><div class="ferr" id="eCta">Wajib diisi.</div></div>
-        <div class="fg"><label class="flbl">Hashtag <span class="req">*</span></label><input class="finp" id="fHashtag" type="text"/><div class="ferr" id="eHashtag">Wajib diisi.</div></div>
+        <div class="fg">
+          <label class="flbl">Call to Action (CTA) <span class="req">*</span></label>
+          <div class="ico-wrap">
+            <i class="fa-solid fa-bullhorn"></i>
+            <input class="finp" id="fCta" type="text" placeholder="Misal: Klik link di bio!"/>
+          </div>
+          <div class="ferr" id="eCta">CTA mengarahkan tindakan audiens.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Hashtags <span class="req">*</span></label>
+          <div class="ico-wrap">
+            <i class="fa-solid fa-hashtag"></i>
+            <input class="finp" id="fHashtag" type="text" placeholder="#bisnis #edukasi #tips"/>
+          </div>
+          <div class="ferr" id="eHashtag">Gunakan hashtag relevan untuk jangkauan luas.</div>
+        </div>
       </div>
     </div>
+
+    <!-- STEP 6: KPI -->
     <div class="spanel" id="sp6">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">KPI Target</div><div class="shd-sub">Metrik keberhasilan</div></div></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">KPI Target</div>
+          <div class="shd-sub">Target performa yang ingin dicapai dari konten ini.</div>
+        </div>
+      </div>
       <div class="fg2">
-        <div class="fg"><label class="flbl">Target Views <span class="req">*</span></label><div class="unit-wrap"><input class="finp" id="fViews" type="number"/><span class="unit">views</span></div><div class="ferr" id="eViews">Wajib diisi.</div></div>
-        <div class="fg"><label class="flbl">Target Engagement <span class="req">*</span></label><div class="unit-wrap"><input class="finp" id="fEngage" type="number" step="0.1"/><span class="unit">%</span></div><div class="ferr" id="eEngage">Wajib diisi.</div></div>
+        <div class="fg">
+          <label class="flbl">Target Views <span class="req">*</span></label>
+          <div class="unit-wrap">
+            <i class="fa-solid fa-chart-line" style="position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-400); font-size: 13px; z-index: 1;"></i>
+            <input class="finp" id="fViews" type="number" style="padding-left: 38px;" placeholder="0"/>
+            <span class="unit">views</span>
+          </div>
+          <div class="ferr" id="eViews">Tentukan target penayangan.</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Target Engagement <span class="req">*</span></label>
+          <div class="unit-wrap">
+            <i class="fa-solid fa-heart" style="position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-400); font-size: 13px; z-index: 1;"></i>
+            <input class="finp" id="fEngage" type="number" step="0.1" style="padding-left: 38px;" placeholder="0.0"/>
+            <span class="unit">%</span>
+          </div>
+          <div class="ferr" id="eEngage">Tentukan target interaksi.</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 12px; background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.2);">
+        <div class="info-box-ttl" style="color: var(--violet);"><i class="fa-solid fa-bullseye"></i> Pengukuran</div>
+        <div class="info-box-txt">Target KPI membantu tim mengevaluasi efektivitas konten setelah dipublikasikan.</div>
       </div>
     </div>
+
+    <!-- STEP 7: ASSIGN -->
     <div class="spanel" id="sp7">
-      <div class="shd"><div class="shd-bar"></div><div><div class="shd-title">Assign Creator</div><div class="shd-sub">Tentukan PIC produksi</div></div></div>
-      <div class="assign-box">
-        <div class="fg"><label class="flbl">Email Creator <span class="hint-lbl">— Opsional</span></label><input class="finp" id="fCreator" type="email" placeholder="creator@email.com"/></div>
+      <div class="shd">
+        <div class="shd-bar"></div>
+        <div>
+          <div class="shd-title">Finalisasi & Assign</div>
+          <div class="shd-sub">Tinjau kembali ringkasan dan tentukan siapa yang akan mengerjakan tugas ini.</div>
+        </div>
       </div>
-      <div class="summary-card"><div class="summary-ttl"><i class="fa-solid fa-file-lines"></i> Ringkasan Brief</div><div id="wizSummary"></div></div>
+      <div class="assign-box">
+        <div class="fg">
+          <label class="flbl">Email Creator <span class="hint-lbl">— Opsional</span></label>
+          <div class="ico-wrap">
+            <i class="fa-solid fa-user-plus"></i>
+            <input class="finp" id="fCreator" type="email" placeholder="alamat-email@creator.com"/>
+          </div>
+          <div class="assign-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>Creator akan menerima email undangan untuk mengerjakan tugas ini jika alamat email didaftarkan.</div>
+          </div>
+        </div>
+      </div>
+      <div class="summary-card" style="margin-top: 16px;">
+        <div class="summary-ttl"><i class="fa-solid fa-clipboard-check"></i> Ringkasan Brief</div>
+        <div id="wizSummary"></div>
+      </div>
     </div>
   </div>
   <div class="mfoot">
@@ -587,8 +1025,8 @@ const PLAT_ICON = { Instagram:'fa-instagram', TikTok:'fa-tiktok', YouTube:'fa-yo
 const PLAT_CLS = { Instagram:'plat-ig', TikTok:'plat-tt', YouTube:'plat-yt' };
 const STATUS_CLS = { 'In Production':'p-prod','Under Review':'p-review','Need Revision':'p-revision','Published':'p-pub','Ready to Publish':'p-ready' };
 const STEP_NAMES = ['Deskripsi Tugas','Informasi Dasar','Strategi Konten','Creative Direction','Copywriting','KPI Target','Assign Creator'];
-const WF_STEPS = ['Brief Dibuat','In Production','Under Review','Need Revision','Ready to Publish','Published'];
-const STATUS_IDX = {'In Production':1,'Under Review':2,'Need Revision':3,'Ready to Publish':4,'Published':5};
+const WF_STEPS = ['Brief Dibuat', 'In Production', 'Under Review', 'Need Revision', 'Ready to Publish', 'Published'];
+const STATUS_IDX = { 'In Production': 1, 'Under Review': 2, 'Need Revision': 3, 'Ready to Publish': 4, 'Published': 5 };
 
 let db = {!! $contentBriefs->map(function($b){
   return [
@@ -619,10 +1057,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ── HELPERS ────────────────────────────── */
-const col = id => COLORS[(id-1)%COLORS.length];
+const col = id => COLORS[id % COLORS.length];
 const get = id => document.getElementById(id)?.value || '';
 const set = (id, v) => { if(document.getElementById(id)) document.getElementById(id).value = v || ''; };
 const fmtDate = d => d ? new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const pill = s => `<span class="status-pill ${STATUS_CLS[s] || 'sp-ready'}"><span class="status-dot"></span>${s}</span>`;
 
 /* ── CORE LOGIC ─────────────────────────── */
 function buildWizProg(){
@@ -645,26 +1084,28 @@ function renderTable(){
   const tbody = document.getElementById('tblBody');
   if(!tbody) return;
   if(filtered.length === 0){
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6"><div class="empty-ic"><i class="fa-solid fa-search"></i></div>Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-400)">Tidak ada data tugas konten</td></tr>';
+    document.getElementById('tblCount').textContent = '0 tugas';
     return;
   }
+  
   tbody.innerHTML = filtered.map(k => `
     <tr onclick="openDetail(${k.id})">
       <td><div class="task-title">${k.title}</div><div class="task-desc">${k.description?.substring(0,45)}...</div></td>
       <td><div class="brand-info"><div class="brand-name">${k.brand_name}</div></div></td>
       <td><div class="platform-info"><i class="fa-brands ${PLAT_ICON[k.platform]} ${PLAT_CLS[k.platform]}"></i><span>${k.platform}</span></div></td>
       <td>${fmtDate(k.deadProd)}</td>
-      <td><span class="status ${STATUS_CLS[k.status]}">${k.status}</span></td>
-      <td onclick="event.stopPropagation()">
-        <div class="actions">
-          <button class="btn-action" onclick="openDetail(${k.id})"><i class="fa-solid fa-eye"></i></button>
-          <button class="btn-action" onclick="openEdit(${k.id})"><i class="fa-solid fa-edit"></i></button>
-          <button class="btn-action btn-delete" onclick="openDel(${k.id})"><i class="fa-solid fa-trash"></i></button>
+      <td>${pill(k.status)}</td>
+      <td onclick="event.stopPropagation()" style="text-align:right">
+        <div class="actions" style="justify-content:flex-end">
+          <button class="btn-action" onclick="openDetail(${k.id})" title="Detail"><i class="fa-solid fa-eye"></i></button>
+          <button class="btn-action" onclick="openEdit(${k.id})" title="Edit"><i class="fa-solid fa-edit"></i></button>
+          <button class="btn-action btn-delete" onclick="openDel(${k.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>
     </tr>
   `).join('');
-  document.getElementById('tblCount').textContent = filtered.length + ' tugas';
+  document.getElementById('tblCount').textContent = `${filtered.length} tugas`;
 }
 
 function applyFilter(){
@@ -686,84 +1127,332 @@ function bgClose(e,id){ if(e.target.id===id) closeModal(id); }
 
 function openCreate(){ editId=null; curStep=1; resetForm(); updateWizUI(); openModal('ovWizard'); }
 function openEdit(id){
-  const k = db.find(x=>x.id===id); if(!k) return;
+  const k = db.find(x=>x.id == id); if(!k) return;
   editId=id; curStep=1; resetForm();
-  ['fDesc','fTitle','fBrand','fPlatform','fDuration','fDeadProd','fDeadPub','fObjective','fAudience','fKeyMsg','fHook','fStory','fVisual','fCaption','fCta','fHashtag','fViews','fEngage','fCreator'].forEach(f => set(f, k[f.replace('f','').toLowerCase()] || k[f]));
-  updateFormatOptions(); set('fFormat', k.format);
-  updateWizUI(); openModal('ovWizard');
+  
+  // Explicit mapping to ensure all fields are filled
+  set('fDesc', k.description);
+  set('fTitle', k.title);
+  set('fBrand', k.brand);
+  set('fPlatform', k.platform);
+  
+  // Update format options based on platform before setting the value
+  const platform = k.platform;
+  const formatSelect = document.getElementById('fFormat');
+  if (formatSelect) {
+    formatSelect.innerHTML = '<option value="">Pilih...</option>';
+    const opts = { 
+      Instagram: ['IG Feed', 'IG Reels', 'IG Story'], 
+      TikTok: ['Video Vertikal', 'Carousel'], 
+      YouTube: ['Video Panjang', 'Shorts'] 
+    };
+    if (opts[platform]) {
+      opts[platform].forEach(o => formatSelect.add(new Option(o, o)));
+    }
+    formatSelect.value = k.format || '';
+  }
+
+  set('fDuration', k.duration);
+  set('fDeadProd', k.deadProd);
+  set('fDeadPub', k.deadPub);
+  set('fObjective', k.objective);
+  set('fAudience', k.audience);
+  set('fKeyMsg', k.keyMsg);
+  set('fHook', k.hook);
+  set('fStory', k.story);
+  set('fVisual', k.visual);
+  set('fCaption', k.caption);
+  set('fCta', k.cta);
+  set('fHashtag', k.hashtag);
+  set('fViews', k.views);
+  set('fEngage', k.engage);
+  set('fCreator', k.creator);
+  
+  updateWizUI(); 
+  openModal('ovWizard');
 }
 
 function resetForm(){
-  document.querySelectorAll('.finp, .ftxt, .fsel-f').forEach(el => { el.value=''; el.classList.remove('err'); });
+  document.querySelectorAll('.finp, .ftxt, .fsel-f').forEach(el => { 
+    el.value=''; 
+    el.classList.remove('err'); 
+  });
   document.querySelectorAll('.ferr').forEach(el => el.classList.remove('show'));
 }
 
 /* ── WIZARD ─────────────────────────────── */
+function validateStep(s){
+  let ok = true;
+  const err = (id, show) => {
+    const el = document.getElementById('f'+id);
+    const msg = document.getElementById('e'+id);
+    if(el) el.classList.toggle('err', show);
+    if(msg) msg.classList.toggle('show', show);
+    if(show) ok = false;
+  };
+
+  if(s===1) err('Desc', !get('fDesc'));
+  if(s===2){
+    err('Title', !get('fTitle'));
+    err('Brand', !get('fBrand'));
+    err('Platform', !get('fPlatform'));
+    err('Format', !get('fFormat'));
+    err('Duration', !get('fDuration'));
+    err('DeadProd', !get('fDeadProd'));
+    err('DeadPub', !get('fDeadPub'));
+  }
+  if(s===3){
+    err('Objective', !get('fObjective'));
+    err('Audience', !get('fAudience'));
+    err('KeyMsg', !get('fKeyMsg'));
+  }
+  if(s===4){
+    err('Hook', !get('fHook'));
+    err('Story', !get('fStory'));
+    err('Visual', !get('fVisual'));
+  }
+  if(s===5){
+    err('Caption', !get('fCaption'));
+    err('Cta', !get('fCta'));
+    err('Hashtag', !get('fHashtag'));
+  }
+  if(s===6){
+    err('Views', !get('fViews'));
+    err('Engage', !get('fEngage'));
+  }
+  return ok;
+}
+
 function updateWizUI(){
   for(let i=1;i<=NSTEPS;i++){
-    document.getElementById('sp'+i).classList.toggle('show', i===curStep);
-    const ws = document.getElementById('ws'+i), wd = document.getElementById('wd'+i);
-    ws.classList.remove('active','done');
-    if(i<curStep){ ws.classList.add('done'); wd.innerHTML='<i class="fa-solid fa-check"></i>'; }
-    else if(i===curStep){ ws.classList.add('active'); wd.textContent=i; }
-    else wd.textContent=i;
+    const panel = document.getElementById('sp'+i);
+    if(panel) panel.classList.toggle('show', i===curStep);
+    
+    const ws = document.getElementById('ws'+i);
+    const wd = document.getElementById('wd'+i);
+    if(ws && wd){
+      ws.classList.remove('active','done');
+      if(i<curStep){ 
+        ws.classList.add('done'); 
+        wd.innerHTML='<i class="fa-solid fa-check"></i>'; 
+      }
+      else if(i===curStep){ 
+        ws.classList.add('active'); 
+        wd.textContent=i; 
+      }
+      else wd.textContent=i;
+    }
   }
+  
   document.getElementById('wizStepNum').textContent = curStep;
   document.getElementById('wizCurr').textContent = curStep;
   document.getElementById('wizStepName').textContent = STEP_NAMES[curStep-1];
   document.getElementById('btnPrev').style.display = curStep>1 ? '' : 'none';
-  document.getElementById('btnNext').innerHTML = curStep===NSTEPS ? '<i class="fa-solid fa-floppy-disk"></i> Simpan' : 'Selanjutnya <i class="fa-solid fa-arrow-right"></i>';
+  document.getElementById('btnNext').innerHTML = curStep===NSTEPS 
+    ? (editId ? '<i class="fa-solid fa-floppy-disk"></i> Update Brief' : '<i class="fa-solid fa-floppy-disk"></i> Simpan Brief') 
+    : 'Selanjutnya <i class="fa-solid fa-arrow-right"></i>';
+    
   if(curStep===NSTEPS) buildSummary();
 }
 
 function buildSummary(){
-  const s = [['Judul',get('fTitle')],['Brand',document.querySelector('#fBrand option:checked')?.text || '-'],['Platform',get('fPlatform')],['Deadline',fmtDate(get('fDeadProd'))]];
+  const s = [
+    ['Judul', get('fTitle')],
+    ['Brand', document.querySelector('#fBrand option:checked')?.text || '-'],
+    ['Platform', get('fPlatform')],
+    ['Deadline Prod', fmtDate(get('fDeadProd'))],
+    ['Deadline Pub', fmtDate(get('fDeadPub'))]
+  ];
   document.getElementById('wizSummary').innerHTML = s.map(([l,v])=>`<div class="sumrow"><span>${l}</span><b>${v}</b></div>`).join('');
 }
 
 function wizNext(){
-  if(curStep < NSTEPS){ curStep++; updateWizUI(); return; }
-  const btn = document.getElementById('btnNext'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner spin"></i>';
+  if(!validateStep(curStep)) return;
+  
+  if(curStep < NSTEPS){ 
+    curStep++; 
+    updateWizUI(); 
+    return; 
+  }
+  
+  const btn = document.getElementById('btnNext'); 
+  const originalHtml = btn.innerHTML;
+  btn.disabled=true; 
+  btn.innerHTML='<i class="fa-solid fa-spinner spin"></i> Menyimpan...';
+  
   const data = {
-    title:get('fTitle'), description:get('fDesc'), brand_id:get('fBrand'), platform:get('fPlatform'), content_format:get('fFormat'),
-    target_duration:get('fDuration'), production_deadline:get('fDeadProd'), publish_deadline:get('fDeadPub'),
-    objective:get('fObjective'), target_audience:get('fAudience'), key_message:get('fKeyMsg'),
-    hook:get('fHook'), storyline:get('fStory'), visual_direction:get('fVisual'),
-    caption:get('fCaption'), cta:get('fCta'), hashtags:get('fHashtag'),
-    target_views:get('fViews'), target_engagement:get('fEngage'), creator_email:get('fCreator')
+    title:get('fTitle'), 
+    description:get('fDesc'), 
+    brand_id:get('fBrand'), 
+    platform:get('fPlatform'), 
+    content_format:get('fFormat'),
+    target_duration:get('fDuration'), 
+    production_deadline:get('fDeadProd'), 
+    publish_deadline:get('fDeadPub'),
+    objective:get('fObjective'), 
+    target_audience:get('fAudience'), 
+    key_message:get('fKeyMsg'),
+    hook:get('fHook'), 
+    storyline:get('fStory'), 
+    visual_direction:get('fVisual'),
+    caption:get('fCaption'), 
+    cta:get('fCta'), 
+    hashtags:get('fHashtag'),
+    target_views:get('fViews'), 
+    target_engagement:get('fEngage'), 
+    creator_email:get('fCreator')
   };
-  fetch(editId ? `/content-briefs/${editId}` : '/content-briefs', {
-    method: editId ? 'PUT' : 'POST',
-    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept':'application/json' },
+  
+  const url = editId ? `/content-briefs/${editId}` : '/content-briefs';
+  const method = editId ? 'PUT' : 'POST';
+  
+  fetch(url, {
+    method: method,
+    headers: { 
+      'Content-Type':'application/json', 
+      'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+      'Accept':'application/json' 
+    },
     body: JSON.stringify(data)
-  }).then(r => r.json()).then(res => {
-    if(res.success) window.location.reload();
-    else { toast('e', res.message); btn.disabled=false; btn.textContent='Simpan'; }
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.success){
+      toast('s', res.message);
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      toast('e', res.message || 'Gagal menyimpan data');
+      btn.disabled=false; 
+      btn.innerHTML=originalHtml;
+      
+      if(res.errors){
+        Object.keys(res.errors).forEach(key => {
+          toast('e', res.errors[key][0]);
+        });
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Error saving brief:', err);
+    toast('e', 'Terjadi kesalahan sistem');
+    btn.disabled=false; 
+    btn.innerHTML=originalHtml;
   });
 }
 function wizPrev(){ if(curStep>1){ curStep--; updateWizUI(); } }
 
 /* ── DETAIL ─────────────────────────────── */
 function openDetail(id){
-  const k = db.find(x=>x.id===id); if(!k) return;
-  document.getElementById('detHero').innerHTML = `<div class="det-ic" style="background:${col(k.id)}"><i class="fa-brands ${PLAT_ICON[k.platform]}"></i></div><div><div class="det-title">${k.title}</div><div class="det-meta"><span class="df-tag">${k.brand_name}</span>${pill(k.status)}</div></div>`;
-  const idx = STATUS_IDX[k.status]||0;
-  document.getElementById('wfBar').innerHTML = WF_STEPS.map((s,i)=>`${i>0?'<div class="wf-arr"><i class="fa-solid fa-chevron-right"></i></div>':''}<div class="wf-step ${i<idx?'wf-done':i===idx?'wf-active':'wf-pending'}"><div class="wf-dot"><i class="fa-solid fa-circle"></i></div><div class="wf-lbl">${s}</div></div>`).join('');
-  document.getElementById('detTabs').innerHTML = ['Brief','Strategi','Kreatif'].map((t,i)=>`<div class="dtab ${i===0?'on':''}" onclick="switchTab(${i},this)">${t}</div>`).join('');
+  const k = db.find(x=>x.id == id); if(!k) return;
+  
+  const iconCls = PLAT_ICON[k.platform] ? `fa-brands ${PLAT_ICON[k.platform]}` : 'fa-solid fa-file-lines';
+  
+  // Update Hero section
+  document.getElementById('detHero').innerHTML = `
+    <div class="det-ic" style="background:${col(k.id)}">
+      <i class="${iconCls}"></i>
+    </div>
+    <div>
+      <div class="det-title">${k.title || 'Tanpa Judul'}</div>
+      <div class="det-meta">
+        <span class="df-tag">${k.brand_name || '-'}</span>
+        <span class="df-tag" style="background:var(--bg);color:var(--text-500)">${k.platform || '-'}</span>
+        ${pill(k.status)}
+      </div>
+    </div>
+  `;
+  
+  // Update Workflow Bar
+  const idx = STATUS_IDX[k.status] || 0;
+  document.getElementById('wfBar').innerHTML = WF_STEPS.map((s,i)=>`
+    ${i>0?'<div class="wf-arr"><i class="fa-solid fa-chevron-right"></i></div>':''}
+    <div class="wf-step ${i<idx?'wf-done':i===idx?'wf-active':'wf-pending'}">
+      <div class="wf-dot"><i class="fa-solid fa-circle"></i></div>
+      <div class="wf-lbl">${s}</div>
+    </div>
+  `).join('');
+  
+  // Update Tabs
+  document.getElementById('detTabs').innerHTML = ['Brief','Strategi','Kreatif','Copywriting','Target KPI'].map((t,i)=>`
+    <div class="dtab ${i===0?'on':''}" onclick="switchTab(${i},this)">${t}</div>
+  `).join('');
+  
+  // Update Panels
   document.getElementById('detPanels').innerHTML = [
-    `<div class="dpanel show"><div class="drow"><div class="df"><div class="df-lbl">Format</div><div class="df-val">${k.format}</div></div><div class="df"><div class="df-lbl">Deadline</div><div class="df-val">${fmtDate(k.deadProd)}</div></div><div class="df full"><div class="df-lbl">Deskripsi</div><div class="df-val dim">${k.description}</div></div></div></div>`,
-    `<div class="dpanel"><div class="df"><div class="df-lbl">Objective</div><div class="df-val">${k.objective}</div></div><div class="df"><div class="df-lbl">Audience</div><div class="df-val dim">${k.audience}</div></div></div>`,
-    `<div class="dpanel"><div class="df"><div class="df-lbl">Hook</div><div class="df-val italic">"${k.hook}"</div></div><div class="df"><div class="df-lbl">Story</div><div class="df-val dim">${k.story}</div></div></div>`
+    // Tab 1: Brief
+    `<div class="dpanel show">
+      <div class="drow">
+        <div class="df"><div class="df-lbl">Format</div><div class="df-val">${k.format || '-'}</div></div>
+        <div class="df"><div class="df-lbl">Durasi</div><div class="df-val">${k.duration || '-'}</div></div>
+        <div class="df"><div class="df-lbl">Deadline Prod</div><div class="df-val">${fmtDate(k.deadProd)}</div></div>
+        <div class="df"><div class="df-lbl">Deadline Pub</div><div class="df-val">${fmtDate(k.deadPub)}</div></div>
+        <div class="df full"><div class="df-lbl">Deskripsi</div><div class="df-val dim">${k.description || '-'}</div></div>
+        <div class="df full"><div class="df-lbl">Creator Email</div><div class="df-val accent">${k.creator || 'Belum diassign'}</div></div>
+      </div>
+    </div>`,
+    // Tab 2: Strategi
+    `<div class="dpanel">
+      <div class="df"><div class="df-lbl">Objective</div><div class="df-val">${k.objective || '-'}</div></div>
+      <div class="df"><div class="df-lbl">Target Audience</div><div class="df-val dim">${k.audience || '-'}</div></div>
+      <div class="df full"><div class="df-lbl">Key Message</div><div class="df-val dim">${k.keyMsg || '-'}</div></div>
+    </div>`,
+    // Tab 3: Kreatif
+    `<div class="dpanel">
+      <div class="df full"><div class="df-lbl">Hook</div><div class="df-val italic">"${k.hook || '-'}"</div></div>
+      <div class="df full"><div class="df-lbl">Storyline</div><div class="df-val dim">${k.story || '-'}</div></div>
+      <div class="df full"><div class="df-lbl">Visual Direction</div><div class="df-val dim">${k.visual || '-'}</div></div>
+    </div>`,
+    // Tab 4: Copywriting
+    `<div class="dpanel">
+      <div class="df full"><div class="df-lbl">Caption</div><div class="df-val dim" style="white-space:pre-wrap">${k.caption || '-'}</div></div>
+      <div class="df"><div class="df-lbl">CTA</div><div class="df-val">${k.cta || '-'}</div></div>
+      <div class="df"><div class="df-lbl">Hashtags</div><div class="df-val accent">${k.hashtag || '-'}</div></div>
+    </div>`,
+    // Tab 5: KPI
+    `<div class="dpanel">
+      <div class="drow">
+        <div class="df"><div class="df-lbl">Target Views</div><div class="df-val">${(k.views || 0).toLocaleString()} views</div></div>
+        <div class="df"><div class="df-lbl">Target Engagement</div><div class="df-val">${(k.engage || 0)}%</div></div>
+      </div>
+    </div>`
   ].join('');
-  document.getElementById('detEditBtn').onclick = () => { closeModal('ovDetail'); openEdit(id); };
+  
+  const editBtn = document.getElementById('detEditBtn');
+  if(editBtn) {
+    editBtn.onclick = () => { closeModal('ovDetail'); openEdit(id); };
+  }
   openModal('ovDetail');
 }
 function switchTab(i,el){ document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); document.querySelectorAll('.dpanel').forEach((p,idx)=>p.classList.toggle('show',i===idx)); }
 
 /* ── DELETE ─────────────────────────────── */
-function openDel(id){ const k=db.find(x=>x.id===id); delId=id; document.getElementById('delMsg').textContent=`Hapus "${k.title}"?`; openModal('ovDel'); }
+function openDel(id){ const k=db.find(x=>x.id == id); delId=id; document.getElementById('delMsg').textContent=`Hapus "${k.title}"?`; openModal('ovDel'); }
 document.getElementById('delConfirmBtn').onclick = () => {
-  fetch(`/content-briefs/${delId}`, { method:'DELETE', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'} }).then(()=>window.location.reload());
+  const btn = document.getElementById('delConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Menghapus...';
+  
+  fetch(`/content-briefs/${delId}`, { 
+    method:'DELETE', 
+    headers:{
+      'X-CSRF-TOKEN':'{{ csrf_token() }}',
+      'Accept':'application/json'
+    } 
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.success) window.location.reload();
+    else {
+      toast('e', res.message || 'Gagal menghapus brief');
+      btn.disabled = false;
+      btn.innerHTML = 'Ya, Hapus';
+    }
+  })
+  .catch(err => {
+    toast('e', 'Terjadi kesalahan koneksi');
+    btn.disabled = false;
+    btn.innerHTML = 'Ya, Hapus';
+  });
 };
 
 /* ── UTILS ──────────────────────────────── */
