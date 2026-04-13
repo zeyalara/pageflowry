@@ -967,20 +967,17 @@
       </div>
       <div class="assign-box">
         <div class="fg">
-          <label class="flbl">Nomor WhatsApp Creator <span class="hint-lbl">— Opsional</span></label>
+          <label class="flbl">Email Creator <span class="hint-lbl">— Opsional</span></label>
           <div class="ico-wrap">
-            <i class="fa-brands fa-whatsapp"></i>
-            <input class="finp" id="fWhatsApp" type="text" placeholder="Contoh: 085641765954"/>
+            <i class="fa-solid fa-user-plus"></i>
+            <input class="finp" id="fCreator" type="email" placeholder="alamat-email@creator.com"/>
           </div>
           <div class="assign-hint">
             <i class="fa-solid fa-circle-info"></i>
-            <div>Sistem akan membuka WhatsApp otomatis untuk mengirim detail brief ini ke nomor tujuan setelah Anda menekan tombol simpan.</div>
+            <div>Creator akan menerima email undangan untuk mengerjakan tugas ini jika alamat email didaftarkan.</div>
           </div>
           
-          <!-- Hidden Email field for compatibility if needed -->
-          <input type="hidden" id="fCreator" value="" />
-        
-        <!-- Fitur Copy Link (Hanya muncul saat Edit) -->
+          <!-- Fitur Copy Link (Hanya muncul saat Edit) -->
           <div id="copyLinkContainer" style="display:none; margin-top:16px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm);">
             <div style="font-size:12px; color:var(--text-600); margin-bottom:10px;">
               Jika email tidak terkirim atau ingin lebih cepat, Anda bisa langsung menyalin link brief menggunakan tombol Copy Link.
@@ -1056,8 +1053,7 @@ let db = {!! $contentBriefs->map(function($b){
     'objective'=>$b->objective,'audience'=>$b->target_audience,'keyMsg'=>$b->key_message,
     'hook'=>$b->hook,'story'=>$b->storyline,'visual'=>$b->visual_direction,
     'caption'=>$b->caption,'cta'=>$b->cta,'hashtag'=>$b->hashtags,
-    'views'=>(int)$b->target_views,'engage'=>(float)$b->target_engagement,'creator'=>$b->creator_email,
-    'whatsapp'=>$b->creator_whatsapp
+    'views'=>(int)$b->target_views,'engage'=>(float)$b->target_engagement,'creator'=>$b->creator_email
   ];
 })->toJson() !!};
 
@@ -1187,7 +1183,6 @@ function openEdit(id){
   set('fViews', k.views);
   set('fEngage', k.engage);
   set('fCreator', k.creator);
-  set('fWhatsApp', k.whatsapp); // Pastikan ini sesuai field di DB
   set('fBriefToken', k.token);
   document.getElementById('copyLinkContainer').style.display = 'block';
   
@@ -1323,8 +1318,7 @@ function wizNext(){
     hashtags:get('fHashtag'),
     target_views:get('fViews'), 
     target_engagement:get('fEngage'), 
-    creator_email:get('fCreator'),
-    creator_whatsapp:get('fWhatsApp')
+    creator_email:get('fCreator')
   };
   
   const url = editId ? `/content-briefs/${editId}` : '/content-briefs';
@@ -1343,17 +1337,7 @@ function wizNext(){
   .then(res => {
     if(res.success){
       toast('s', res.message);
-      
-      // Jika ada link WhatsApp, buka di tab baru
-      if(res.whatsapp_link) {
-        toast('s', 'Membuka WhatsApp...');
-        setTimeout(() => {
-          window.open(res.whatsapp_link, '_blank');
-          window.location.reload();
-        }, 1500);
-      } else {
-        setTimeout(() => window.location.reload(), 1000);
-      }
+      setTimeout(() => window.location.reload(), 1000);
     } else {
       toast('e', res.message || 'Gagal menyimpan data');
       btn.disabled=false; 
