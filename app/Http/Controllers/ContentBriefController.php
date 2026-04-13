@@ -270,6 +270,7 @@ class ContentBriefController extends Controller
                 
                 // Assign & Summary - Step 7
                 'creator_email' => 'nullable|email',
+                'creator_whatsapp' => 'nullable|string|max:20',
             ], [
                 'title.required' => 'Judul konten wajib diisi.',
                 'brand_id.required' => 'Brand wajib dipilih.',
@@ -328,6 +329,7 @@ class ContentBriefController extends Controller
                 
                 // Assign & Summary - Step 7
                 'creator_email' => $validated['creator_email'] ?? null,
+                'creator_whatsapp' => $validated['creator_whatsapp'] ?? null,
                 
                 // System Fields - WAJIB: user_id harus sesuai user login
                 'creator_id' => auth()->id(),
@@ -341,14 +343,40 @@ class ContentBriefController extends Controller
             $emailStatus = '';
             $creatorEmail = '';
 
+            // Nonaktifkan pengiriman email otomatis jika diinginkan, atau tetap biarkan sebagai fallback
             if (! empty($validated['creator_email'])) {
                 $creatorEmail = $validated['creator_email'];
                 $notify = $this->trySendCreatorNotification($contentBrief, $creatorEmail);
                 $emailSent = $notify['sent'];
                 $emailStatus = $notify['status'];
             } else {
-                $emailStatus = 'Email creator tidak diisi - notifikasi tidak dikirim.';
+                $emailStatus = 'Email creator tidak diisi.';
                 Log::info('No creator email provided, skipping email notification');
+            }
+
+            // Generate WhatsApp Link - SESUAI REQUIREMENT
+            $waLink = '';
+            if (!empty($validated['creator_whatsapp'])) {
+                $phone = preg_replace('/[^0-9]/', '', $validated['creator_whatsapp']);
+                if (str_starts_with($phone, '0')) {
+                    $phone = '62' . substr($phone, 1);
+                }
+                
+                $briefUrl = route('brief.public', $token);
+                $message = "📋 *Tugas Konten Baru*\n"
+                         . "Anda mendapat tugas konten baru untuk dikerjakan\n\n"
+                         . "📝 *Informasi Tugas*\n"
+                         . "Judul: {$contentBrief->title}\n"
+                         . "Brand: " . ($contentBrief->brand->name ?? '-') . "\n"
+                         . "Platform: {$contentBrief->platform}\n"
+                         . "Deadline Produksi: " . Carbon::parse($contentBrief->production_deadline)->format('d M Y') . "\n\n"
+                         . "📋 *Detail Konten*\n"
+                         . "Deskripsi:\n" . ($contentBrief->description ?? '-') . "\n\n"
+                         . "Objective:\n{$contentBrief->objective}\n\n"
+                         . "Buka halaman brief & tugas:\n"
+                         . $briefUrl;
+                
+                $waLink = "https://wa.me/{$phone}?text=" . urlencode($message);
             }
 
             // Generate share links using new token-based routes - SESUAI REQUIREMENT
@@ -365,6 +393,7 @@ class ContentBriefController extends Controller
                 'creator_email' => $creatorEmail,
                 'email_status' => $emailStatus,
                 'share_token' => $token,
+                'whatsapp_link' => $waLink,
                 'share_links' => [
                     'brief' => $briefUrl,
                     'production' => $productionUrl,
