@@ -46,7 +46,7 @@ return [
             'port' => env('MAIL_PORT', 587),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'), // Tambahkan ini
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'), // Gunakan variabel dari .env
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL'), PHP_URL_HOST)),
             'verify_peer' => false, // Set false untuk hosting yang ketat
