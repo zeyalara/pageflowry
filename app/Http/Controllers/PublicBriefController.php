@@ -46,7 +46,7 @@ class PublicBriefController extends Controller
      */
     public function storeProduction($token, Request $request)
     {
-        $brief = ContentBrief::with('tasks')->where('token', $token)->first();
+        $brief = ContentBrief::with(['tasks'])->where('token', $token)->first();
 
         if (!$brief) {
             abort(404, 'Brief tidak ditemukan');
@@ -55,7 +55,7 @@ class PublicBriefController extends Controller
         // Validate request
         $validated = $request->validate([
             'task_id' => 'required|string', // Format: task_{id} atau brief_{id}
-            'video_file' => 'required|file|mimes:mp4,mov,avi,mkv,m4v,wmv,flv,mpeg,mpg,mpe,3gp,3g2,ogv,ts,m2ts,asf,f4v|max:500000', // 500MB max
+            'video_file' => 'required|file|mimes:mp4,mov,avi,mkv,m4v,wmv,flv,mpeg,mpg,mpe,3gp,3g2,ogv,ts,m2ts,asf,f4v,jpg,jpeg,png|max:500000', // 500MB max
             'caption' => 'required|string|max:2000',
             'notes' => 'nullable|string|max:1000',
         ]);

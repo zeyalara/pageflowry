@@ -69,12 +69,16 @@ class PublishingController extends Controller
             ->where('status', 'ready_to_publish')
             ->update(['status' => 'published']);
 
-        $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
+        $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['id', 'judul_konten', 'brand_id']);
         foreach ($updatedTasks as $task) {
             ContentBrief::where('user_id', Auth::id())
                 ->where('title', $task->judul_konten)
                 ->where('brand_id', $task->brand_id)
                 ->update(['status' => 'Published']);
+            
+            \App\Models\Production::where('content_task_id', $task->id)
+                ->where('user_id', Auth::id())
+                ->update(['status' => 'published']);
         }
 
         return response()->json([

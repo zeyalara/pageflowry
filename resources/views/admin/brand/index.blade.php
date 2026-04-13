@@ -1,8 +1,8 @@
 @extends('layouts.admin')
-
 @section('page-title', 'Brand Management')
 
 @push('styles')
+
 <style>
 /* ═══════════════════════════════════════
    STAT MINI CARDS
@@ -528,6 +528,7 @@
 @endpush
 
 @section('content')
+
 <!-- BODY -->
 <div class="body">
 

@@ -976,6 +976,22 @@
             <i class="fa-solid fa-circle-info"></i>
             <div>Creator akan menerima email undangan untuk mengerjakan tugas ini jika alamat email didaftarkan.</div>
           </div>
+          
+          <!-- Fitur Copy Link (Hanya muncul saat Edit) -->
+          <div id="copyLinkContainer" style="display:none; margin-top:16px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm);">
+            <div style="font-size:12px; color:var(--text-600); margin-bottom:10px;">
+              Jika email tidak terkirim atau ingin lebih cepat, Anda bisa langsung menyalin link brief menggunakan tombol Copy Link.
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button type="button" class="btn btn-ghost" onclick="copyBriefLink()" style="height:32px; font-size:13px; padding:0 12px;">
+                <i class="fa-solid fa-copy"></i> Copy Link
+              </button>
+              <span id="copyFeedback" style="color:var(--emerald); font-size:12px; font-weight:600; display:none;">
+                <i class="fa-solid fa-check"></i> Link berhasil disalin
+              </span>
+            </div>
+            <input type="hidden" id="fBriefToken" value="" />
+          </div>
         </div>
       </div>
       <div class="summary-card" style="margin-top: 16px;">
@@ -1031,7 +1047,7 @@ const STATUS_IDX = { 'In Production': 1, 'Under Review': 2, 'Need Revision': 3, 
 let db = {!! $contentBriefs->map(function($b){
   return [
     'id'=>$b->id,'title'=>$b->title,'description'=>$b->description,'platform'=>$b->platform,'status'=>$b->status,
-    'brand_name'=>$b->brand->name ?? '-','brand'=>$b->brand_id,'format'=>$b->content_format,'duration'=>$b->target_duration,
+    'brand_name'=>$b->brand->name ?? '-','brand'=>$b->brand_id,'format'=>$b->content_format,'duration'=>$b->target_duration, 'token'=>$b->token,
     'deadProd'=>$b->production_deadline ? $b->production_deadline->format('Y-m-d') : null,
     'deadPub'=>$b->publish_deadline ? $b->publish_deadline->format('Y-m-d') : null,
     'objective'=>$b->objective,'audience'=>$b->target_audience,'keyMsg'=>$b->key_message,
@@ -1125,7 +1141,7 @@ function openModal(id){ document.getElementById(id).classList.add('open'); docum
 function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
 function bgClose(e,id){ if(e.target.id===id) closeModal(id); }
 
-function openCreate(){ editId=null; curStep=1; resetForm(); updateWizUI(); openModal('ovWizard'); }
+function openCreate(){ editId=null; curStep=1; document.getElementById('copyLinkContainer').style.display='none'; resetForm(); updateWizUI(); openModal('ovWizard'); }
 function openEdit(id){
   const k = db.find(x=>x.id == id); if(!k) return;
   editId=id; curStep=1; resetForm();
@@ -1167,6 +1183,8 @@ function openEdit(id){
   set('fViews', k.views);
   set('fEngage', k.engage);
   set('fCreator', k.creator);
+  set('fBriefToken', k.token);
+  document.getElementById('copyLinkContainer').style.display = 'block';
   
   updateWizUI(); 
   openModal('ovWizard');
@@ -1340,6 +1358,17 @@ function wizNext(){
   });
 }
 function wizPrev(){ if(curStep>1){ curStep--; updateWizUI(); } }
+
+function copyBriefLink() {
+  const token = document.getElementById('fBriefToken').value;
+  if (!token) return;
+  const link = `{{ url('/brief') }}/${token}`;
+  navigator.clipboard.writeText(link).then(() => {
+    const fb = document.getElementById('copyFeedback');
+    fb.style.display = 'inline-block';
+    setTimeout(() => fb.style.display = 'none', 2000);
+  });
+}
 
 /* ── DETAIL ─────────────────────────────── */
 function openDetail(id){

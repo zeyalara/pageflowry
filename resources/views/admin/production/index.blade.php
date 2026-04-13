@@ -790,7 +790,7 @@
       Daftar Production
     </div>
     <button class="btn btn-primary" onclick="openUploadModal()">
-      <i class="fa-solid fa-plus"></i> Upload Video Produksi
+      <i class="fa-solid fa-plus"></i> Upload Produksi
     </button>
   </div>
   <table>
@@ -836,7 +836,15 @@
           </td>
           <td>
             @if($production->file_video)
-              <span class="td-file"><i class="fa-solid fa-video"></i> Video</span>
+              @php
+                $ext = strtolower(pathinfo($production->file_video, PATHINFO_EXTENSION));
+                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+              @endphp
+              @if($isImage)
+                <span class="td-file"><i class="fa-solid fa-image"></i> Gambar</span>
+              @else
+                <span class="td-file"><i class="fa-solid fa-video"></i> Video</span>
+              @endif
             @else
               <span class="text-muted">-</span>
             @endif
@@ -896,8 +904,8 @@
     <div class="modal-head">
       <div class="modal-title-wrap">
         <div class="modal-eyebrow"><i class="fa-solid fa-film"></i> Production</div>
-        <div class="modal-title">Upload Video Produksi</div>
-        <div class="modal-subtitle">Pilih task dan upload video produksi</div>
+        <div class="modal-title">Upload Produksi</div>
+        <div class="modal-subtitle">Pilih task dan upload media produksi (video/gambar)</div>
       </div>
       <button class="modal-close" type="button" onclick="closeModal('uploadOverlay')">
         <i class="fa-solid fa-xmark"></i>
@@ -944,14 +952,14 @@
 
           <div class="form-group full">
             <label class="form-label">
-              Upload Video <span class="required">*</span>
+              Upload Media <span class="required">*</span>
             </label>
             <div class="file-input-wrapper" onclick="document.getElementById('video_file').click()">
-              <input type="file" id="video_file" name="video_file" class="file-input" accept="video/*" required onchange="updateFileName(this)">
+              <input type="file" id="video_file" name="video_file" class="file-input" accept="video/*,image/*" required onchange="updateFileName(this)">
               <div class="file-input-text" id="file-name">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload video
+                <i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload media
               </div>
-              <div class="file-input-hint">Semua format video yang bisa dipilih di dialog unggah (filter Video)</div>
+              <div class="file-input-hint">Semua format video atau gambar</div>
             </div>
           </div>
 
@@ -969,7 +977,7 @@
       <div class="mf-right">
         <button class="btn-ghost" type="button" onclick="closeModal('uploadOverlay')">Batal</button>
         <button class="btn btn-primary" type="button" onclick="submitUpload(event)">
-          <i class="fa-solid fa-upload"></i> Upload Video
+          <i class="fa-solid fa-upload"></i> Upload Media
         </button>
       </div>
     </div>
@@ -1097,7 +1105,7 @@ function showUploadForTask(taskId, taskTitle) {
   // Update modal title
   const modalTitle = document.querySelector('.modal-title');
   if (modalTitle) {
-    modalTitle.textContent = `Upload Video Produksi - ${taskTitle}`;
+    modalTitle.textContent = `Upload Produksi - ${taskTitle}`;
   }
   
   // Open modal
@@ -1118,7 +1126,7 @@ function closeOnOverlay(event, modalId) {
 }
 
 function updateFileName(input) {
-  const fileName = input.files[0]?.name || '<i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload video';
+  const fileName = input.files[0]?.name || '<i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload media';
   document.getElementById('file-name').innerHTML = fileName;
 }
 
@@ -1129,7 +1137,7 @@ function resetForm() {
   }
   const fileNameEl = document.getElementById('file-name');
   if (fileNameEl) {
-    fileNameEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload video';
+    fileNameEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Klik untuk upload media';
   }
 }
 

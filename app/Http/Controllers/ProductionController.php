@@ -18,7 +18,7 @@ use Illuminate\Http\UploadedFile;
 class ProductionController extends Controller
 {
     /**
-     * Aturan upload video: selaras dengan input file accept="video/*" (semua format video di pemilih file).
+     * Aturan upload video/image: selaras dengan input file accept="video/*,image/*".
      *
      * @return array<int, string|\Closure>
      */
@@ -38,15 +38,15 @@ class ProductionController extends Controller
                 if ($mime === '' || $mime === 'application/octet-stream') {
                     $mime = strtolower((string) $value->getClientMimeType());
                 }
-                if ($mime !== '' && str_starts_with($mime, 'video/')) {
+                if ($mime !== '' && (str_starts_with($mime, 'video/') || str_starts_with($mime, 'image/'))) {
                     return;
                 }
                 $ext = strtolower((string) $value->getClientOriginalExtension());
-                $videoExts = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', 'wmv', 'flv', 'mpeg', 'mpg', 'mpe', '3gp', '3g2', 'ogv', 'ts', 'm2ts', 'asf', 'f4v'];
-                if ($ext !== '' && in_array($ext, $videoExts, true)) {
+                $allowedExts = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', 'wmv', 'flv', 'mpeg', 'mpg', 'mpe', '3gp', '3g2', 'ogv', 'ts', 'm2ts', 'asf', 'f4v', 'jpg', 'jpeg', 'png'];
+                if ($ext !== '' && in_array($ext, $allowedExts, true)) {
                     return;
                 }
-                $fail('File harus berformat video (gunakan filter Video di dialog pilih file).');
+                $fail('File harus berformat video atau gambar (jpg, jpeg, png).');
             },
         ];
     }
@@ -69,6 +69,7 @@ class ProductionController extends Controller
                 $query->where('status', 'Active');
             })
             ->whereIn('status', ['In Production', 'Need Revision'])
+            ->where('status', '!=', 'draft')
             ->orderBy('title', 'asc')
             ->get()
             ->map(function($task) {

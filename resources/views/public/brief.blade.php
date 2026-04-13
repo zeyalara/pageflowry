@@ -846,7 +846,7 @@
                 <div class="upload-card">
                     <div class="upload-header">
                         <h2><i class="fas fa-cloud-upload-alt" style="color: var(--primary); margin-right: 10px;"></i>Upload Production</h2>
-                        <p>Kirim video hasil produksi Anda untuk direview oleh admin</p>
+                        <p>Kirim media (video/gambar) hasil produksi Anda untuk direview oleh admin</p>
                     </div>
 
                     <form id="uploadForm" action="{{ route('production.store.public', $brief->token) }}" method="POST" enctype="multipart/form-data">
@@ -874,16 +874,16 @@
 
                         <!-- File Upload -->
                         <div class="form-group">
-                            <label class="form-label">Upload Video <span class="required">*</span></label>
+                            <label class="form-label">Upload Media <span class="required">*</span></label>
                             <div class="file-upload">
-                                <input type="file" name="video_file" id="file_video" class="file-upload-input" accept="video/*" required>
+                                <input type="file" name="video_file" id="file_video" class="file-upload-input" accept="video/*,image/*" required>
                                 <div class="file-upload-box" id="fileUploadBox">
                                     <div class="file-upload-icon">
                                         <i class="fas fa-cloud-upload-alt"></i>
                                     </div>
-                                    <div class="file-upload-text">Klik atau drag file video di sini</div>
+                                    <div class="file-upload-text">Klik atau drag file media di sini</div>
                                     <div class="file-name" id="fileName"></div>
-                                    <div class="file-hint">MP4, MOV, AVI, MKV (Maks. 500MB)</div>
+                                    <div class="file-hint">MP4, MOV, JPG, PNG (Maks. 500MB)</div>
                                 </div>
                             </div>
                             @error('video_file')
@@ -932,7 +932,15 @@
                                 <div class="production-meta">
                                     <span><i class="fas fa-calendar"></i> {{ $production->created_at->format('d M Y') }}</span>
                                     @if($production->file_video)
-                                        <span><i class="fas fa-video"></i> Video tersedia</span>
+                                        @php
+                                            $ext = strtolower(pathinfo($production->file_video, PATHINFO_EXTENSION));
+                                            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                        @endphp
+                                        @if($isImage)
+                                            <span><i class="fas fa-image"></i> Gambar tersedia</span>
+                                        @else
+                                            <span><i class="fas fa-video"></i> Video tersedia</span>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
