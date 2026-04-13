@@ -966,26 +966,19 @@
         </div>
       </div>
       <div class="assign-box">
-        <div class="fg2">
-          <div class="fg">
-            <label class="flbl">Email Creator <span class="hint-lbl">— Opsional</span></label>
-            <div class="ico-wrap">
-              <i class="fa-solid fa-envelope"></i>
-              <input class="finp" id="fCreator" type="email" placeholder="alamat-email@creator.com"/>
-            </div>
+        <div class="fg">
+          <label class="flbl">Nomor WhatsApp Creator <span class="hint-lbl">— Opsional</span></label>
+          <div class="ico-wrap">
+            <i class="fa-brands fa-whatsapp"></i>
+            <input class="finp" id="fWhatsApp" type="text" placeholder="Contoh: 085641765954"/>
           </div>
-          <div class="fg">
-            <label class="flbl">WhatsApp Creator <span class="hint-lbl">— Opsional</span></label>
-            <div class="ico-wrap">
-              <i class="fa-brands fa-whatsapp"></i>
-              <input class="finp" id="fWhatsApp" type="text" placeholder="0856..."/>
-            </div>
+          <div class="assign-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>Sistem akan membuka WhatsApp otomatis untuk mengirim detail brief ini ke nomor tujuan setelah Anda menekan tombol simpan.</div>
           </div>
-        </div>
-        <div class="assign-hint">
-          <i class="fa-solid fa-circle-info"></i>
-          <div>Jika nomor WhatsApp diisi, sistem akan menyediakan tombol kirim pesan otomatis setelah brief disimpan.</div>
-        </div>
+          
+          <!-- Hidden Email field for compatibility if needed -->
+          <input type="hidden" id="fCreator" value="" />
         
         <!-- Fitur Copy Link (Hanya muncul saat Edit) -->
           <div id="copyLinkContainer" style="display:none; margin-top:16px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm);">
