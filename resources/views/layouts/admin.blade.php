@@ -1592,6 +1592,19 @@ window.addEventListener('resize', function() {
   min-width: 300px;
   max-width: min(360px, calc(100vw - 24px));
 }
+
+@media (max-width: 576px) {
+  .profile-dropdown {
+    position: fixed;
+    top: calc(var(--topbar) + 10px);
+    right: 12px;
+    left: 12px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 .header-dd-head {
   padding: 10px 14px 6px;
   font-size: 11px;

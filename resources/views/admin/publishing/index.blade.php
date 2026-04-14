@@ -642,6 +642,7 @@
     </div>
   </div>
 
+  <div style="overflow-x: auto; width: 100%;">
   <table class="publishing-table">
     <thead>
       <tr>
@@ -692,6 +693,7 @@
       @endforelse
     </tbody>
   </table>
+  </div>
 </div>
 
 <div id="publishModal" class="modal-overlay" style="display:none;">
@@ -775,9 +777,16 @@ function buildDeviceChrome(platform, data, aspectClass) {
   var user = escapeHtml(data.brand || 'brand_anda');
   var capSnippet = escapeHtml((data.caption || '').slice(0, 140)) + ((data.caption || '').length > 140 ? '…' : '');
   var hashSnippet = escapeHtml((data.hashtags || '').slice(0, 100));
-  var vid = data.videoUrl
-    ? '<video src="' + escapeAttr(data.videoUrl) + '" muted loop playsinline controls></video>'
-    : '<div class="pp-video-ph"><i class="fa-solid fa-film"></i></div>';
+  var vid = '<div class="pp-video-ph"><i class="fa-solid fa-film"></i></div>';
+  if (data.videoUrl) {
+    var urlLower = data.videoUrl.toLowerCase();
+    var isImage = urlLower.includes('.jpg') || urlLower.includes('.jpeg') || urlLower.includes('.png') || urlLower.includes('.gif') || urlLower.includes('.webp');
+    if (isImage) {
+      vid = '<img src="' + escapeAttr(data.videoUrl) + '" style="width: 100%; height: 100%; object-fit: cover;">';
+    } else {
+      vid = '<video src="' + escapeAttr(data.videoUrl) + '" muted loop playsinline controls></video>';
+    }
+  }
 
   if (platform === 'Instagram') {
     return '<div class="pp-frame ' + aspectClass + '">' + vid +

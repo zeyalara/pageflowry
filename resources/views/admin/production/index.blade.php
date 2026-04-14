@@ -136,13 +136,20 @@
 
 /* Table overflow fixes - Consistent with Brand Management */
 .tbl-card {
+  width: 100%;
   overflow-x: auto;
 }
 .tbl-card table {
   width: 100%;
-  table-layout: auto;
-  min-width: 100%;
+  table-layout: fixed;
+  min-width: 1000px; /* Minimum width for scroll on small devices */
   border-collapse: collapse;
+}
+.tbl-card th,
+.tbl-card td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .tbl-card thead th {
   font-family: 'DM Sans', sans-serif;
@@ -155,9 +162,6 @@
   text-align: left;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .tbl-card tbody tr {
   border-bottom: 1px solid var(--border-light);
@@ -175,10 +179,9 @@
   color: var(--text-700);
   padding: 14px 16px;
   vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .tbl-card .action-buttons {
+  min-width: 140px;
   display: flex;
   gap: 5px;
   flex-wrap: nowrap;
@@ -796,12 +799,12 @@
   <table>
     <thead>
       <tr>
-        <th style="width: 50px;">ID</th>
-        <th>Nama Brief</th>
-        <th>Nama Task</th>
+        <th style="width: 40px;">ID</th>
+        <th style="width: 230px;">Nama Brief</th>
+        <th style="width: 230px;">Nama Task</th>
         <th style="width: 100px;">File</th>
         <th style="width: 120px;">Status</th>
-        <th style="width: 160px;">Tanggal Upload</th>
+        <th style="width: 140px;">Tanggal Upload</th>
         <th style="width: 140px; text-align: right;">Aksi</th>
       </tr>
     </thead>

@@ -175,6 +175,24 @@
         .trend-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
+    .content-grid {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 2fr 1.5fr;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 820px) {
+        .content-grid { grid-template-columns: 1fr; }
+    }
+
     /* filter & export controls */
     .analytics-toolbar {
         display: flex;
@@ -265,7 +283,7 @@
 </div>
 
 {{-- GRID: CHART SEDERHANA --}}
-<div class="content-grid" style="margin-top:20px;display:grid;grid-template-columns:2fr 1.5fr;gap:16px;align-items:flex-start;">
+<div class="content-grid">
     {{-- CHART STATUS --}}
     <div class="content-card">
         <div class="card-header">

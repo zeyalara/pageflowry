@@ -1337,7 +1337,27 @@ function wizNext(){
   .then(res => {
     if(res.success){
       toast('s', res.message);
-      setTimeout(() => window.location.reload(), 1000);
+      
+      if (!editId && res.share_token) {
+        document.getElementById('fBriefToken').value = res.share_token;
+        document.getElementById('copyLinkContainer').style.display = 'block';
+        
+        document.getElementById('wizTitle').innerHTML = '<span style="color:var(--emerald)"><i class="fa-solid fa-check-circle"></i> Brief Berhasil Disimpan</span>';
+        document.getElementById('wizStepName').textContent = 'Anda bisa membagikan link brief sekarang';
+        
+        const btnNext = document.getElementById('btnNext');
+        btnNext.innerHTML = '<i class="fa-solid fa-check"></i> Selesai';
+        btnNext.onclick = function() { window.location.reload(); };
+        btnNext.disabled = false;
+        
+        const btnPrev = document.getElementById('btnPrev');
+        if (btnPrev) btnPrev.style.display = 'none';
+        
+        // Disable form inputs to prevent further changes
+        document.querySelectorAll('.finp, .ftxt, .fsel-f').forEach(el => el.disabled = true);
+      } else {
+        setTimeout(() => window.location.reload(), 1000);
+      }
     } else {
       toast('e', res.message || 'Gagal menyimpan data');
       btn.disabled=false; 

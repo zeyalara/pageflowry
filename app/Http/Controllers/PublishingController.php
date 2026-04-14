@@ -64,13 +64,20 @@ class PublishingController extends Controller
             ], 422);
         }
 
-        ContentTask::where('user_id', Auth::id())
+        $tasks = ContentTask::where('user_id', Auth::id())
             ->whereIn('id', $ids)
-            ->where('status', 'ready_to_publish')
-            ->update(['status' => 'published']);
+            ->get();
+            
+        if ($tasks->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data konten tidak ditemukan untuk dipublish.'
+            ], 404);
+        }
 
-        $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['id', 'judul_konten', 'brand_id']);
-        foreach ($updatedTasks as $task) {
+        foreach ($tasks as $task) {
+            $task->update(['status' => 'published']);
+            
             ContentBrief::where('user_id', Auth::id())
                 ->where('title', $task->judul_konten)
                 ->where('brand_id', $task->brand_id)

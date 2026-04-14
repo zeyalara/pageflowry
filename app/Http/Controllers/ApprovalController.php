@@ -44,22 +44,27 @@ class ApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::where('user_id', Auth::id())
-                ->where('id', $request->content_task_id)
-                ->whereIn('status', ['under_review', 'need_revision'])
-                ->update([
-                    'status' => 'ready_to_publish',
-                    'approved_by' => $userId,
-                    'approved_at' => now(),
-                ]);
-
             $task = ContentTask::where('user_id', Auth::id())->find($request->content_task_id);
-            if ($task) {
-                ContentBrief::where('user_id', Auth::id())
-                    ->where('title', $task->judul_konten)
-                    ->where('brand_id', $task->brand_id)
-                    ->update(['status' => 'Ready to Publish']);
+            
+            if (!$task) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data content task tidak ditemukan.'
+                ], 404);
             }
+
+            // Update ContentTask
+            $task->update([
+                'status' => 'ready_to_publish',
+                'approved_by' => $userId,
+                'approved_at' => now(),
+            ]);
+
+            // Sync ke ContentBrief
+            ContentBrief::where('user_id', Auth::id())
+                ->where('title', $task->judul_konten)
+                ->where('brand_id', $task->brand_id)
+                ->update(['status' => 'Ready to Publish']);
 
             DB::commit();
 
@@ -94,17 +99,26 @@ class ApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            ContentTask::where('user_id', Auth::id())
+            $tasks = ContentTask::where('user_id', Auth::id())
                 ->whereIn('id', $ids)
-                ->whereIn('status', ['under_review', 'need_revision'])
-                ->update([
+                ->get();
+                
+            if ($tasks->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan untuk disetujui.',
+                ], 404);
+            }
+
+            foreach ($tasks as $task) {
+                // Update ContentTask
+                $task->update([
                     'status' => 'ready_to_publish',
                     'approved_by' => $userId,
                     'approved_at' => now(),
                 ]);
 
-            $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
-            foreach ($updatedTasks as $task) {
+                // Sync ke ContentBrief
                 ContentBrief::where('user_id', Auth::id())
                     ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
