@@ -424,40 +424,58 @@ class ContentBriefController extends Controller
     {
         $contentBrief->loadMissing('brand');
 
-        Log::info('Attempting to send email to creator', [
-            'content_brief_id' => $contentBrief->id,
-            'creator_email' => $creatorEmail,
-            'mail_mailer' => config('mail.default'),
-            'mail_host' => config('mail.mailers.'.config('mail.default').'.host'),
-        ]);
+        // FORCING SMTP ON PRODUCTION IF LOG IS ACTIVE
+        if (config('mail.default') === 'log' && !app()->isLocal()) {
+            config(['mail.default' => 'smtp']);
+        }
 
-        if (config('mail.default') === 'log') {
-            Log::warning('MAIL_MAILER=log: email tidak dikirim ke inbox, hanya ke file log. Set MAIL_MAILER=smtp dan MAIL_* di .env.');
+        // Hosting often needs these settings to bypass SSL issues
+        if (!app()->isLocal()) {
+            config([
+                'mail.mailers.smtp.verify_peer' => false,
+                'mail.mailers.smtp.verify_peer_name' => false,
+                'mail.mailers.smtp.timeout' => 30,
+            ]);
+
+            // If FROM address is default/example, change it to something based on the domain
+            if (config('mail.from.address') === 'hello@example.com' || empty(config('mail.from.address'))) {
+                $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'pageflowry.cludz.net';
+                config(['mail.from.address' => 'noreply@' . $host]);
+                config(['mail.from.name' => 'PageFlowry System']);
+            }
         }
 
         try {
             $this->sendCreatorNotificationEmail($contentBrief, $creatorEmail);
-
-            Log::info('Creator notification email sent successfully', [
-                'content_brief_id' => $contentBrief->id,
-                'creator_email' => $creatorEmail,
-            ]);
 
             return [
                 'sent' => true,
                 'status' => 'Email otomatis terkirim ke '.$creatorEmail,
             ];
         } catch (\Exception $e) {
-            Log::error('Failed to send creator notification email', [
-                'content_brief_id' => $contentBrief->id,
-                'creator_email' => $creatorEmail,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('Failed to send via SMTP, trying sendmail fallback', ['error' => $e->getMessage()]);
+
+            // FALLBACK TO SENDMAIL ON HOSTING
+            try {
+                if (!app()->isLocal()) {
+                    config(['mail.default' => 'sendmail']);
+                    $this->sendCreatorNotificationEmail($contentBrief, $creatorEmail);
+                    
+                    return [
+                        'sent' => true,
+                        'status' => 'Email terkirim via fallback (sendmail) ke '.$creatorEmail,
+                    ];
+                }
+            } catch (\Exception $e2) {
+                Log::error('All mail methods failed', [
+                    'smtp_error' => $e->getMessage(),
+                    'sendmail_error' => $e2->getMessage()
+                ]);
+            }
 
             return [
                 'sent' => false,
-                'status' => 'Gagal mengirim email ke '.$creatorEmail.': '.$e->getMessage(),
+                'status' => 'Gagal mengirim email: '.$e->getMessage(),
             ];
         }
     }

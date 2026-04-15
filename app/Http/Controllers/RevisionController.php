@@ -44,7 +44,6 @@ class RevisionController extends Controller
     {
         $task = ContentTask::where('user_id', Auth::id())->findOrFail($id);
         
-        // Find brief to get creator email and token
         $brief = ContentBrief::where('user_id', Auth::id())
             ->where('title', $task->judul_konten)
             ->where('brand_id', $task->brand_id)
@@ -67,19 +66,54 @@ class RevisionController extends Controller
                 'reply_to' => Auth::user()->email
             ];
 
-            \Illuminate\Support\Facades\Mail::to($brief->creator_email)->send(new \App\Mail\RevisionNotification($emailData));
-
-            $mailHint = null;
-            if (config('mail.default') === 'log') {
-                $mailHint = 'Catatan: Mailer saat ini diatur ke "log". Email hanya akan muncul di storage/logs/laravel.log. Untuk mengirim ke Inbox asli, ubah MAIL_MAILER=smtp di file .env.';
+            // FORCING SMTP ON PRODUCTION IF LOG IS ACTIVE
+            if (config('mail.default') === 'log' && !app()->isLocal()) {
+                config(['mail.default' => 'smtp']);
             }
+
+            // Hosting often needs these settings to bypass SSL issues
+            if (!app()->isLocal()) {
+                config([
+                    'mail.mailers.smtp.verify_peer' => false,
+                    'mail.mailers.smtp.verify_peer_name' => false,
+                    'mail.mailers.smtp.timeout' => 30,
+                ]);
+
+                // If FROM address is default/example, change it to something based on the domain
+                if (config('mail.from.address') === 'hello@example.com' || empty(config('mail.from.address'))) {
+                    $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'pageflowry.cludz.net';
+                    config(['mail.from.address' => 'noreply@' . $host]);
+                    config(['mail.from.name' => 'PageFlowry System']);
+                }
+            }
+
+            \Illuminate\Support\Facades\Mail::to($brief->creator_email)->send(new \App\Mail\RevisionNotification($emailData));
 
             return response()->json([
                 'success' => true,
                 'message' => 'Notifikasi revisi berhasil dikirim ke ' . $brief->creator_email,
-                'mail_hint' => $mailHint
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send revision email via SMTP, trying sendmail fallback', ['error' => $e->getMessage()]);
+
+            // FALLBACK TO SENDMAIL ON HOSTING
+            try {
+                if (!app()->isLocal()) {
+                    config(['mail.default' => 'sendmail']);
+                    \Illuminate\Support\Facades\Mail::to($brief->creator_email)->send(new \App\Mail\RevisionNotification($emailData));
+                    
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Notifikasi dikirim menggunakan fallback (sendmail) ke ' . $brief->creator_email,
+                    ]);
+                }
+            } catch (\Exception $e2) {
+                \Illuminate\Support\Facades\Log::error('All mail methods failed for revision', [
+                    'smtp_error' => $e->getMessage(),
+                    'sendmail_error' => $e2->getMessage()
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengirim email: ' . $e->getMessage(),
