@@ -557,9 +557,9 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin .7s linear infinite}
 
-/* ═══════════════════════════════════════
+/* -----------------------------------------
    PRINT STYLES
-═══════════════════════════════════════ */
+----------------------------------------- */
 @media print {
   /* Hide navigation, sidebar, and non-essential UI */
   nav, .sidebar, .sidebar-wrap, .sb-wrap, .header, .toolbar, .btn, .view-toggle, .row-actions, .modal, .overlay, .tch-right, .pg-header, .stats-row, .pagi {
@@ -1395,28 +1395,73 @@ function wizNext(){
   .then(r => r.json())
   .then(res => {
     if(res.success){
-      toast('s', res.message);
-      
-      if (!editId && res.share_token) {
-        document.getElementById('fBriefToken').value = res.share_token;
-        document.getElementById('copyLinkContainer').style.display = 'block';
-        
-        document.getElementById('wizTitle').innerHTML = '<span style="color:var(--emerald)"><i class="fa-solid fa-check-circle"></i> Brief Berhasil Disimpan</span>';
-        document.getElementById('wizStepName').textContent = 'Anda bisa membagikan link brief sekarang';
-        
-        const btnNext = document.getElementById('btnNext');
-        btnNext.innerHTML = '<i class="fa-solid fa-check"></i> Selesai';
-        btnNext.onclick = function() { window.location.reload(); };
-        btnNext.disabled = false;
-        
-        const btnPrev = document.getElementById('btnPrev');
-        if (btnPrev) btnPrev.style.display = 'none';
-        
-        // Disable form inputs to prevent further changes
-        document.querySelectorAll('.finp, .ftxt, .fsel-f').forEach(el => el.disabled = true);
+      // Map API response to local db format
+      const mappedData = {
+        id: res.data.id,
+        title: res.data.title,
+        description: res.data.description,
+        platform: res.data.platform,
+        status: res.data.status,
+        brand_name: res.data.brand_name,
+        brand: res.data.brand_id,
+        format: res.data.content_format,
+        duration: res.data.target_duration,
+        token: res.data.token,
+        deadProd: res.data.production_deadline,
+        deadPub: res.data.publish_deadline,
+        objective: res.data.objective,
+        audience: res.data.target_audience,
+        keyMsg: res.data.key_message,
+        hook: res.data.hook,
+        story: res.data.storyline,
+        visual: res.data.visual_direction,
+        caption: res.data.caption,
+        cta: res.data.cta,
+        hashtag: res.data.hashtags,
+        views: res.data.target_views,
+        engage: res.data.target_engagement,
+        creator: res.data.creator_email
+      };
+
+      if (editId) {
+        // Update existing record in db array
+        const idx = db.findIndex(x => x.id == editId);
+        if (idx !== -1) db[idx] = mappedData;
+        toast('s', res.message);
+        closeModal('ovWizard');
       } else {
-        setTimeout(() => window.location.reload(), 1000);
+        // Add new record to db array
+        db.unshift(mappedData);
+        toast('s', res.message);
+        
+        // After creating new, show share link if available, or just close
+        if (res.share_token) {
+          document.getElementById('fBriefToken').value = res.share_token;
+          document.getElementById('copyLinkContainer').style.display = 'block';
+          
+          document.getElementById('wizTitle').innerHTML = '<span style="color:var(--emerald)"><i class="fa-solid fa-check-circle"></i> Brief Berhasil Disimpan</span>';
+          document.getElementById('wizStepName').textContent = 'Anda bisa membagikan link brief sekarang';
+          
+          const btnNext = document.getElementById('btnNext');
+          btnNext.innerHTML = '<i class="fa-solid fa-check"></i> Selesai';
+          btnNext.onclick = function() { closeModal('ovWizard'); };
+          btnNext.disabled = false;
+          
+          const btnPrev = document.getElementById('btnPrev');
+          if (btnPrev) btnPrev.style.display = 'none';
+          
+          // Disable form inputs to prevent further changes
+          document.querySelectorAll('.finp, .ftxt, .fsel-f').forEach(el => el.disabled = true);
+        } else {
+          closeModal('ovWizard');
+        }
       }
+      
+      // Real-time UI update
+      filtered = [...db];
+      renderStats();
+      renderTable();
+      
     } else {
       toast('e', res.message || 'Gagal menyimpan data');
       btn.disabled=false; 
@@ -1549,8 +1594,19 @@ document.getElementById('delConfirmBtn').onclick = () => {
   })
   .then(r => r.json())
   .then(res => {
-    if(res.success) window.location.reload();
-    else {
+    if(res.success) {
+      // Real-time update: remove from db and re-render
+      db = db.filter(x => x.id != delId);
+      filtered = filtered.filter(x => x.id != delId);
+      renderStats();
+      renderTable();
+      closeModal('ovDel');
+      toast('s', res.message);
+      
+      // Reset button state
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ya, Hapus';
+    } else {
       toast('e', res.message || 'Gagal menghapus brief');
       btn.disabled = false;
       btn.innerHTML = 'Ya, Hapus';

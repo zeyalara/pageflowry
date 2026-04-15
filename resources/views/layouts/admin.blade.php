@@ -593,6 +593,10 @@ button.tb-icon-btn {
 }
 
 /* ═══════════════════════════════════════════════
+   DETAILS PROGRESS BAR
+═══════════════════════════════════════════════ */
+.dl-head {
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
@@ -1085,7 +1089,7 @@ tbody tr:hover td { background: var(--blue-50); }
             ->where('status', 'under_review')
             ->orderByDesc('updated_at')
             ->limit(3)
-            ->get(['id', 'id', 'judul_konten', 'updated_at']);
+            ->get(['id', 'judul_konten', 'updated_at']);
 
         $msgReadyPublish = \App\Models\ContentTask::query()
             ->where('user_id', $uid)
@@ -1097,7 +1101,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
     $msgTotal = $msgNeedRevision->count() + $msgUnderReview->count() + $msgReadyPublish->count() + $deadlineSoonCount + $deadlineOverdueCount;
 
-    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $productionBadge + $deadlineSoonCount + $deadlineOverdueCount + ($deadlineSoonCount + $deadlineOverdueCount);
+    $notifTotal = $notifRevision + $notifApproval + $notifPublish + $productionBadge + $deadlineSoonCount + $deadlineOverdueCount;
 
     $initials = 'U';
     if ($authUser) {

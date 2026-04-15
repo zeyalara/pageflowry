@@ -525,9 +525,9 @@
 }
 .spin { animation: spin .7s linear infinite; display: inline-block; }
 
-  /* ═══════════════════════════════════════
-     PRINT STYLES
-  ═══════════════════════════════════════ */
+  /* -----------------------------------------
+   PRINT STYLES
+----------------------------------------- */
   @media print {
     /* Hide navigation, sidebar, and non-essential UI */
     nav, .sidebar, .sidebar-wrap, .sb-wrap, .header, .toolbar, .btn, .view-toggle, .row-actions, .modal, .overlay, .tch-right {
