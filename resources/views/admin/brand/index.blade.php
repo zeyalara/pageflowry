@@ -524,6 +524,68 @@
   to { transform: rotate(360deg); }
 }
 .spin { animation: spin .7s linear infinite; display: inline-block; }
+
+  /* ═══════════════════════════════════════
+     PRINT STYLES
+  ═══════════════════════════════════════ */
+  @media print {
+    /* Hide navigation, sidebar, and non-essential UI */
+    nav, .sidebar, .sidebar-wrap, .sb-wrap, .header, .toolbar, .btn, .view-toggle, .row-actions, .modal, .overlay, .tch-right {
+      display: none !important;
+    }
+
+    /* Reset page margins and background */
+    body {
+      background: white !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .main-content, .content, .body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Expand the table to full width */
+    .table-card {
+      box-shadow: none !important;
+      border: none !important;
+      width: 100% !important;
+    }
+
+    .brand-table {
+      width: 100% !important;
+      border: 1px solid #eee !important;
+    }
+
+    .brand-table th, .brand-table td {
+      border: 1px solid #eee !important;
+    }
+
+    /* Ensure avatars and text are visible */
+    .brand-avatar {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .status-pill {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      border: 1px solid #ccc !important;
+    }
+
+    /* Show a print header */
+    .table-card::before {
+      content: "PAGEFLOWRY - DAFTAR BRAND";
+      display: block;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #0d1526;
+    }
+  }
 </style>
 @endpush
 
@@ -572,9 +634,14 @@
       <option value="inactive">Non Active</option>
     </select>
     <div class="toolbar-spacer"></div>
-    <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
-      <i class="fa-solid fa-file-pdf"></i> Export PDF
-    </a>
+    <div style="display:flex; gap:8px;">
+      <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
+      <button class="btn btn-ghost" onclick="window.print()" title="Cetak Halaman">
+        <i class="fa-solid fa-print"></i> Print
+      </button>
+    </div>
     <button class="btn btn-primary" onclick="openAddModal()">
       <i class="fa-solid fa-plus"></i> Tambah Brand
     </button>
