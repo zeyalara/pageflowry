@@ -638,9 +638,6 @@
       <a href="{{ route('brands.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px;">
         <i class="fa-solid fa-file-pdf"></i> Export PDF
       </a>
-      <button class="btn btn-ghost" onclick="window.print()" title="Cetak Halaman">
-        <i class="fa-solid fa-print"></i> Print
-      </button>
     </div>
     <button class="btn btn-primary" onclick="openAddModal()">
       <i class="fa-solid fa-plus"></i> Tambah Brand

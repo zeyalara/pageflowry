@@ -701,9 +701,6 @@
     <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;">
       <i class="fa-solid fa-file-pdf"></i> Export PDF
     </a>
-    <button class="btn btn-ghost" onclick="window.print()" title="Cetak Halaman">
-      <i class="fa-solid fa-print"></i> Print
-    </button>
   </div>
 </div>
 
