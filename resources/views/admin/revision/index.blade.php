@@ -226,6 +226,14 @@
 .p-need-revision .pill-dot {
   background: #ef4444;
 }
+.p-terevisi {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.p-terevisi .pill-dot {
+  background: #10b981;
+}
 
 /* Action Buttons */
 .btn-action {
@@ -247,6 +255,64 @@
   color: white;
   border-color: var(--blue);
   transform: translateY(-1px);
+}
+
+/* ─────────────────────────────────────────
+   MODERN FILE UPLOAD
+───────────────────────────────────────── */
+.file-drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--bg);
+  transition: all .2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.file-drop-zone:hover, .file-drop-zone.dragover {
+  border-color: var(--blue);
+  background: rgba(88,151,254,.05);
+}
+.file-drop-zone i {
+  font-size: 32px;
+  color: var(--blue);
+  margin-bottom: 12px;
+  display: block;
+}
+.file-drop-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-700);
+}
+.file-drop-hint {
+  font-size: 11px;
+  color: var(--text-400);
+  margin-top: 4px;
+}
+.progress-container {
+  margin-top: 16px;
+  display: none;
+}
+.progress-bar-wrap {
+  height: 6px;
+  background: var(--border-light);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--blue);
+  width: 0%;
+  transition: width .2s ease;
+}
+.progress-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  text-align: right;
+  margin-top: 6px;
 }
 
 /* Table overflow fixes */
@@ -321,6 +387,11 @@
     <div class="stat-val">{{ $stats['need_revision'] ?? 0 }}</div>
     <div class="stat-lbl">Need Revision</div>
   </div>
+  <div class="stat-card sc-em" style="--i:3">
+    <div class="stat-ic"><i class="fa-solid fa-check-double"></i></div>
+    <div class="stat-val">{{ $stats['terevisi'] ?? 0 }}</div>
+    <div class="stat-lbl">Terevisi</div>
+  </div>
 </div>
 
 <div class="card tbl-card">
@@ -334,15 +405,14 @@
     <thead>
       <tr>
         <th style="width: 40px;">ID</th>
-        <th style="width: 200px;">Judul Konten</th>
+        <th style="width: 180px;">Judul Konten</th>
         <th style="width: 100px;">Brand</th>
-        <th style="width: 80px;">Versi Video</th>
-        <th style="width: 80px;">Durasi Final</th>
+        <th style="width: 80px;">Versi</th>
         <th style="width: 150px;">Catatan Produksi</th>
         <th style="width: 150px;">Catatan Revisi</th>
-        <th style="width: 100px;">Deadline Revisi</th>
-        <th style="width: 120px;">Status</th>
-        <th style="width: 150px;">Aksi</th>
+        <th style="width: 100px;">Deadline</th>
+        <th style="width: 110px;">Status</th>
+        <th style="width: 180px;">Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -352,9 +422,17 @@
           $statusMap = [
             'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
             'need_revision' => ['label' => 'Need Revision', 'class' => 'p-need-revision'],
+            'terevisi' => ['label' => 'Terevisi', 'class' => 'p-terevisi'],
           ];
           $s = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-prod'];
           $rowNumber = $index + 1;
+          
+          // Find brief to check creator email
+          $brief = \App\Models\ContentBrief::where('user_id', auth()->id())
+              ->where('title', $task->judul_konten)
+              ->where('brand_id', $task->brand_id)
+              ->first();
+          $hasCreatorEmail = $brief && $brief->creator_email;
         @endphp
         <tr>
           <td style="white-space: nowrap; vertical-align: middle;">{{ $rowNumber }}</td>
@@ -365,7 +443,6 @@
             <span class="td-brand">{{ optional($task->brand)->name ?? '-' }}</span>
           </td>
           <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->versi_video : '-' }}</td>
-          <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->durasi_final : '-' }}</td>
           <td style="white-space: nowrap; vertical-align: middle;">
             @if($production && $production->catatan_produksi)
               <span class="td-notes" title="{{ $production->catatan_produksi }}">
@@ -401,28 +478,38 @@
             </span>
           </td>
           <td style="white-space: nowrap; vertical-align: middle;">
-            <div class="action-buttons" style="display:flex;gap:1px;flex-wrap:nowrap;">
+            <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:nowrap;">
               @if($production && $production->file_video)
                 <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Video">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download Video">
-                  <i class="fa-solid fa-download"></i>
-                </button>
               @endif
+
               @if($task->status == 'under_review')
-                <button class="btn-action" onclick="openBeriRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Beri Revisi">
+                <button class="btn-action" onclick="openBeriRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Beri Revisi" style="color: var(--amber);">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval">
+                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval" style="color: var(--emerald);">
                   <i class="fa-solid fa-circle-check"></i>
                 </button>
               @elseif($task->status == 'need_revision')
                 <button class="btn-action" onclick="openEditRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}', '{{ addslashes($task->revision_note ?? '') }}', '{{ $task->revision_deadline?->format('Y-m-d') ?? '' }}')" title="Edit Revisi">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval">
+                <button class="btn-action" onclick="openUploadRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Upload Hasil Revisi" style="color: var(--blue);">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+                @if($hasCreatorEmail)
+                  <button class="btn-action" onclick="notifyRevision({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim Notifikasi Revisi ke Kreator" style="color: var(--violet);">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </button>
+                @endif
+              @elseif($task->status == 'terevisi')
+                <button class="btn-action" onclick="openSendApprovalModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Kirim ke Approval" style="color: var(--emerald);">
                   <i class="fa-solid fa-circle-check"></i>
+                </button>
+                <button class="btn-action" onclick="openEditRevisiModal({{ $task->id }}, '{{ addslashes($task->judul_konten) }}', '{{ addslashes($task->revision_note ?? '') }}', '{{ $task->revision_deadline?->format('Y-m-d') ?? '' }}')" title="Beri Revisi Lagi" style="color: var(--amber);">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
               @endif
             </div>
@@ -539,6 +626,62 @@
   </div>
 </div>
 
+<!-- Modal Upload Hasil Revisi -->
+<div class="overlay" id="uploadRevisiOverlay" onclick="closeOnOverlay(event, 'uploadRevisiOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-cloud-arrow-up"></i> Revision</div>
+        <div class="modal-title">Upload Hasil Revisi</div>
+        <div class="modal-subtitle">Unggah file video/gambar hasil perbaikan</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('uploadRevisiOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <form id="uploadRevisiForm" onsubmit="submitUploadRevisi(event)" novalidate>
+        <div class="form-group">
+          <label class="form-label">Tugas Konten</label>
+          <input type="text" id="uploadRevisiTaskTitle" class="form-input" disabled>
+          <input type="hidden" name="content_task_id" id="uploadRevisiTaskId">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Upload Media Revisi <span class="required">*</span>
+          </label>
+          <div class="file-drop-zone" id="revDropZone" onclick="document.getElementById('revFileInput').click()">
+            <input type="file" name="video_file" id="revFileInput" style="display:none" accept="video/*,image/*" required onchange="handleRevFileSelect(this)">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <div class="file-drop-name" id="revFileName">Klik atau seret file ke sini</div>
+            <div class="file-drop-hint">Video atau Gambar (Maks 500MB)</div>
+          </div>
+          
+          <div class="progress-container" id="revProgressContainer">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="revProgressBar"></div>
+            </div>
+            <div class="progress-text" id="revProgressText">0%</div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-asterisk" style="font-size:8px"></i> Wajib diisi
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('uploadRevisiOverlay')">Batal</button>
+        <button class="btn btn-primary" type="button" onclick="submitUploadRevisi(event)">
+          <i class="fa-solid fa-upload"></i> Upload Revisi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Preview Video Modal -->
 <div class="overlay" id="previewOverlay" onclick="closeOnOverlay(event, 'previewOverlay')">
   <div class="modal" onclick="event.stopPropagation()" style="max-width: 800px;">
@@ -612,12 +755,51 @@
     </div>
     <div class="modal-footer">
       <div class="mf-left">
-        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Status akan berubah menjadi "Ready to Publish"
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Konten akan dipindahkan ke menu Approval
       </div>
       <div class="mf-right">
         <button class="btn-ghost" type="button" onclick="closeModal('sendApprovalOverlay')">Batal</button>
         <button class="btn btn-primary" type="button" onclick="confirmSendToApproval(event)">
-          <i class="fa-solid fa-circle-check"></i> Kirim
+          <i class="fa-solid fa-circle-check"></i> Kirim ke Approval
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notify Creator Modal -->
+<div class="overlay" id="notifyCreatorOverlay" onclick="closeOnOverlay(event, 'notifyCreatorOverlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <div class="modal-eyebrow"><i class="fa-solid fa-paper-plane"></i> Email Notification</div>
+        <div class="modal-title">Kirim Notifikasi Revisi</div>
+        <div class="modal-subtitle">Kreator akan menerima email berisi detail revisi</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal('notifyCreatorOverlay')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-divider"></div>
+      <div style="text-align: center; padding: 10px 0;">
+        <div style="width: 60px; height: 60px; background: rgba(139, 92, 246, 0.1); color: var(--violet); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">
+          <i class="fa-solid fa-envelope-open-text"></i>
+        </div>
+        <p style="font-size: 14px; color: var(--text-700); line-height: 1.5; margin-bottom: 8px;">
+          Anda akan mengirimkan notifikasi email kepada kreator untuk konten:
+        </p>
+        <p id="notifyTaskTitle" style="font-weight: 700; color: var(--text-900); font-size: 15px;"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Pastikan catatan revisi sudah benar
+      </div>
+      <div class="mf-right">
+        <button class="btn-ghost" type="button" onclick="closeModal('notifyCreatorOverlay')">Batal</button>
+        <button class="btn btn-primary" id="btnConfirmNotify" type="button" style="background: var(--violet); border: none;">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Sekarang
         </button>
       </div>
     </div>
@@ -644,10 +826,168 @@ function openEditRevisiModal(taskId, taskTitle, revisionNote, revisionDeadline) 
   document.getElementById('editRevisiOverlay').classList.add('open');
 }
 
+function openUploadRevisiModal(taskId, taskTitle) {
+  document.getElementById('uploadRevisiTaskId').value = taskId;
+  document.getElementById('uploadRevisiTaskTitle').value = taskTitle;
+  document.getElementById('revFileName').textContent = 'Klik atau seret file ke sini';
+  document.getElementById('revProgressContainer').style.display = 'none';
+  document.getElementById('uploadRevisiOverlay').classList.add('open');
+}
+
+function handleRevFileSelect(input) {
+  const nameEl = document.getElementById('revFileName');
+  if (input.files && input.files[0]) {
+    nameEl.textContent = input.files[0].name;
+    nameEl.style.color = 'var(--blue)';
+  }
+}
+
+// Drag and Drop support
+document.addEventListener('DOMContentLoaded', () => {
+  const dropZone = document.getElementById('revDropZone');
+  if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, e => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    dropZone.addEventListener('dragenter', () => dropZone.classList.add('dragover'));
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      dropZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const input = document.getElementById('revFileInput');
+        input.files = files;
+        handleRevFileSelect(input);
+      }
+    });
+  }
+});
+
+let pendingNotifyTaskId = null;
+
+function notifyRevision(taskId, taskTitle) {
+  pendingNotifyTaskId = taskId;
+  document.getElementById('notifyTaskTitle').textContent = taskTitle;
+  document.getElementById('notifyCreatorOverlay').classList.add('open');
+  
+  // Set up click handler for confirm button
+  const btn = document.getElementById('btnConfirmNotify');
+  btn.onclick = () => confirmNotifyRevision();
+}
+
+function confirmNotifyRevision() {
+  if (!pendingNotifyTaskId) return;
+
+  const btn = document.getElementById('btnConfirmNotify');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+  btn.disabled = true;
+
+  fetch(`/admin/revision/${pendingNotifyTaskId}/notify`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal('notifyCreatorOverlay');
+      toast('s', data.message);
+      if (data.mail_hint) {
+        setTimeout(() => toast('w', data.mail_hint), 1000);
+      }
+    } else {
+      toast('e', data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    toast('e', 'Terjadi kesalahan jaringan.');
+  })
+  .finally(() => {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    pendingNotifyTaskId = null;
+  });
+}
+
+function submitUploadRevisi(event) {
+  event.preventDefault();
+  const form = document.getElementById('uploadRevisiForm');
+  const formData = new FormData(form);
+  const btn = document.querySelector('#uploadRevisiOverlay .btn-primary');
+  
+  const fileInput = document.getElementById('revFileInput');
+  if (!fileInput.files[0]) {
+    toast('w', 'Silakan pilih file terlebih dahulu');
+    return;
+  }
+
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah...';
+  btn.disabled = true;
+
+  const progressContainer = document.getElementById('revProgressContainer');
+  const progressBar = document.getElementById('revProgressBar');
+  const progressText = document.getElementById('revProgressText');
+  
+  progressContainer.style.display = 'block';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '{{ route("revision.upload") }}', true);
+  xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.setRequestHeader('Accept', 'application/json');
+
+  xhr.upload.onprogress = function(e) {
+    if (e.lengthComputable) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      progressBar.style.width = percent + '%';
+      progressText.textContent = percent + '%';
+    }
+  };
+
+  xhr.onload = function() {
+    let res;
+    try {
+      res = JSON.parse(xhr.responseText);
+    } catch(e) {
+      res = { success: false, message: 'Server error' };
+    }
+
+    if (xhr.status >= 200 && xhr.status < 300 && res.success) {
+      toast('s', res.message);
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      toast('e', res.message || 'Gagal mengunggah');
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  };
+
+  xhr.onerror = function() {
+    toast('e', 'Koneksi terputus saat upload.');
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  };
+
+  xhr.send(formData);
+}
+
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('open');
   if (modalId === 'sendApprovalOverlay') {
     pendingApprovalTaskId = null;
+  }
+  if (modalId === 'notifyCreatorOverlay') {
+    pendingNotifyTaskId = null;
   }
   resetForm(modalId);
 }
@@ -698,15 +1038,15 @@ function submitBeriRevisi(event) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        closeModal('beriRevisiOverlay');
-        window.location.reload();
+        toast('s', data.message || 'Revisi berhasil disimpan');
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert('Gagal memberi revisi: ' + (data.message || 'Terjadi kesalahan'));
+        toast('e', 'Gagal memberi revisi: ' + (data.message || 'Terjadi kesalahan'));
       }
     })
     .catch(error => {
       console.error('Revision error:', error);
-      alert('Terjadi kesalahan saat memberi revisi. Silakan coba lagi.');
+      toast('e', 'Terjadi kesalahan saat memberi revisi. Silakan coba lagi.');
     })
     .finally(() => {
       submitBtn.innerHTML = originalText;
@@ -746,15 +1086,15 @@ function submitEditRevisi(event) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        closeModal('editRevisiOverlay');
-        window.location.reload();
+        toast('s', data.message || 'Revisi berhasil diperbarui');
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert('Gagal memperbarui revisi: ' + (data.message || 'Terjadi kesalahan'));
+        toast('e', 'Gagal memperbarui revisi: ' + (data.message || 'Terjadi kesalahan'));
       }
     })
     .catch(error => {
-      console.error('Revision error:', error);
-      alert('Terjadi kesalahan saat memperbarui revisi. Silakan coba lagi.');
+      console.error('Revision update error:', error);
+      toast('e', 'Terjadi kesalahan saat memperbarui revisi.');
     })
     .finally(() => {
       submitBtn.innerHTML = originalText;
@@ -802,14 +1142,15 @@ function confirmSendToApproval(event) {
       if (data.success) {
         closeModal('sendApprovalOverlay');
         pendingApprovalTaskId = null;
-        window.location.reload();
+        toast('s', data.message || 'Konten dikirim ke Approval');
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert('Gagal kirim ke approval: ' + (data.message || 'Terjadi kesalahan'));
+        toast('e', 'Gagal mengirim ke Approval: ' + (data.message || 'Terjadi kesalahan'));
       }
     })
     .catch(error => {
       console.error('Send to approval error:', error);
-      alert('Terjadi kesalahan saat mengirim ke approval. Silakan coba lagi.');
+      toast('e', 'Terjadi kesalahan saat mengirim ke Approval.');
     })
     .finally(() => {
       submitBtn.innerHTML = originalText;

@@ -187,6 +187,8 @@ Route::get('/admin/revision', [RevisionController::class, 'index'])->middleware(
 Route::post('/admin/revision/send-to-approval', [RevisionController::class, 'sendToApproval'])->middleware('auth')->name('revision.send-to-approval');
 Route::post('/admin/revision/request-revision', [RevisionController::class, 'requestRevision'])->middleware('auth')->name('revision.request-revision');
 Route::post('/admin/revision/update-revision', [RevisionController::class, 'updateRevision'])->middleware('auth')->name('revision.update-revision');
+Route::post('/admin/revision/{id}/notify', [RevisionController::class, 'notifyRevision'])->middleware('auth')->name('revision.notify');
+Route::post('/admin/revision/upload', [RevisionController::class, 'uploadRevision'])->middleware('auth')->name('revision.upload');
 
 // Additional Sidebar Routes
 Route::get('/admin/approval', [ApprovalController::class, 'index'])

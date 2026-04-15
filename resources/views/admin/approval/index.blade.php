@@ -319,13 +319,11 @@
       <tr>
         <th style="width: 40px;">ID</th>
         <th style="width: 200px;">Judul Konten</th>
-        <th style="width: 100px;">Brand</th>
-        <th style="width: 80px;">Versi Video</th>
-        <th style="width: 80px;">Durasi Final</th>
-        <th style="width: 150px;">Catatan Produksi</th>
-        <th style="width: 160px;">Catatan Revisi</th>
-        <th style="width: 100px;">Deadline Revisi</th>
-        <th style="width: 120px;">Status</th>
+        <th style="width: 120px;">Brand</th>
+        <th style="width: 100px;">Versi</th>
+        <th style="width: 100px;">Durasi</th>
+        <th style="width: 140px;">Deadline Publish</th>
+        <th style="width: 130px;">Status</th>
         <th style="width: 140px;">Aksi</th>
       </tr>
     </thead>
@@ -334,13 +332,18 @@
         @php 
           $production = $task->productions->first();
           $statusMap = [
-            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
+            'under_review' => ['label' => 'Waiting Approval', 'class' => 'p-under-review'],
             'need_revision' => ['label' => 'Need Revision', 'class' => 'p-need-revision'],
-            'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
+            'ready_to_publish' => ['label' => 'Approved', 'class' => 'p-ready-to-publish'],
             'published' => ['label' => 'Published', 'class' => 'p-published'],
           ];
           $s = $statusMap[$task->status] ?? ['label' => ucfirst(str_replace('_', ' ', $task->status)), 'class' => 'p-prod'];
           $rowNumber = $index + 1;
+
+          // Check if deadline is soon or overdue
+          $deadline = $task->publish_deadline ? \Carbon\Carbon::parse($task->publish_deadline) : null;
+          $isOverdue = $deadline && $deadline->isPast() && $task->status != 'published';
+          $isSoon = $deadline && !$isOverdue && $deadline->diffInDays(now()) <= 3 && $task->status != 'published';
         @endphp
         <tr>
           <td style="white-space: nowrap; vertical-align: middle;">{{ $rowNumber }}</td>
@@ -353,29 +356,18 @@
           <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->versi_video : '-' }}</td>
           <td style="white-space: nowrap; vertical-align: middle;">{{ $production ? $production->durasi_final : '-' }}</td>
           <td style="white-space: nowrap; vertical-align: middle;">
-            @if($production && $production->catatan_produksi)
-              <span class="td-notes" title="{{ $production->catatan_produksi }}">
-                {{ Str::limit($production->catatan_produksi, 40) }}
-              </span>
-            @else
-              <span class="text-muted">-</span>
-            @endif
-          </td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            @if($task->revision_note)
-              <span class="td-notes" title="{{ $task->revision_note }}">
-                {{ Str::limit($task->revision_note, 30) }}
-              </span>
-            @else
-              <span class="text-muted">-</span>
-            @endif
-          </td>
-          <td style="white-space: nowrap; vertical-align: middle;">
-            @if($task->revision_deadline)
-              <span class="td-date">
-                <i class="fa-regular fa-calendar"></i>
-                {{ $task->revision_deadline->format('d M Y') }}
-              </span>
+            @if($deadline)
+              <div style="display: flex; flex-direction: column;">
+                <span class="td-date @if($isOverdue) text-danger @elseif($isSoon) text-warning @endif" style="font-weight: 600;">
+                  <i class="fa-regular fa-calendar-check"></i>
+                  {{ $deadline->format('d M Y') }}
+                </span>
+                @if($isOverdue)
+                  <span style="font-size: 10px; color: var(--rose); font-weight: 700;">TERLEWAT</span>
+                @elseif($isSoon)
+                  <span style="font-size: 10px; color: var(--amber); font-weight: 700;">SEGERA PUBLISH</span>
+                @endif
+              </div>
             @else
               <span class="text-muted">-</span>
             @endif
@@ -387,22 +379,22 @@
             </span>
           </td>
           <td style="white-space: nowrap; vertical-align: middle;">
-            <div class="action-buttons" style="display:flex;gap:1px;flex-wrap:nowrap;">
+            <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:nowrap;">
               @if($production && $production->file_video)
-                <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Video">
+                <button class="btn-action" onclick="previewVideo({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Preview Konten">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download Video">
+                <button class="btn-action" onclick="openDownloadModal({{ $production->id }}, '{{ addslashes($task->judul_konten) }}', '{{ $production->file_video }}')" title="Download File">
                   <i class="fa-solid fa-download"></i>
                 </button>
               @endif
               @if($task->status != 'ready_to_publish')
-                <button class="btn-action" onclick="approveSingle({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Approve">
+                <button class="btn-action" onclick="approveSingle({{ $task->id }}, '{{ addslashes($task->judul_konten) }}')" title="Setujui untuk Publish" style="color: var(--emerald); border-color: rgba(16,185,129,0.2);">
                   <i class="fa-solid fa-check"></i>
                 </button>
               @else
-                <button class="btn-action" disabled title="Already Approved">
-                  <i class="fa-solid fa-check-circle"></i>
+                <button class="btn-action" disabled title="Sudah Disetujui" style="background: var(--bg); color: var(--emerald);">
+                  <i class="fa-solid fa-circle-check"></i>
                 </button>
               @endif
             </div>
@@ -410,10 +402,10 @@
         </tr>
       @empty
         <tr>
-          <td colspan="10" style="text-align:center;padding:32px 0;color:var(--text-400);">
-            <i class="fa-solid fa-list" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
-            <div style="font-size:15px;font-weight:600;">Belum ada konten untuk diapprove</div>
-            <div style="font-size:12.5px;">Upload video produksi dan kirim ke approval terlebih dahulu</div>
+          <td colspan="8" style="text-align:center;padding:48px 0;color:var(--text-400);">
+            <i class="fa-solid fa-clipboard-check" style="font-size:40px;margin-bottom:16px;opacity:.2;"></i>
+            <div style="font-size:16px;font-weight:700;color:var(--text-500);">Tidak ada antrean approval</div>
+            <div style="font-size:13px;">Semua konten sudah disetujui atau belum ada kiriman revisi baru</div>
           </td>
         </tr>
       @endforelse
@@ -442,12 +434,12 @@
     </div>
     <div class="modal-footer">
       <div class="mf-left">
-        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Konten akan berubah status menjadi "Ready to Publish"
+        <i class="fa-solid fa-info-circle" style="font-size:8px"></i> Konten akan disetujui dan siap untuk dipublikasikan
       </div>
       <div class="mf-right">
         <button class="btn-ghost" type="button" onclick="closeModal('approveOverlay')">Batal</button>
         <button class="btn btn-primary" type="button" onclick="confirmApprove()">
-          <i class="fa-solid fa-check"></i> Approve
+          <i class="fa-solid fa-check"></i> Setujui & Publish
         </button>
       </div>
     </div>

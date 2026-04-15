@@ -21,6 +21,15 @@ class ApprovalController extends Controller
         ->orderBy('id', 'asc')
         ->get();
 
+        // Attach publish_deadline from ContentBrief
+        foreach ($contentTasks as $task) {
+            $brief = ContentBrief::where('user_id', Auth::id())
+                ->where('title', $task->judul_konten)
+                ->where('brand_id', $task->brand_id)
+                ->first(['publish_deadline']);
+            $task->publish_deadline = $brief ? $brief->publish_deadline : null;
+        }
+
         // Statistics dari content_tasks.status
         $stats = [
             'total_review' => ContentTask::where('user_id', Auth::id())->whereIn('status', ['under_review', 'need_revision', 'ready_to_publish'])->count(),

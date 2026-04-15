@@ -15,8 +15,8 @@ class RevisionController extends Controller
      */
     public function index()
     {
-        // Revision only shows items that are currently being reviewed or revised.
-        $workflowStatuses = ['under_review', 'need_revision'];
+        // Revision shows items that are under_review, need_revision, or terevisi.
+        $workflowStatuses = ['under_review', 'need_revision', 'terevisi'];
 
         $contentTasks = ContentTask::with(['brand', 'creator', 'productions' => function($q) {
                 $q->latest()->limit(1);
@@ -28,12 +28,113 @@ class RevisionController extends Controller
 
         // Statistics dari content_tasks.status
         $stats = [
-            'total_review' => ContentTask::where('user_id', Auth::id())->whereIn('status', ['under_review', 'need_revision'])->count(),
+            'total_review' => ContentTask::where('user_id', Auth::id())->whereIn('status', $workflowStatuses)->count(),
             'under_review' => ContentTask::where('user_id', Auth::id())->where('status', 'under_review')->count(),
             'need_revision' => ContentTask::where('user_id', Auth::id())->where('status', 'need_revision')->count(),
+            'terevisi' => ContentTask::where('user_id', Auth::id())->where('status', 'terevisi')->count(),
         ];
 
         return view('admin.revision.index', compact('contentTasks', 'stats'));
+    }
+
+    /**
+     * Notify creator about revision via email
+     */
+    public function notifyRevision($id)
+    {
+        $task = ContentTask::where('user_id', Auth::id())->findOrFail($id);
+        
+        // Find brief to get creator email and token
+        $brief = ContentBrief::where('user_id', Auth::id())
+            ->where('title', $task->judul_konten)
+            ->where('brand_id', $task->brand_id)
+            ->first();
+
+        if (!$brief || !$brief->creator_email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email kreator tidak ditemukan di data brief.',
+            ], 422);
+        }
+
+        try {
+            $emailData = [
+                'title' => $task->judul_konten,
+                'brand' => $brief->brand->name ?? '-',
+                'revision_note' => $task->revision_note,
+                'deadline' => $task->revision_deadline ? $task->revision_deadline->format('d M Y') : '-',
+                'upload_link' => route('brief.public', ['token' => $brief->token, 'tab' => 'upload']),
+                'reply_to' => Auth::user()->email
+            ];
+
+            \Illuminate\Support\Facades\Mail::to($brief->creator_email)->send(new \App\Mail\RevisionNotification($emailData));
+
+            $mailHint = null;
+            if (config('mail.default') === 'log') {
+                $mailHint = 'Catatan: Mailer saat ini diatur ke "log". Email hanya akan muncul di storage/logs/laravel.log. Untuk mengirim ke Inbox asli, ubah MAIL_MAILER=smtp di file .env.';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notifikasi revisi berhasil dikirim ke ' . $brief->creator_email,
+                'mail_hint' => $mailHint
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload revision video/image
+     */
+    public function uploadRevision(Request $request)
+    {
+        $request->validate([
+            'content_task_id' => 'required|exists:content_tasks,id',
+            'video_file' => 'required|file|mimes:mp4,mov,avi,mkv,m4v,wmv,flv,mpeg,mpg,mpe,3gp,3g2,ogv,ts,m2ts,asf,f4v,jpg,jpeg,png|max:500000',
+        ]);
+
+        $task = ContentTask::where('user_id', Auth::id())->findOrFail($request->content_task_id);
+
+        try {
+            $file = $request->file('video_file');
+            $fileName = time() . '_rev_' . $task->id . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('productions', $fileName, 'public');
+
+            // Find brief to link
+            $brief = ContentBrief::where('user_id', Auth::id())
+                ->where('title', $task->judul_konten)
+                ->where('brand_id', $task->brand_id)
+                ->first();
+
+            // Create new production record for the revision
+            $production = \App\Models\Production::create([
+                'brief_id' => $brief ? $brief->id : null,
+                'content_task_id' => $task->id,
+                'judul_konten' => $task->judul_konten,
+                'versi_video' => 'Revision',
+                'durasi_final' => '-', // Will be updated if needed
+                'file_video' => $filePath,
+                'status' => 'pending', // Pending approval of this revision
+                'user_id' => Auth::id(),
+            ]);
+
+            // Update task status to terevisi
+            $task->update(['status' => 'terevisi']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hasil revisi berhasil diunggah. Status sekarang "Terevisi".',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengunggah revisi: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -55,22 +156,22 @@ class RevisionController extends Controller
         try {
             ContentTask::where('user_id', Auth::id())
                 ->whereIn('id', $ids)
-                ->whereIn('status', ['under_review', 'need_revision'])
-                ->update(['status' => 'ready_to_publish']);
+                ->whereIn('status', ['under_review', 'need_revision', 'terevisi'])
+                ->update(['status' => 'under_review']); // Set back to under_review to show in Approval page
 
             $updatedTasks = ContentTask::where('user_id', Auth::id())->whereIn('id', $ids)->get(['judul_konten', 'brand_id']);
             foreach ($updatedTasks as $task) {
                 ContentBrief::where('user_id', Auth::id())
                     ->where('title', $task->judul_konten)
                     ->where('brand_id', $task->brand_id)
-                    ->update(['status' => 'Ready to Publish']);
+                    ->update(['status' => 'Under Review']);
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Konten dikirim ke Approval.',
+                'message' => 'Konten dikirim ke halaman Approval.',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -142,11 +243,21 @@ class RevisionController extends Controller
         try {
             ContentTask::where('user_id', Auth::id())
                 ->where('id', $request->content_task_id)
-                ->where('status', 'need_revision')
+                ->whereIn('status', ['need_revision', 'terevisi'])
                 ->update([
+                    'status' => 'need_revision', // Force back to need_revision if it was terevisi
                     'revision_note' => $request->revision_note,
                     'revision_deadline' => $request->revision_deadline,
                 ]);
+
+            // Also ensure ContentBrief status is synced
+            $task = ContentTask::where('user_id', Auth::id())->find($request->content_task_id);
+            if ($task) {
+                ContentBrief::where('user_id', Auth::id())
+                    ->where('title', $task->judul_konten)
+                    ->where('brand_id', $task->brand_id)
+                    ->update(['status' => 'Need Revision']);
+            }
 
             DB::commit();
 

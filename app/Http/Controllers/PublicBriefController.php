@@ -46,6 +46,10 @@ class PublicBriefController extends Controller
      */
     public function storeProduction($token, Request $request)
     {
+        // Increase limits for large file uploads
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
+
         $brief = ContentBrief::with(['tasks'])->where('token', $token)->first();
 
         if (!$brief) {
@@ -124,7 +128,12 @@ class PublicBriefController extends Controller
                     'creator_id' => $brief->user_id, // Default ke admin pembuat
                 ]);
             } else {
-                $contentTask->update(['status' => 'under_review']);
+                // If currently need_revision, change to terevisi
+                if ($contentTask->status === 'need_revision') {
+                    $contentTask->update(['status' => 'terevisi']);
+                } else {
+                    $contentTask->update(['status' => 'under_review']);
+                }
             }
 
             // Hubungkan production ke content_task

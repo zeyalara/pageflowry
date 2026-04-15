@@ -137,19 +137,21 @@
 /* Table overflow fixes - Consistent with Brand Management */
 .tbl-card {
   width: 100%;
+}
+.table-responsive {
+  width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .tbl-card table {
   width: 100%;
-  table-layout: fixed;
-  min-width: 1000px; /* Minimum width for scroll on small devices */
   border-collapse: collapse;
 }
 .tbl-card th,
 .tbl-card td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
 }
 .tbl-card thead th {
   font-family: 'DM Sans', sans-serif;
@@ -157,11 +159,10 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .65px;
-  color: var(--text-300);
-  padding: 12px 16px;
-  text-align: left;
+  color: var(--text-500);
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 .tbl-card tbody tr {
   border-bottom: 1px solid var(--border-light);
@@ -796,109 +797,112 @@
       <i class="fa-solid fa-plus"></i> Upload Produksi
     </button>
   </div>
-  <table>
-    <thead>
-      <tr>
-        <th style="width: 40px;">ID</th>
-        <th style="width: 230px;">Nama Brief</th>
-        <th style="width: 230px;">Nama Task</th>
-        <th style="width: 100px;">File</th>
-        <th style="width: 120px;">Status</th>
-        <th style="width: 140px;">Tanggal Upload</th>
-        <th style="width: 140px; text-align: right;">Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      @forelse($productions as $index => $production)
-        @php
-          $statusMap = [
-            'production' => ['label' => 'Production', 'class' => 'p-in-production'],
-            'pending' => ['label' => 'Pending', 'class' => 'p-pending'],
-            'in_review' => ['label' => 'In Review', 'class' => 'p-under-review'],
-            'need_revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
-            'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
-            'published' => ['label' => 'Published', 'class' => 'p-published'],
-            'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
-            'approved' => ['label' => 'Approved', 'class' => 'p-approved'],
-            'revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
-            'rejected' => ['label' => 'Rejected', 'class' => 'p-rejected'],
-          ];
-          $s = $statusMap[$production->status] ?? ['label' => ucfirst($production->status), 'class' => 'p-prod'];
-          $rowNumber = $index + 1;
-        @endphp
+  <div class="table-responsive">
+    <table>
+      <thead>
         <tr>
-          <td>{{ $rowNumber }}</td>
-          <td>
-            <span class="td-name">{{ optional($production->brief)->title ?? '-' }}</span>
-            @if(optional($production->brief)->brand)
-              <div class="text-muted" style="font-size: 11px;">{{ $production->brief->brand->name }}</div>
-            @endif
-          </td>
-          <td>
-            <span class="td-brand">{{ optional($production->simpleTask)->title ?? optional($production->task)->judul_konten ?? optional($production->brief)->title ?? '-' }}</span>
-          </td>
-          <td>
-            @if($production->file_video)
-              @php
-                $ext = strtolower(pathinfo($production->file_video, PATHINFO_EXTENSION));
-                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-              @endphp
-              @if($isImage)
-                <span class="td-file"><i class="fa-solid fa-image"></i> Gambar</span>
-              @else
-                <span class="td-file"><i class="fa-solid fa-video"></i> Video</span>
+          <th>Nama Brief</th>
+          <th>Nama Task</th>
+          <th>Media</th>
+          <th>Status</th>
+          <th>Tanggal Upload</th>
+          <th style="text-align: right; min-width: 160px;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($productions as $index => $production)
+          @php
+            $statusMap = [
+              'production' => ['label' => 'Production', 'class' => 'p-in-production'],
+              'pending' => ['label' => 'Pending', 'class' => 'p-pending'],
+              'in_review' => ['label' => 'In Review', 'class' => 'p-under-review'],
+              'need_revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
+              'ready_to_publish' => ['label' => 'Ready to Publish', 'class' => 'p-ready-to-publish'],
+              'published' => ['label' => 'Published', 'class' => 'p-published'],
+              'under_review' => ['label' => 'Under Review', 'class' => 'p-under-review'],
+              'approved' => ['label' => 'Approved', 'class' => 'p-approved'],
+              'revision' => ['label' => 'Need Revision', 'class' => 'p-revision'],
+              'rejected' => ['label' => 'Rejected', 'class' => 'p-rejected'],
+            ];
+            $s = $statusMap[$production->status] ?? ['label' => ucfirst($production->status), 'class' => 'p-prod'];
+          @endphp
+          <tr>
+            <td>
+              <div class="td-name">{{ optional($production->brief)->title ?? '-' }}</div>
+              @if(optional($production->brief)->brand)
+                <div style="font-size: 11px; color: var(--text-400); margin-top: 2px;">
+                  <i class="fa-solid fa-tag" style="font-size: 10px; margin-right: 4px;"></i>
+                  {{ $production->brief->brand->name }}
+                </div>
               @endif
-            @else
-              <span class="text-muted">-</span>
-            @endif
-          </td>
-          <td>
-            <span class="pill {{ $s['class'] }}">
-              <span class="pill-dot"></span>
-              {{ $s['label'] }}
-            </span>
-          </td>
-          <td>{{ $production->created_at->format('d M Y') }}</td>
-          <td style="text-align: right;">
-            <div class="action-buttons" style="justify-content: flex-end;">
+            </td>
+            <td>
+              <div class="td-brand">{{ optional($production->simpleTask)->title ?? optional($production->task)->judul_konten ?? optional($production->brief)->title ?? '-' }}</div>
+            </td>
+            <td>
               @if($production->file_video)
-                <button class="btn-action btn-preview" onclick="previewVideo({{ $production->id }})" title="Preview">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-                <a href="{{ route('production.download', $production->id) }}" class="btn-action btn-download" title="Download">
-                  <i class="fa-solid fa-download"></i>
-                </a>
-                
-                {{-- Action: Approve (Only if not already approved) --}}
-                @if($production->status !== 'approved')
-                  <button type="button" class="btn-action btn-approve" onclick="openApproveModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Approve" style="color: var(--emerald);">
-                    <i class="fa-solid fa-check"></i>
-                  </button>
-                @endif
-
-                {{-- Action: Revision (Only if not already revision) --}}
-                @if($production->status !== 'revision')
-                  <button type="button" class="btn-action btn-revision" onclick="openRevisionModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Revision" style="color: var(--amber);">
-                    <i class="fa-solid fa-rotate-left"></i>
-                  </button>
-                @endif
+                @php
+                  $ext = strtolower(pathinfo($production->file_video, PATHINFO_EXTENSION));
+                  $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                @endphp
+                <span class="td-file" style="display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid {{ $isImage ? 'fa-image' : 'fa-video' }}" style="color: var(--blue);"></i>
+                  {{ $isImage ? 'Gambar' : 'Video' }}
+                </span>
+              @else
+                <span style="color: var(--text-300);">Tidak ada file</span>
               @endif
-            </div>
-          </td>
-        </tr>
-      @empty
-        <tr>
-          <td colspan="7" class="empty-state">
-            <div class="empty-state-content">
-              <i class="fa-solid fa-film"></i>
-              <div class="empty-title">Belum ada production</div>
-              <div class="empty-desc">Upload production dari halaman brief publik</div>
-            </div>
-          </td>
-        </tr>
-      @endforelse
-    </tbody>
-  </table>
+            </td>
+            <td>
+              <span class="pill {{ $s['class'] }}">
+                <span class="pill-dot"></span>
+                {{ $s['label'] }}
+              </span>
+            </td>
+            <td>
+              <div style="font-size: 12px; color: var(--text-500);">
+                {{ $production->created_at->format('d M Y') }}
+              </div>
+            </td>
+            <td style="text-align: right;">
+              <div class="action-buttons" style="justify-content: flex-end; gap: 6px;">
+                @if($production->file_video)
+                  <button class="btn-action btn-preview" onclick="previewVideo({{ $production->id }})" title="Preview Media">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                  <a href="{{ route('production.download', $production->id) }}" class="btn-action btn-download" title="Download Media" style="color: var(--emerald); border-color: rgba(16,185,129,0.2);">
+                    <i class="fa-solid fa-download"></i>
+                  </a>
+                  
+                  @if($production->status !== 'approved')
+                    <button type="button" class="btn-action" onclick="openApproveModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Approve Production" style="color: var(--blue); border-color: var(--blue-200);">
+                      <i class="fa-solid fa-check"></i>
+                    </button>
+                  @endif
+
+                  @if($production->status !== 'revision')
+                    <button type="button" class="btn-action btn-revision" onclick="openRevisionModal({{ $production->id }}, '{{ addslashes(optional($production->brief)->title ?? 'Production') }}')" title="Minta Revisi">
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                  @endif
+                @endif
+              </div>
+            </td>
+          </tr>
+        @empty
+          <tr>
+            <td colspan="6" class="empty-state">
+              <div class="empty-state-content" style="padding: 60px 0;">
+                <i class="fa-solid fa-film" style="font-size: 40px; color: var(--text-300); margin-bottom: 16px;"></i>
+                <div class="empty-title" style="font-size: 16px; font-weight: 700; color: var(--text-500);">Belum ada production</div>
+                <div class="empty-desc" style="font-size: 13px; color: var(--text-400);">Upload production melalui tombol di atas atau link brief publik</div>
+              </div>
+            </td>
+          </tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <!-- Upload Modal -->
@@ -1205,20 +1209,17 @@ function submitUpload(event) {
     }
 
     if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
-      closeModal('uploadOverlay');
-      window.location.reload();
+      toast('s', data.message || 'Upload berhasil!');
+      setTimeout(() => window.location.reload(), 1500);
       return;
     }
 
     if (data && data.message) {
-      alert('Upload gagal: ' + data.message);
+      toast('e', 'Upload gagal: ' + data.message);
     } else if (xhr.status === 413) {
-      alert('File terlalu besar untuk server (413). Naikkan post_max_size & upload_max_filesize di php.ini (atau public/.user.ini), dan di Nginx: client_max_body_size — lihat deploy/nginx-upload-limits.conf.');
-    } else if (!contentType.includes('application/json') && xhr.responseText) {
-      console.error('Server returned non-JSON:', xhr.responseText.substring(0, 300));
-      alert('Server mengembalikan halaman error (bukan JSON). Cek log server atau ukuran/time limit upload.');
+      toast('e', 'File terlalu besar untuk server (413).');
     } else {
-      alert('Upload gagal (HTTP ' + xhr.status + '). Coba lagi atau periksa koneksi.');
+      toast('e', 'Upload gagal (HTTP ' + xhr.status + ').');
     }
 
     submitBtn.innerHTML = originalText;
@@ -1226,7 +1227,7 @@ function submitUpload(event) {
   };
 
   xhr.onerror = function () {
-    alert('Koneksi terputus saat upload. Periksa jaringan atau coba file lebih kecil.');
+    toast('e', 'Gagal mengunggah: Koneksi terputus atau ditolak oleh server.');
     submitBtn.innerHTML = originalText;
     submitBtn.disabled = false;
   };

@@ -537,21 +537,8 @@
 .del-ic-wrap{width:60px;height:60px;border-radius:16px;background:rgba(244,63,94,.1);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--rose);margin:0 auto 16px}
 
 /* ─────────────────────────────────────────
-   TOAST
+   TOAST - Handled globally in admin layout
 ───────────────────────────────────────── */
-.toast-wrap{position:fixed;bottom:28px;right:28px;z-index:999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.toast{
-  display:flex;align-items:center;gap:11px;padding:13px 18px;
-  border-radius:12px;background:var(--text-900);color:#fff;
-  font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(13,21,38,.25);
-  transform:translateX(110%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
-  pointer-events:all;min-width:250px;max-width:380px;
-}
-.toast.show{transform:translateX(0)}
-.t-ic{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
-.t-s .t-ic{background:rgba(16,185,129,.2);color:var(--emerald)}
-.t-w .t-ic{background:rgba(245,158,11,.2);color:var(--amber)}
-.t-e .t-ic{background:rgba(244,63,94,.2);color:var(--rose)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1089,7 +1076,7 @@
 </div>
 </div>
 
-<div class="toast-wrap" id="toastWrap"></div>
+<!-- Global Toast Wrapper handled in layouts.admin -->
 @endsection
 
 @push('scripts')
@@ -1626,6 +1613,6 @@ function updateFormatOptions(){
   if(opts[p]) opts[p].forEach(o => f.add(new Option(o,o)));
 }
 function addCharCounter(id,cid,max){ const el=document.getElementById(id); if(!el) return; el.oninput=()=>{ const l=el.value.length; document.getElementById(cid).textContent=`${l}/${max}`; document.getElementById(cid).classList.toggle('over',l>max); }; }
-function toast(t,m){ const w=document.getElementById('toastWrap'), e=document.createElement('div'); e.className=`toast t-${t} show`; e.innerHTML=m; w.appendChild(e); setTimeout(()=>e.remove(),3000); }
+// toastWrap and toast() function are now handled globally in admin layout
 </script>
 @endpush

@@ -254,8 +254,9 @@ class ProductionController extends Controller
         }
 
         try {
-            // Video besar butuh waktu baca/move file; hindari timeout default PHP di hosting.
+            // Increase limits for large file uploads
             set_time_limit(0);
+            ini_set('memory_limit', '512M');
 
             DB::beginTransaction();
 

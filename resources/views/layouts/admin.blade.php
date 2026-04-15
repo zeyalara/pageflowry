@@ -1735,7 +1735,47 @@ window.addEventListener('resize', function() {
   background: #e5e7eb;
   margin: 4px 0;
 }
+
+/* ─────────────────────────────────────────
+   TOAST SYSTEM
+───────────────────────────────────────── */
+.toast-wrap{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:11px;padding:13px 18px;
+  border-radius:12px;background:#0d1526;color:#fff;
+  font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(13,21,38,.25);
+  transform:translateX(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:all;min-width:250px;max-width:380px;
+}
+.toast.show{transform:translateX(0)}
+.t-ic{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.t-s .t-ic{background:rgba(16,185,129,.2);color:#10b981}
+.t-w .t-ic{background:rgba(245,158,11,.2);color:#f59e0b}
+.t-e .t-ic{background:rgba(244,63,94,.2);color:#f43f5e}
 </style>
 @stack('scripts')
+<div id="toastWrap" class="toast-wrap"></div>
+<script>
+function toast(type, message) {
+  const wrap = document.getElementById('toastWrap');
+  const e = document.createElement('div');
+  let icon = 'fa-info-circle';
+  if(type === 's') icon = 'fa-check-circle';
+  if(type === 'e') icon = 'fa-exclamation-circle';
+  if(type === 'w') icon = 'fa-exclamation-triangle';
+  
+  e.className = `toast t-${type}`;
+  e.innerHTML = `
+    <div class="t-ic"><i class="fa-solid ${icon}"></i></div>
+    <div class="t-msg">${message}</div>
+  `;
+  wrap.appendChild(e);
+  setTimeout(() => e.classList.add('show'), 10);
+  setTimeout(() => {
+    e.classList.remove('show');
+    setTimeout(() => e.remove(), 400);
+  }, 4000);
+}
+</script>
 </body>
 </html>

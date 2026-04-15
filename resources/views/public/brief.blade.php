@@ -643,7 +643,81 @@
                 align-items: flex-start;
             }
         }
-    </style>
+            /* Progress Bar */
+        .progress-bar-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            height: 10px;
+            background: var(--slate-100);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            text-align: right;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Success State */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .success-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow-2xl);
+            animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #dcfce7;
+            color: #16a34a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 24px;
+        }
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--slate-900);
+            margin-bottom: 12px;
+        }
+        .success-msg {
+            color: var(--slate-600);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+</style>
 </head>
 <body>
     <div class="container">
@@ -911,6 +985,14 @@
                             <i class="fas fa-paper-plane"></i>
                             <span>Kirim Production</span>
                         </button>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-bar-container" id="progressBarContainer">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">0%</div>
+                        </div>
                     </form>
                 </div>
 
@@ -956,6 +1038,21 @@
         </div>
     </div>
 
+    <!-- Success Modal -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-card">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="success-title">Berhasil Terkirim!</h2>
+            <p class="success-msg">Produksi Anda telah berhasil diunggah dan akan segera ditinjau oleh tim admin.</p>
+            <button class="btn-submit" onclick="window.location.reload()" style="margin: 0;">
+                <i class="fas fa-sync-alt"></i>
+                <span>Tutup & Segarkan Halaman</span>
+            </button>
+        </div>
+    </div>
+
     <script>
         // Tab Switching
         function switchTab(tab) {
@@ -988,6 +1085,62 @@
                 fileUploadBox.classList.remove('has-file');
                 btnSubmit.disabled = true;
             }
+        });
+
+        // XHR Progress Upload
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            const btn = document.getElementById('btnSubmit');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sedang Mengunggah...';
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', form.action, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            const progressContainer = document.getElementById('progressBarContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressContainer.style.display = 'block';
+            
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressFill.style.width = percent + '%';
+                    progressText.textContent = `${percent}% Terunggah`;
+                }
+            };
+            
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    document.getElementById('successOverlay').style.display = 'flex';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    progressContainer.style.display = 'none';
+                    
+                    if (xhr.status === 413) {
+                        alert('File terlalu besar untuk server (413).');
+                    } else {
+                        alert('Gagal mengunggah (Error ' + xhr.status + ').');
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                progressContainer.style.display = 'none';
+                alert('Gagal mengunggah: Koneksi terputus.');
+            };
+            
+            xhr.send(formData);
         });
 
         // Drag and Drop
