@@ -556,6 +556,63 @@
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin .7s linear infinite}
+
+/* ═══════════════════════════════════════
+   PRINT STYLES
+═══════════════════════════════════════ */
+@media print {
+  /* Hide navigation, sidebar, and non-essential UI */
+  nav, .sidebar, .sidebar-wrap, .sb-wrap, .header, .toolbar, .btn, .view-toggle, .row-actions, .modal, .overlay, .tch-right, .pg-header, .stats-row, .pagi {
+    display: none !important;
+  }
+
+  /* Reset page margins and background */
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-content, .content, .body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Expand the table to full width */
+  .table-card {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+  }
+
+  .ktable {
+    width: 100% !important;
+    border: 1px solid #eee !important;
+  }
+
+  .ktable th, .ktable td {
+    border: 1px solid #eee !important;
+  }
+
+  /* Ensure colors and text are visible */
+  .status-pill {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 1px solid #ccc !important;
+  }
+
+  /* Show a print header */
+  .table-card::before {
+    content: "PAGEFLOWRY - DAFTAR TUGAS KONTEN";
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0d1526;
+  }
+}
 </style>
 @endpush
 
@@ -640,9 +697,14 @@
     @endif
   </select>
   <div class="toolbar-spacer"></div>
-  <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;">
-    <i class="fa-solid fa-file-pdf"></i> Export PDF
-  </a>
+  <div style="display:flex; gap:8px;">
+    <a href="{{ route('content-tasks.export-pdf') }}" class="btn btn-ghost" style="text-decoration:none;">
+      <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </a>
+    <button class="btn btn-ghost" onclick="window.print()" title="Cetak Halaman">
+      <i class="fa-solid fa-print"></i> Print
+    </button>
+  </div>
 </div>
 
 <!-- TABLE CARD -->
