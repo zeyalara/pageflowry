@@ -15,7 +15,8 @@ return [
     */
 
     // Gunakan "smtp" + isi MAIL_* di .env agar email benar-benar terkirim (bukan hanya ke log).
-    'default' => env('MAIL_MAILER', 'smtp'),
+    // Pada hosting, jika smtp gagal maka akan mencoba sendmail secara otomatis.
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------
@@ -48,8 +49,15 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'encryption' => env('MAIL_ENCRYPTION', 'tls'), // Gunakan variabel dari .env
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL'), PHP_URL_HOST)),
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL'), PHP_URL_HOST) ?: (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost')),
             'verify_peer' => false, // Set false untuk hosting yang ketat
+            'stream' => [
+                'ssl' => [
+                    'allow_self_signed' => true,
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ],
+            ],
         ],
 
         'ses' => [
@@ -86,6 +94,7 @@ return [
             'transport' => 'failover',
             'mailers' => [
                 'smtp',
+                'sendmail',
                 'log',
             ],
             'retry_after' => 60,
